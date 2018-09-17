@@ -1,0 +1,30 @@
+.wfEditorContainer{
+    width: calc( 100% - 240px);
+    background: #F9F9F9;
+    height: 150px;
+    overflow: auto;
+}
+.wfEditorContainer .icon-workflow{
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 20px;
+    padding: 15px;
+}
+.wfEditorContainer .icon-workflow:hover{
+    cursor: pointer;
+    background: #E6E6E6;
+    border-radius: 5px;
+}
+.wfEditorContainer .action-area{
+    display: inline-block;
+}
+.wfEditorContainer .action-area-tip{
+    text-align: center;
+}
+.wfEditorContainer .wfEditor-split{
+    display: inline-block;
+    height: 44px;
+    width: 1px;
+    background: #ccc;
+    vertical-align: middle;
+}
