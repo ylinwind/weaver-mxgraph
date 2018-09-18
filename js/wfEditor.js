@@ -1,5 +1,8 @@
+var wfUi;
 function WfPanel(editorUi, container) {
+    console.log(editorUi,editorUi.editor.graph.setGridEnabled)
     this.editorUi = editorUi;
+    wfUi = editorUi;
 	this.container = container;
     this.palettes = new Object();
     // this.siderBar = new Sidebar(editorUi, container);
@@ -12,7 +15,53 @@ function WfPanel(editorUi, container) {
     this.init();
     this.setTipInfoShow();
     this.tipInfoDisplay = 'block';
-    this.createDragSource_();
+    // 创建处理函数-----------------
+    this.pointerUpHandler = mxUtils.bind(this, function()
+	{
+		this.showTooltips = true;
+	});
+
+    this.pointerMoveHandler = mxUtils.bind(this, function(evt)
+	{
+		var src = mxEvent.getSource(evt);
+		
+		while (src != null)
+		{
+			if (src == this.currentElt)
+			{
+				return;
+			}
+			
+			src = src.parentNode;
+		}
+		
+		this.hideTooltip();
+	});
+	this.pointerDownHandler = mxUtils.bind(this, function()
+	{
+		this.showTooltips = false;
+		this.hideTooltip();
+	});
+    // Handles mouse leaving the window
+	this.pointerOutHandler = mxUtils.bind(this, function(evt)
+	{
+		if (evt.toElement == null && evt.relatedTarget == null)
+		{
+			this.hideTooltip();
+		}
+	});
+    // Enables tooltips after scroll
+	mxEvent.addListener(container, 'scroll', mxUtils.bind(this, function()
+	{
+		this.showTooltips = true;
+		this.hideTooltip();
+	}));
+
+	mxEvent.addListener(document, (mxClient.IS_POINTER) ? 'pointerup' : 'mouseup', this.pointerUpHandler);
+	mxEvent.addListener(document, (mxClient.IS_POINTER) ? 'pointermove' : 'mousemove', this.pointerMoveHandler);
+    mxEvent.addListener(document, (mxClient.IS_POINTER) ? 'pointerdown' : 'mousedown', this.pointerDownHandler);
+    mxEvent.addListener(document, (mxClient.IS_POINTER) ? 'pointerout' : 'mouseout', this.pointerOutHandler); 
+    // ----------------------
 }
 WfPanel.prototype.init = function (){
 
@@ -145,6 +194,7 @@ WfPanel.prototype.defaultImageHeight = 80;
  */
 WfPanel.prototype.drawActions = function(){
     let iconActions = this.editorUi.actions;
+    var _this = this;
     let icons = [ //所有的操作按钮
         {icon:'icon-workflow-baocun',action:iconActions.get('save'),title:'save'},
         {icon:'icon-workflow-daochu',action:iconActions.get('export'),title:'export'},
@@ -152,13 +202,13 @@ WfPanel.prototype.drawActions = function(){
         {icon:'icon-workflow-fanhui',action:iconActions.get('redo'),title:'redo'},
         {icon:'icon-workflow-shanchu',action:iconActions.get('delete'),title:'delete'},
 
-        {icon:'icon-workflow-chuangjian',action:'',title:''},
-        {icon:'icon-workflow-chuli',action:'',title:''},
-        {icon:'icon-workflow-shenpi',action:'',title:''},
-        {icon:'icon-workflow-fencha',action:'',title:''},
-        {icon:'icon-workflow-fenchazhongjiandian',action:'',title:''},
-        {icon:'icon-workflow-hebing',action:'',title:''},
-        {icon:'icon-workflow-guidang',action:'',title:''},
+        // {icon:'icon-workflow-chuangjian',action:'',title:''},
+        // {icon:'icon-workflow-chuli',action:'',title:''},
+        // {icon:'icon-workflow-shenpi',action:'',title:''},
+        // {icon:'icon-workflow-fencha',action:'',title:''},
+        // {icon:'icon-workflow-fenchazhongjiandian',action:'',title:''},
+        // {icon:'icon-workflow-hebing',action:'',title:''},
+        // {icon:'icon-workflow-guidang',action:'',title:''},
 
         {icon:'icon-workflow-tianjiafenzu',action:'',title:''},
         {icon:'icon-workflow-ziti',action:'',title:''},
@@ -173,23 +223,23 @@ WfPanel.prototype.drawActions = function(){
         {icon:'icon-workflow-kaoxiaduiqi',action:'',title:''},
 
         {icon:'icon-workflow-biaochi',action:'',title:''},
-        {icon:'icon-workflow-wangge',action:'',title:''},
+        {icon:'icon-workflow-wangge',action:'1',title:''},
         {icon:'icon-workflow-xianshifenzu',action:'',title:''},
         {icon:'icon-workflow-huifuyuanbil',action:'',title:''},
-        {icon:'icon-workflow-suoxiao',action:'',title:''},
-        {icon:'icon-workflow-fangda',action:'',title:''},
+        {icon:'icon-workflow-suoxiao',action:iconActions.get('zoomOut'),title:''},
+        {icon:'icon-workflow-fangda',action:iconActions.get('zoomIn'),title:''},
 
         {icon:'icon-workflow-ceshi',action:'',title:''},
         {icon:'icon-workflow-tingzhi',action:'',title:''},
     ]
     let elDiv;
     icons.map((v,i)=>{
-        if(i==0||i==5||i==12||i==16||i==28||i==22){
+        if(i==0||i==5||i==9||i==15||i==21){
             elDiv = document.createElement('div');
             elDiv.className = 'action-area';
             let elDiv_tip = document.createElement('div');
             elDiv_tip.className = 'action-area-tip';
-            elDiv_tip.innerHTML = i==0?'编辑':i==5?'节点':i==12?'标注':i==16?'对齐':i==22?'视图（100%）':i==28?'测试':'';
+            elDiv_tip.innerHTML = i==0?'编辑':i==5?'标注':i==9?'对齐':i==15?'视图（100%）':i==21?'测试':'';
             elDiv_tip.style.display = this.tipInfoDisplay;
             elDiv.appendChild(elDiv_tip);
         }
@@ -197,10 +247,22 @@ WfPanel.prototype.drawActions = function(){
         spanEl.className = `${v.icon} icon-workflow`;
         spanEl.title = v.title || 'title';
         spanEl.onclick = function(e){
-            v.action.funct&&v.action.funct(e);
+            v.action&&_this.setIconsActions(v.action,e,v.icon);
         }
         elDiv.appendChild(spanEl);
-        if(i==4 || i==11 || i==15 || i==21 || i==27 || i==icons.length-1){
+        if(i==19){
+            console.log('in',v);
+            let input = document.createElement('INPUT');
+            input.type = 'range';
+            input.className = 'wf-view-range';
+            input.onclick = (v)=>{console.log('click',v,input)};
+            input.onchange = function(v){
+                console.log(v,'vvvvvv')
+            }
+            elDiv.appendChild(input);
+        }
+
+        if(i==4 || i==8 || i==14 || i==20 || i==22 || i==icons.length-1){
             this.container.appendChild(elDiv);
             if(i!=icons.length-1){
                 let spanSplit = document.createElement('span');
@@ -209,6 +271,27 @@ WfPanel.prototype.drawActions = function(){
             }
         }
     });
+}
+/**
+icons actions
+ */
+WfPanel.prototype.setIconsActions = function(func,evt,icon){
+    var graph = this.editorUi.editor.graph;
+    if(icon=='icon-workflow-wangge'){//设置网格显示隐藏
+        let gridEnables = graph.isGridEnabled();
+        let color = graph.view.gridColor;
+        graph.setGridEnabled(!gridEnables);
+        if(!gridEnables){
+            this.editorUi.setGridColor(color);
+        }
+        this.editorUi.fireEvent(new mxEventObject('gridEnabledChanged'));
+    }else{
+        func.funct(evt);
+        if(icon=='icon-workflow-suoxiao' || icon=='icon-workflow-fangda'){//修改操作区域显示缩放值
+            var tips = document.getElementsByClassName('action-area-tip')[4];
+            tips.innerHTML = `视图（${graph.view.scale*100}%）`
+        }
+    }
 }
 /**
 控制每块操作区域提示语
@@ -230,29 +313,57 @@ WfPanel.prototype.setTipInfoShow = function(){
     this.container.appendChild(tipBtn);
 }
 /**
-siderbar  funcs
+ * Hides the current tooltip.
+ */
+WfPanel.prototype.hideTooltip = function()
+{
+	if (this.thread != null)
+	{
+		window.clearTimeout(this.thread);
+		this.thread = null;
+	}
+	
+	if (this.tooltip != null)
+	{
+		this.tooltip.style.display = 'none';
+		this.tooltipImage.style.visibility = 'hidden';
+		this.currentElt = null;
+	}
+};
+/**
+siderbar  funcs //图形参数配置
  */
 WfPanel.prototype.addGeneralPalette = function(expand)
 {
 	var sb = this;
 	var lineTags = 'line lines connector connectors connection connections arrow arrows ';
 	let wfStrokeStyle = 'fillColor=#BFF3C3;strokeColor=#5ABD6B;';
+    let iconRightStyle = 'margin-right:20px;'
 
 	var fns = [
-	 	this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 120, 60, '', 'Rectangle', null, null, 'rect rectangle box'),
-	 	this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;'+wfStrokeStyle, 120, 60, '', 'Rounded Rectangle', null, null, 'rounded rect rectangle box'),
+	 	this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian'),
+	 	this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '处理', '处理', null, null, 'rect rectangle box','icon-workflow-chuli'),
+        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;'+wfStrokeStyle, 130, 80, '审批', '审批', null, null, 
+        'diamond rhombus if condition decision conditional question test','icon-workflow-shenpi'),
+
+        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70,
+         `<span class='icon-workflow-fencha icon-left-style'></span>分叉<span class='icon-workflow-fencha icon-right-style'></span>`, `分叉`,
+         null, null, 'rect rectangle box','icon-workflow-fencha'),
+        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '分叉中间点', '分叉中间点', null, null, 'rect rectangle box','icon-workflow-fenchazhongjiandian'),
+        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '合并节点', '合并节点', null, null, 'rect rectangle box','icon-workflow-hebing'),
+
 	 	// Explicit strokecolor/fillcolor=none is a workaround to maintain transparent background regardless of current style
-	 	this.createVertexTemplateEntry('text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;',
- 			40, 20, 'Text', 'Text', null, null, 'text textbox textarea label'),
-	 	this.createVertexTemplateEntry('text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;', 190, 120,
-			'<h1>Heading</h1><p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>',
-			'Textbox', null, null, 'text textbox textarea'),
-	 	this.createVertexTemplateEntry('shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;', 120, 60, '', 'Process', null, null, 'process task'),
-	 	this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;'+wfStrokeStyle, 130, 80, '处理', 'Diamond', null, null, 'diamond rhombus if condition decision conditional question test'),
+            // this.createVertexTemplateEntry('text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;',
+            //     40, 20, 'Text', '', null, null, 'text textbox textarea label','icon-workflow-fencha'),
+            // this.createVertexTemplateEntry('text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;', 190, 120,
+            //     '<h1>Heading</h1><p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>',
+            //     'Textbox', null, null, 'text textbox textarea','icon-workflow-fenchazhongjiandian'),
+            // this.createVertexTemplateEntry('shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;', 120, 60, '', 'Process', null, null, 'process task','icon-workflow-hebing'),
+	 	
 	 	// 自定义
 		this.addEntry('shape group container', function()
 		{
-		    var cell = new mxCell(`<span class='icon-workflow-chuli' style="font-size:20px";></span>`, new mxGeometry(0, 0, 120, 60),
+		    var cell = new mxCell(`<span class='icon-workflow-chuli' style="font-size:20px";></span>`, new mxGeometry(0, 0, 110, 70),
 				'rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle);
 		    cell.vertex = true;
 		    
@@ -260,7 +371,7 @@ WfPanel.prototype.addGeneralPalette = function(expand)
 			symbol.vertex = true;
 			cell.insert(symbol);
 	    	
-    		return sb.createVertexTemplateFromCells([cell], cell.geometry.width, cell.geometry.height, 'Shape Group');
+    		return sb.createVertexTemplateFromCells([cell], cell.geometry.width, cell.geometry.height, 'Shape Group','','','','icon-workflow-guidang');
 		})
     ]
     this.addPaletteFunctions('1', '111', (expand != null) ? expand : true, fns);
@@ -287,8 +398,13 @@ WfPanel.prototype.addPalette = function(id, title, expanded, onInit)
 	// this.container.appendChild(elt);
 	
 	var div = document.createElement('div');
-	div.className = 'geSidebar';
+	div.className = 'action-area';
 	
+    var tipInfo = document.createElement('div');
+    tipInfo.className = 'action-area-tip';
+    tipInfo.innerHTML = '节点';
+    div.appendChild(tipInfo);
+
 	// Disables built-in pan and zoom in IE10 and later
 	if (mxClient.IS_POINTER)
 	{
@@ -304,12 +420,10 @@ WfPanel.prototype.addPalette = function(id, title, expanded, onInit)
 	{
 		div.style.display = 'none';
 	}
-	
-    // this.addFoldingHandler(elt, div, onInit);
-	
-	var outer = document.createElement('div');
-    outer.appendChild(div);
-    this.container.appendChild(outer);
+    var wfSplit = document.createElement('div');
+	wfSplit.className = 'wfEditor-split';
+    this.container.insertBefore(div,this.container.childNodes[2]);
+    this.container.insertBefore(wfSplit,this.container.childNodes[3]);
     
     // Keeps references to the DOM nodes
     if (id != null)
@@ -400,33 +514,33 @@ WfPanel.prototype.addFoldingHandler = function(title, content, funct)
 /**
  * Creates a drop handler for inserting the given cells.
  */
-WfPanel.prototype.createVertexTemplateEntry = function(style, width, height, value, title, showLabel, showTitle, tags)
+WfPanel.prototype.createVertexTemplateEntry = function(style, width, height, value, title, showLabel, showTitle, tags,icon)
 {
 	tags = (tags != null && tags.length > 0) ? tags : title.toLowerCase();
 	
 	return this.addEntry(tags, mxUtils.bind(this, function()
  	{
- 		return this.createVertexTemplate(style, width, height, value, title, showLabel, showTitle);
+ 		return this.createVertexTemplate(style, width, height, value, title, showLabel, showTitle,'',icon);
  	}));
 }
 /**
  * Creates a drop handler for inserting the given cells.
  */
-WfPanel.prototype.createVertexTemplate = function(style, width, height, value, title, showLabel, showTitle, allowCellsInserted)
+WfPanel.prototype.createVertexTemplate = function(style, width, height, value, title, showLabel, showTitle, allowCellsInserted,icon)
 {
 	var cells = [new mxCell((value != null) ? value : '', new mxGeometry(0, 0, width, height), style)];
 	cells[0].vertex = true;
 	
-	return this.createVertexTemplateFromCells(cells, width, height, title, showLabel, showTitle, allowCellsInserted);
+	return this.createVertexTemplateFromCells(cells, width, height, title, showLabel, showTitle, allowCellsInserted,icon);
 };
 /**
  * Creates a drop handler for inserting the given cells.
  */
-WfPanel.prototype.createVertexTemplateFromCells = function(cells, width, height, title, showLabel, showTitle, allowCellsInserted)
+WfPanel.prototype.createVertexTemplateFromCells = function(cells, width, height, title, showLabel, showTitle, allowCellsInserted,icon)
 {
 	// Use this line to convert calls to this function with lots of boilerplate code for creating cells
 	//console.trace('xml', this.graph.compress(mxUtils.getXml(this.graph.encodeCells(cells))), cells);
-	return this.createItem(cells, title, showLabel, showTitle, width, height, allowCellsInserted);
+	return this.createItem(cells, title, showLabel, showTitle, width, height, allowCellsInserted,icon);
 };
 /**
  * Hides the current tooltip.
@@ -559,13 +673,13 @@ WfPanel.prototype.createThumb = function(cells, width, height, parent, title, sh
 /**
  * Creates and returns a new palette item for the given image.
  */
-WfPanel.prototype.createItem = function(cells, title, showLabel, showTitle, width, height, allowCellsInserted)
+WfPanel.prototype.createItem = function(cells, title, showLabel, showTitle, width, height, allowCellsInserted , icon='')
 {
 	// var elt = document.createElement('a');
 	// elt.setAttribute('href', 'javascript:void(0);');
 	// elt.className = 'geItem';
 	var elt = document.createElement('span');
-	elt.className = 'icon-workflow-chuangjian geItem';
+	elt.className = `${icon} icon-workflow`;
 
 	// elt.style.overflow = 'hidden';
 	// var border = (mxClient.IS_QUIRKS) ? 8 + 2 * this.thumbPadding : 2 * this.thumbBorder;
@@ -584,7 +698,7 @@ WfPanel.prototype.createItem = function(cells, title, showLabel, showTitle, widt
 		mxEvent.consume(evt);
 	});
 
-	// this.createThumb(cells, this.thumbWidth, this.thumbHeight, elt, title, showLabel, showTitle, width, height);
+	// this.createThumb(cells, this.thumbWidth, this.thumbHeight, elt, title, showLabel, showTitle, width, height); //预览时也是实际图形的缩放版；
 	var bounds = new mxRectangle(0, 0, width, height);
 	
 	if (cells.length > 1 || cells[0].vertex)
@@ -625,7 +739,6 @@ WfPanel.prototype.createItem = function(cells, title, showLabel, showTitle, widt
  */
 WfPanel.prototype.createDragSource = function(elt, dropHandler, preview, cells, bounds)
 {
-    console.log(elt, dropHandler, preview, cells, bounds,'elt, dropHandler, preview, cells, bounds')
 	// Checks if the cells contain any vertices
 	var ui = this.editorUi;
 	var graph = ui.editor.graph;
@@ -1663,20 +1776,10 @@ WfPanel.prototype.showTooltip = function(elt, cells, w, h, title, showLabel)
 		}
 	}
 };
-
-WfPanel.prototype.createDragSource_ = function(){
-    console.log(this.editorUi,'-----');
-    // var _this = this;
-    // this.siderBar.addEntry('shape group container', function()
-	// 	{
-	// 	    var cell = new mxCell(`<span class='icon-workflow-chuli' style="font-size:20px";></span>`, new mxGeometry(0, 0, 120, 60),
-	// 			'rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle);
-	// 	    cell.vertex = true;
-		    
-	// 		var symbol = new mxCell('', new mxGeometry(20, 15, 20, 30), 'triangle;html=1;whiteSpace=wrap;');
-	// 		symbol.vertex = true;
-	// 		cell.insert(symbol);
-	    	
-    // 		return _this.siderBar.createVertexTemplateFromCells([cell], cell.geometry.width, cell.geometry.height, 'Shape Group');
-	// 	}),
-}
+/**
+ * Adds all palettes to the sidebar.
+ */
+WfPanel.prototype.getTooltipOffset = function()
+{
+	return new mxPoint(0, 0);
+};

@@ -2976,8 +2976,10 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 		}
 		
 		this.sidebarContainer.style.bottom = (this.footerHeight + sidebarFooterHeight + off) + 'px';
-		this.formatContainer.style.bottom = (this.footerHeight + off) + 'px';
-		this.diagramContainer.style.bottom = (this.footerHeight + off + th) + 'px';
+		this.formatContainer.style.bottom = '0px';
+		this.diagramContainer.style.bottom = '0px';
+		// this.formatContainer.style.bottom = (this.footerHeight + off) + 'px';
+		// this.diagramContainer.style.bottom = (this.footerHeight + off + th) + 'px';
 	}
 	
 	if (sizeDidChange)
@@ -3107,6 +3109,7 @@ EditorUi.prototype.createUi = function()
 	}
 	
 	// Creates the footer
+	/*
 	var footer = (this.editor.chromeless) ? null : this.createFooter();
 	
 	if (footer != null)
@@ -3114,6 +3117,7 @@ EditorUi.prototype.createUi = function()
 		this.footerContainer.appendChild(footer);
 		this.container.appendChild(this.footerContainer);
 	}
+	*/
 
 	if (this.sidebar != null && this.sidebarFooterContainer)
 	{
