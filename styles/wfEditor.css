@@ -28,3 +28,63 @@
     background: #ccc;
     vertical-align: middle;
 }
+.icon-left-style{
+    /* margin-right: 40px; */
+    position: absolute;
+    left: 0;
+}
+.icon-right-style{
+    /* margin-right: 40px; */
+    position: absolute;
+    right: 0;
+}
+.wf-word-line{
+    width: 74px;
+    padding: 0 18px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.mxCellEditor{
+    width: 110px !important;
+    padding: 0 18px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+/* range custom style */
+.wfEditorContainer input[type=range]{ 
+    vertical-align: middle;
+    outline: none; 
+    -webkit-appearance: none;/*清除系统默认样式*/  
+    width:100px;  
+    background: -webkit-linear-gradient(#3B99FC, #3B99FC) no-repeat, #ddd;  
+    background-size: 50% 100%;/*设置左右宽度比例*/  
+    border-radius: 2px;
+    height: 2px;/*横条的高度*/  
+} 
+/*拖动块的样式*/  
+.wfEditorContainer input[type=range]::-webkit-slider-thumb {  
+    -webkit-appearance: none;/*清除系统默认样式*/  
+    height:12px;/*拖动块高度*/  
+    width: 12px;/*拖动块宽度*/  
+    background: #fff;/*拖动块背景*/  
+    border-radius: 50%; /*外观设置为圆形*/  
+    border: solid 1px #ddd; /*设置边框*/  
+}
+/* 标尺 canvas */
+#wf-row-rule-canvas{
+    background: #F9F9F9;
+    position: fixed;
+    left: 0;
+    top: 135px;
+    border: 1px solid #A9A9A9;
+    border-right: none;
+}
+#wf-col-rule-canvas{
+    background: #F9F9F9;
+    position: fixed;
+    left: 0;
+    top: 157px;
+    border: 1px solid #A9A9A9;
+    border-top: none;
+}

@@ -7168,7 +7168,7 @@ var mxUtils =
 	 * Defines the rounding factor for rounded rectangles in percent between
 	 * 0 and 1. Values should be smaller than 0.5. Default is 0.15.
 	 */
-	RECTANGLE_ROUNDING_FACTOR: 0.15,
+	RECTANGLE_ROUNDING_FACTOR: 0.5,
 
 	/**
 	 * Variable: LINE_ARCSIZE
@@ -63558,7 +63558,19 @@ mxGraph.prototype.isGridEnabled = function()
 {
 	return this.gridEnabled;
 };
-
+/**
+ * Function: isRuleEnabled
+ *
+ * 是否显示标尺
+ */
+mxGraph.prototype.isRuleEnabled = function()
+{
+	return this.ruleEnabled;
+};
+mxGraph.prototype.setRuleEnabled = function(value)
+{
+	this.ruleEnabled = value;
+};
 /**
  * Function: setGridEnabled
  * 
@@ -75439,18 +75451,18 @@ mxVertexHandler.prototype.init = function()
 
 			if (resizable)
 			{
-				if (!this.singleSizer)
-				{
-					this.sizers.push(this.createSizer('nw-resize', i++));
-					this.sizers.push(this.createSizer('n-resize', i++));
-					this.sizers.push(this.createSizer('ne-resize', i++));
-					this.sizers.push(this.createSizer('w-resize', i++));
-					this.sizers.push(this.createSizer('e-resize', i++));
-					this.sizers.push(this.createSizer('sw-resize', i++));
-					this.sizers.push(this.createSizer('s-resize', i++));
-				}
+				// if (!this.singleSizer)
+				// {
+				// 	this.sizers.push(this.createSizer('nw-resize', i++));
+				// 	this.sizers.push(this.createSizer('n-resize', i++));
+				// 	this.sizers.push(this.createSizer('ne-resize', i++));
+				// 	this.sizers.push(this.createSizer('w-resize', i++));
+				// 	this.sizers.push(this.createSizer('e-resize', i++));
+				// 	this.sizers.push(this.createSizer('sw-resize', i++));
+				// 	this.sizers.push(this.createSizer('s-resize', i++));
+				// }
 				
-				this.sizers.push(this.createSizer('se-resize', i++));
+				// this.sizers.push(this.createSizer('se-resize', i++));
 			}
 			
 			var geo = this.graph.model.getGeometry(this.state.cell);
@@ -75473,12 +75485,12 @@ mxVertexHandler.prototype.init = function()
 	}
 	
 	// Adds the rotation handler
-	if (this.isRotationHandleVisible())
-	{
-		this.rotationShape = this.createSizer(this.rotationCursor, mxEvent.ROTATION_HANDLE,
-			mxConstants.HANDLE_SIZE + 3, mxConstants.HANDLE_FILLCOLOR);
-		this.sizers.push(this.rotationShape);
-	}
+	// if (this.isRotationHandleVisible())
+	// {
+	// 	this.rotationShape = this.createSizer(this.rotationCursor, mxEvent.ROTATION_HANDLE,
+	// 		mxConstants.HANDLE_SIZE + 3, mxConstants.HANDLE_FILLCOLOR);
+	// 	this.sizers.push(this.rotationShape);
+	// }
 
 	this.customHandles = this.createCustomHandles();
 	this.redraw();

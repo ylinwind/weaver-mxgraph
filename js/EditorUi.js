@@ -921,6 +921,11 @@ EditorUi = function(editor, container, lightbox)
 		graph.view.validateBackground();
 	}));
 	
+	this.addListener('ruleEnabledChanged', mxUtils.bind(this, function()
+	{
+		graph.view.validateBackground();
+	}));
+	
 	this.addListener('backgroundColorChanged', mxUtils.bind(this, function()
 	{
 		graph.view.validateBackground();

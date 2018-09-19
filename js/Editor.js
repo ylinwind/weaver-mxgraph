@@ -1877,7 +1877,6 @@ PageSetupDialog.getFormats = function()
 			position = -Math.round(phase - mxUtils.mod(this.translate.x * this.scale - x0, phase)) + 'px ' +
 				-Math.round(phase - mxUtils.mod(this.translate.y * this.scale - y0, phase)) + 'px';
 		}
-		
 		var canvas = graph.view.canvas;
 		
 		if (canvas.ownerSVGElement != null)
@@ -1901,8 +1900,76 @@ PageSetupDialog.getFormats = function()
 			canvas.style.backgroundColor = color;
 			canvas.style.backgroundImage = image;
 		}
+		// 标尺
+		if(graph.isRuleEnabled()){
+			this.createBoundRules();
+		}else if(!graph.isRuleEnabled() && document.getElementById('wf-row-rule-canvas')){
+			var rowCanvas,colCanvas;
+			rowCanvas = document.getElementById('wf-row-rule-canvas');
+			colCanvas = document.getElementById('wf-col-rule-canvas');
+			graph.container.removeChild(rowCanvas);
+			graph.container.removeChild(colCanvas);
+		}
 	};
 	
+	// 创建标尺
+	mxGraphView.prototype.createBoundRules = function()
+	{
+		var graph = this.graph;
+		var tmp = this.graph.gridSize * this.scale;
+		var rowCanvas,colCanvas;
+		if(document.getElementById('wf-row-rule-canvas')){
+			rowCanvas = document.getElementById('wf-row-rule-canvas');
+			colCanvas = document.getElementById('wf-col-rule-canvas');
+		}else{
+			rowCanvas = document.createElement('canvas');
+			rowCanvas.width = graph.container.clientWidth;
+			rowCanvas.height = 20;
+			rowCanvas.id = 'wf-row-rule-canvas';
+			// col
+			colCanvas = document.createElement('canvas');
+			colCanvas.height = graph.container.clientHeight;
+			colCanvas.width = 20;
+			colCanvas.id = 'wf-col-rule-canvas';
+			
+			graph.container.appendChild(rowCanvas);
+			graph.container.appendChild(colCanvas);
+		}
+		
+		let rowCtx = rowCanvas.getContext('2d');
+		let colCtx = colCanvas.getContext('2d');
+
+		rowCtx.strokeStyle = '#A9A9A9';
+		rowCtx.moveTo(20-0.5,0-0.5);
+		rowCtx.lineTo(20-0.5,20-0.5);
+		rowCtx.stroke();
+		let rulePointIndex = 1 , colRulerIndex = 1;
+		for(let i = 25 ; i < graph.container.clientWidth ; i+=5){
+			rowCtx.moveTo(i-0.5,20-0.5);
+			if(rulePointIndex%5==0){
+				rowCtx.lineTo(i-0.5,0-0.5);
+			}else{
+				rowCtx.lineTo(i-0.5,12-0.5);
+			}
+			rowCtx.stroke();
+			rulePointIndex++;
+		}
+		// col
+		colCtx.strokeStyle = '#A9A9A9';
+		colCtx.moveTo(0-0.5,0-0.5);
+		colCtx.lineTo(20-0.5,0-0.5);
+		colCtx.stroke();
+		for(let i = 5 ; i < graph.container.clientHeight ; i+=5){
+			colCtx.moveTo(20-0.5,i-0.5);
+			if(colRulerIndex%5==0){
+				colCtx.lineTo(0-0.5,i-0.5);
+			}else{
+				colCtx.lineTo(12-0.5,i-0.5);
+			}
+			colCtx.stroke();
+			colRulerIndex++;
+		}
+	};
 	// Returns the SVG required for painting the background grid.
 	mxGraphView.prototype.createSvgGrid = function(color)
 	{

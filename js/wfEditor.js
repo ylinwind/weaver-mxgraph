@@ -1,6 +1,5 @@
 var wfUi;
 function WfPanel(editorUi, container) {
-    console.log(editorUi,editorUi.editor.graph.setGridEnabled)
     this.editorUi = editorUi;
     wfUi = editorUi;
 	this.container = container;
@@ -13,7 +12,7 @@ function WfPanel(editorUi, container) {
 	this.graph.container.style.visibility = 'hidden';
 	document.body.appendChild(this.graph.container);
     this.init();
-    this.setTipInfoShow();
+    this.setTipInfoBtn();
     this.tipInfoDisplay = 'block';
     // 创建处理函数-----------------
     this.pointerUpHandler = mxUtils.bind(this, function()
@@ -222,12 +221,12 @@ WfPanel.prototype.drawActions = function(){
         {icon:'icon-workflow-zuoyoudengjian',action:'',title:''},
         {icon:'icon-workflow-kaoxiaduiqi',action:'',title:''},
 
-        {icon:'icon-workflow-biaochi',action:'',title:''},
-        {icon:'icon-workflow-wangge',action:'1',title:''},
-        {icon:'icon-workflow-xianshifenzu',action:'',title:''},
-        {icon:'icon-workflow-huifuyuanbil',action:'',title:''},
-        {icon:'icon-workflow-suoxiao',action:iconActions.get('zoomOut'),title:''},
-        {icon:'icon-workflow-fangda',action:iconActions.get('zoomIn'),title:''},
+        {icon:'icon-workflow-biaochi',action:'1',title:'标尺'},
+        {icon:'icon-workflow-wangge',action:'1',title:'网格'},
+        {icon:'icon-workflow-xianshifenzu',action:{funct:_this.setTipInfoShow},title:'显示分组'},
+        {icon:'icon-workflow-huifuyuanbil',action:iconActions.get('resetView'),title:'恢复原比例'},
+        {icon:'icon-workflow-suoxiao',action:iconActions.get('zoomOut'),title:'缩小'},
+        {icon:'icon-workflow-fangda',action:iconActions.get('zoomIn'),title:'放大'},
 
         {icon:'icon-workflow-ceshi',action:'',title:''},
         {icon:'icon-workflow-tingzhi',action:'',title:''},
@@ -250,17 +249,18 @@ WfPanel.prototype.drawActions = function(){
             v.action&&_this.setIconsActions(v.action,e,v.icon);
         }
         elDiv.appendChild(spanEl);
+		// scale range
         if(i==19){
-            console.log('in',v);
             let input = document.createElement('INPUT');
             input.type = 'range';
             input.className = 'wf-view-range';
-            input.onclick = (v)=>{console.log('click',v,input)};
-            input.onchange = function(v){
-                console.log(v,'vvvvvv')
+            input.onclick = (val)=>{console.log('click',val,input)};
+            input.onchange = function(val){
+                console.log(val,'vvvvvv')
             }
             elDiv.appendChild(input);
         }
+		// 
 
         if(i==4 || i==8 || i==14 || i==20 || i==22 || i==icons.length-1){
             this.container.appendChild(elDiv);
@@ -285,9 +285,13 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
             this.editorUi.setGridColor(color);
         }
         this.editorUi.fireEvent(new mxEventObject('gridEnabledChanged'));
-    }else{
+    }else if(icon=='icon-workflow-biaochi'){
+		let gridEnables = graph.isRuleEnabled();
+		graph.setRuleEnabled(!gridEnables);
+		this.editorUi.fireEvent(new mxEventObject('ruleEnabledChanged'));
+	}else{
         func.funct(evt);
-        if(icon=='icon-workflow-suoxiao' || icon=='icon-workflow-fangda'){//修改操作区域显示缩放值
+        if(icon=='icon-workflow-suoxiao' || icon=='icon-workflow-fangda' || icon=='icon-workflow-huifuyuanbil'){//修改操作区域显示缩放值
             var tips = document.getElementsByClassName('action-area-tip')[4];
             tips.innerHTML = `视图（${graph.view.scale*100}%）`
         }
@@ -296,21 +300,22 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 /**
 控制每块操作区域提示语
  */
-WfPanel.prototype.setTipInfoShow = function(){
+WfPanel.prototype.setTipInfoBtn = function(){
     let tipBtn = document.createElement('button');
     tipBtn.innerHTML = 'show tip'
-    tipBtn.onclick = function(){
-        let elDiv_tips = document.getElementsByClassName('action-area-tip');
-        for(let i  = 0 ; i <elDiv_tips.length ; ++i){
-            if(this.tipInfoDisplay=='none'){
-                elDiv_tips[i].style.display = 'block';
-            }else{
-                elDiv_tips[i].style.display = 'none';
-            }
-        }
-        this.tipInfoDisplay = this.tipInfoDisplay=='none'?this.tipInfoDisplay='block':this.tipInfoDisplay='none';
-    }
+    tipBtn.onclick = this.setTipInfoShow;
     this.container.appendChild(tipBtn);
+}
+WfPanel.prototype.setTipInfoShow = function(){
+	let elDiv_tips = document.getElementsByClassName('action-area-tip');
+	for(let i  = 0 ; i <elDiv_tips.length ; ++i){
+		if(this.tipInfoDisplay=='none'){
+			elDiv_tips[i].style.display = 'block';
+		}else{
+			elDiv_tips[i].style.display = 'none';
+		}
+	}
+	this.tipInfoDisplay = this.tipInfoDisplay=='none'?this.tipInfoDisplay='block':this.tipInfoDisplay='none';
 }
 /**
  * Hides the current tooltip.
