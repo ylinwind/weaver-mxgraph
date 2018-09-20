@@ -343,7 +343,6 @@ WfPanel.prototype.addGeneralPalette = function(expand)
 	var sb = this;
 	var lineTags = 'line lines connector connectors connection connections arrow arrows ';
 	let wfStrokeStyle = 'fillColor=#BFF3C3;strokeColor=#5ABD6B;';
-    let iconRightStyle = 'margin-right:20px;'
 
 	var fns = [
 	 	this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian'),
@@ -352,7 +351,8 @@ WfPanel.prototype.addGeneralPalette = function(expand)
         'diamond rhombus if condition decision conditional question test','icon-workflow-shenpi'),
 
         this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70,
-         `<span class='icon-workflow-fencha icon-left-style'></span>分叉<span class='icon-workflow-fencha icon-right-style'></span>`, `分叉`,
+        //  `<span class='icon-workflow-fencha icon-left-style'></span>分叉<span class='icon-workflow-fencha icon-right-style'></span>`, `分叉`,
+         `分叉_split_{"left":"icon-workflow-fencha","right":"icon-workflow-fencha"}`, `分叉`,
          null, null, 'rect rectangle box','icon-workflow-fencha'),
         this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '分叉中间点', '分叉中间点', null, null, 'rect rectangle box','icon-workflow-fenchazhongjiandian'),
         this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '合并节点', '合并节点', null, null, 'rect rectangle box','icon-workflow-hebing'),

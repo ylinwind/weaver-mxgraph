@@ -19619,8 +19619,10 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 		css += 'border:1px solid ' + s.fontBorderColor + ';';
 	}
 	
-	var val = str;
-	
+	var val = str.split('_split_')[0];
+	var nodeIcons = str.split('_split_')[1];
+	nodeIcons?nodeIcons = JSON.parse(nodeIcons):'';
+
 	if (!mxUtils.isNode(val))
 	{
 		val = this.convertHtml(val);
@@ -19642,23 +19644,40 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 	{
 		var div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
 		div.setAttribute('style', style);
+		if(nodeIcons&&nodeIcons.hasOwnProperty('left')){
+			let span = document.createElement('span');
+			span.className = nodeIcons.left;
+			div.appendChild(span);
+		}
 		
 		if (mxUtils.isNode(val))
 		{
+			
 			// Creates a copy for export
 			if (this.root.ownerDocument != document)
 			{
+				
 				div.appendChild(val.cloneNode(true));
 			}
 			else
 			{
 				div.appendChild(val);
 			}
+			
 		}
 		else
 		{
-			div.innerHTML = val;
+			let span = document.createElement('span');
+			span.className = 'nodeVal';
+			span.innerHTML = val
+			div.appendChild(span);
 		}
+		if(nodeIcons&&nodeIcons.hasOwnProperty('right')){
+			let span = document.createElement('span');
+			span.className = nodeIcons.right;
+			div.appendChild(span);
+		}
+		
 		
 		return div;
 	}
@@ -52488,7 +52507,7 @@ mxGraphView.prototype.updateFloatingTerminalPoint = function(edge, start, end, s
  */
 mxGraphView.prototype.getFloatingTerminalPoint = function(edge, start, end, source)
 {
-	start = this.getTerminalPort(edge, start, source);
+	// start = this.getTerminalPort(edge, start, source);
 	var next = this.getNextPoint(edge, end, source);
 	
 	var orth = this.graph.isOrthogonal(edge);
@@ -60544,6 +60563,7 @@ mxGraph.prototype.setConnectionConstraint = function(edge, terminal, source, con
 				this.setCellStyles((source) ? mxConstants.STYLE_EXIT_Y :
 					mxConstants.STYLE_ENTRY_Y, constraint.point.y, [edge]);
 				
+				
 				// Only writes 0 since 1 is default
 				if (!constraint.perimeter)
 				{
@@ -60561,7 +60581,10 @@ mxGraph.prototype.setConnectionConstraint = function(edge, terminal, source, con
 		{
 			this.model.endUpdate();
 		}
+	}else{
+		//console.log(window.wfUi.actions.actions)
 	}
+	
 };
 
 /**
