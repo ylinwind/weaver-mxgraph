@@ -19361,7 +19361,6 @@ mxSvgCanvas2D.prototype.rect = function(x, y, w, h)
 	n.setAttribute('y', this.format((y + s.dy) * s.scale));
 	n.setAttribute('width', this.format(w * s.scale));
 	n.setAttribute('height', this.format(h * s.scale));
-	
 	this.node = n;
 };
 
@@ -19620,8 +19619,13 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 	}
 	
 	var val = str.split('_split_')[0];
-	var nodeIcons = str.split('_split_')[1];
-	nodeIcons?nodeIcons = JSON.parse(nodeIcons):'';
+	// 节点图标
+	var nodeIcons;
+	if(this.canvasStyle != null && this.canvasStyle.icons != null){
+		nodeIcons = JSON.parse(this.canvasStyle.icons);
+	}
+	// 
+	
 
 	if (!mxUtils.isNode(val))
 	{
@@ -19644,11 +19648,7 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 	{
 		var div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
 		div.setAttribute('style', style);
-		if(nodeIcons&&nodeIcons.hasOwnProperty('left')){
-			let span = document.createElement('span');
-			span.className = nodeIcons.left;
-			div.appendChild(span);
-		}
+		
 		
 		if (mxUtils.isNode(val))
 		{
@@ -19672,12 +19672,21 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 			span.innerHTML = val
 			div.appendChild(span);
 		}
+		// append 节点图标
+		let iconDiv = document.createElement('div');
+		iconDiv.className = `nodeIcon`;
+		if(nodeIcons&&nodeIcons.hasOwnProperty('left')){
+			let span = document.createElement('span');
+			span.className = `${nodeIcons.left} nodeIconLeft`;
+			iconDiv.appendChild(span);
+		}
 		if(nodeIcons&&nodeIcons.hasOwnProperty('right')){
 			let span = document.createElement('span');
-			span.className = nodeIcons.right;
-			div.appendChild(span);
+			span.className = `${nodeIcons.right} nodeIconRight`;
+			iconDiv.appendChild(span);
 		}
-		
+		div.appendChild(iconDiv);
+		// 
 		
 		return div;
 	}
@@ -23783,6 +23792,7 @@ mxShape.prototype.paint = function(c)
 	var y = this.bounds.y / s;
 	var w = this.bounds.width / s;
 	var h = this.bounds.height / s;
+	// var icons = this.style.icons || {};
 
 	if (this.isPaintBoundsInverted())
 	{
@@ -23876,7 +23886,7 @@ mxShape.prototype.configureCanvas = function(c, x, y, w, h)
 	{
 		dash = this.style['dashPattern'];		
 	}
-
+	c.canvasStyle = this.style;
 	c.setAlpha(this.opacity / 100);
 	c.setFillAlpha(this.fillOpacity / 100);
 	c.setStrokeAlpha(this.strokeOpacity / 100);
@@ -42758,9 +42768,9 @@ mxCell.prototype.cloneValue = function()
  * Constructs a new object to describe the size and location of a vertex or
  * the control points of an edge.
  */
-function mxGeometry(x, y, width, height)
+function mxGeometry(x, y, width, height,icons)
 {
-	mxRectangle.call(this, x, y, width, height);
+	mxRectangle.call(this, x, y, width, height,icons);
 };
 
 /**

@@ -345,17 +345,17 @@ WfPanel.prototype.addGeneralPalette = function(expand)
 	let wfStrokeStyle = 'fillColor=#BFF3C3;strokeColor=#5ABD6B;';
 
 	var fns = [
-	 	this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian'),
-	 	this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '处理', '处理', null, null, 'rect rectangle box','icon-workflow-chuli'),
-        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;'+wfStrokeStyle, 130, 80, '审批', '审批', null, null, 
+	 	this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-ceshi"};'+wfStrokeStyle, 110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian'),
+	 	this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha","right":"icon-workflow-fencha"};'+wfStrokeStyle, 110, 70, '处理', '处理', null, null, 'rect rectangle box','icon-workflow-chuli'),
+        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha","right":"icon-workflow-fencha"};'+wfStrokeStyle, 130, 80, '审批', '审批', null, null, 
         'diamond rhombus if condition decision conditional question test','icon-workflow-shenpi'),
 
-        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70,
+        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha","right":"icon-workflow-fencha"};'+wfStrokeStyle, 110, 70,
         //  `<span class='icon-workflow-fencha icon-left-style'></span>分叉<span class='icon-workflow-fencha icon-right-style'></span>`, `分叉`,
-         `分叉_split_{"left":"icon-workflow-fencha","right":"icon-workflow-fencha"}`, `分叉`,
+         `分叉`, `分叉`,
          null, null, 'rect rectangle box','icon-workflow-fencha'),
-        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '分叉中间点', '分叉中间点', null, null, 'rect rectangle box','icon-workflow-fenchazhongjiandian'),
-        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '合并节点', '合并节点', null, null, 'rect rectangle box','icon-workflow-hebing'),
+        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha","right":"icon-workflow-fencha"};'+wfStrokeStyle, 110, 70, '分叉中间点', '分叉中间点', null, null, 'rect rectangle box','icon-workflow-fenchazhongjiandian'),
+        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha","right":"icon-workflow-fencha"};'+wfStrokeStyle, 110, 70, '合并节点', '合并节点', null, null, 'rect rectangle box','icon-workflow-hebing'),
 
 	 	// Explicit strokecolor/fillcolor=none is a workaround to maintain transparent background regardless of current style
             // this.createVertexTemplateEntry('text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;',

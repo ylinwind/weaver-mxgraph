@@ -38,13 +38,6 @@
     position: absolute;
     right: 0;
 }
-.wf-word-line{
-    width: 74px;
-    padding: 0 18px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
 .mxCellEditor{
     width: 110px !important;
     padding: 0 18px;
@@ -87,4 +80,27 @@
     top: 157px;
     border: 1px solid #A9A9A9;
     border-top: none;
+}
+/* 节点 */
+
+.wf-word-line{
+    width: 90px;
+    padding: 0 10px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    /* position: relative; */
+    color:#026C14;
+}
+.nodeIcon{
+    position: relative;
+    top: -10px;
+    font-size: 20px;
+    color: #5ABD6B;
+}
+.nodeIcon .nodeIconLeft{
+    float: left;
+}
+.nodeIcon .nodeIconRight{
+    float: right;
 }
