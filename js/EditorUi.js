@@ -72,6 +72,8 @@ EditorUi = function(editor, container, lightbox)
 	// Disables text selection while not editing and no dialog visible
 	if (this.container == document.body)
 	{
+		this.wfNodeInfoContainer.onselectstart = textEditing;
+		this.wfNodeInfoContainer.onmousedown = textEditing;
 		this.wfEditorContainer.onselectstart = textEditing;
 		this.wfEditorContainer.onmousedown = textEditing;
 		this.menubarContainer.onselectstart = textEditing;
@@ -2970,7 +2972,8 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 			this.footerContainer.style.bottom = off + 'px';
 		}
 		
-		this.diagramContainer.style.right = fw + 'px';
+		// this.diagramContainer.style.right = fw + 'px';
+		this.diagramContainer.style.right = '240px';
 		var th = 0;
 		
 		if (this.tabContainer != null)
@@ -3007,6 +3010,7 @@ EditorUi.prototype.createTabContainer = function()
 EditorUi.prototype.createDivs = function()
 {
 	this.wfEditorContainer = this.createDiv('wfEditorContainer');
+	this.wfNodeInfoContainer = this.createDiv('wfNodeInfoContainer');
 	this.menubarContainer = this.createDiv('geMenubarContainer');
 	this.toolbarContainer = this.createDiv('geToolbarContainer');
 	this.sidebarContainer = this.createDiv('geSidebarContainer');
@@ -3025,7 +3029,8 @@ EditorUi.prototype.createDivs = function()
 	this.sidebarContainer.style.left = '0px';
 	this.formatContainer.style.right = '0px';
 	this.formatContainer.style.zIndex = '1';
-	this.diagramContainer.style.right = ((this.format != null) ? this.formatWidth : 0) + 'px';
+	// this.diagramContainer.style.right = ((this.format != null) ? this.formatWidth : 0) + 'px';
+	this.diagramContainer.style.right = '240px';
 	this.footerContainer.style.left = '0px';
 	this.footerContainer.style.right = '0px';
 	this.footerContainer.style.bottom = '0px';
@@ -3093,6 +3098,10 @@ EditorUi.prototype.createUi = function()
 	if(this.wfEditor != null ){
 		this.container.appendChild(this.wfEditorContainer);
 	}
+	this.wfNodeInfo = (this.editor.chromeless) ? null : this.createWfNodeInfo(this.wfNodeInfoContainer);
+	if(this.wfNodeInfo != null ){
+		this.container.appendChild(this.wfNodeInfoContainer);
+	}
 	
 	
 	// Creates the sidebar
@@ -3106,13 +3115,14 @@ EditorUi.prototype.createUi = function()
 	*/
 	
 	// Creates the format sidebar
+	/*
 	this.format = (this.editor.chromeless || !this.formatEnabled) ? null : this.createFormat(this.formatContainer);
 	
 	if (this.format != null)
 	{
 		this.container.appendChild(this.formatContainer);
 	}
-	
+	*/
 	// Creates the footer
 	/*
 	var footer = (this.editor.chromeless) ? null : this.createFooter();
@@ -3203,6 +3213,10 @@ EditorUi.prototype.createSidebar = function(container)
 EditorUi.prototype.createWfEditor = function(container)
 {
 	return new WfPanel(this, container);
+};
+EditorUi.prototype.createWfNodeInfo = function(container)
+{
+	return new WfNodeInfo(this, container);
 };
 
 /**

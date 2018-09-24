@@ -104,3 +104,21 @@
 .nodeIcon .nodeIconRight{
     float: right;
 }
+/* wfNodeInfoContainer */
+.wfNodeInfoContainer{
+    position: absolute;
+    background: #F9F9F9;
+    right: 0px;
+    z-index: 1;
+    top: 0px;
+    width: 240px;
+    bottom: 0px;
+    border: 1px solid #999;
+    border-top: none;
+}
+.wfNodeInfoContainer .nodeInfo-header{
+    height:  44px;
+    line-height: 44px;
+    text-align: center;
+    border-bottom: 1px solid #999;
+}
