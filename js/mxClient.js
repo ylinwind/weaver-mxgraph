@@ -7204,7 +7204,10 @@ var mxUtils =
 	 * Defines the rectangle for the A4 portrait page format. The dimensions
 	 * of this page format are 826x1169 pixels.
 	 */
-	PAGE_FORMAT_A4_PORTRAIT: new mxRectangle(0, 0, 827, 1169),
+	// PAGE_FORMAT_A4_PORTRAIT: new mxRectangle(0, 0, 827, 1169),
+	PAGE_FORMAT_A4_PORTRAIT: new mxRectangle(0, 0, window.innerWidth - 250, window.innerHeight - 140),
+	// 设置默认流程图大小
+	PAGE_FORMAT_WORKFLOW_PORTRAIT: new mxRectangle(0, 0, window.innerWidth - 250, window.innerHeight - 140),
 
 	/**
 	 * Variable: PAGE_FORMAT_A4_PORTRAIT
@@ -54980,7 +54983,8 @@ mxGraph.prototype.preferPageSize = false;
  * <mxPrintPreview> and for painting the background page if <pageVisible> is
  * true and the pagebreaks if <pageBreaksVisible> is true.
  */
-mxGraph.prototype.pageFormat = mxConstants.PAGE_FORMAT_A4_PORTRAIT;
+// mxGraph.prototype.pageFormat = mxConstants.PAGE_FORMAT_A4_PORTRAIT;
+mxGraph.prototype.pageFormat = mxConstants.PAGE_FORMAT_WORKFLOW_PORTRAIT;
 
 /**
  * Variable: pageScale
@@ -59862,7 +59866,6 @@ mxGraph.prototype.importCells = function(cells, dx, dy, target, evt, mapping)
  */
 mxGraph.prototype.moveCells = function(cells, dx, dy, clone, target, evt, mapping)
 {
-	console.log('moveCells')
 	dx = (dx != null) ? dx : 0;
 	dy = (dy != null) ? dy : 0;
 	clone = (clone != null) ? clone : false;
@@ -59973,6 +59976,9 @@ mxGraph.prototype.moveCells = function(cells, dx, dy, clone, target, evt, mappin
 mxGraph.prototype.cellsMoved = function(cells, dx, dy, disconnect, constrain, extend)
 {
 	console.log('cellsMoved')
+	// 如果是连接线则不做更新
+	var isConnectorMove = false;
+	// "edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=0;entryY=0.5;jettySize=auto;orthogonalLoop=1;exitX=1;exitY=0.5;"
 	if (cells != null && (dx != 0 || dy != 0))
 	{
 		extend = (extend != null) ? extend : false;
@@ -59982,20 +59988,25 @@ mxGraph.prototype.cellsMoved = function(cells, dx, dy, disconnect, constrain, ex
 		{
 			if (disconnect)
 			{
-				this.disconnectGraph(cells);
+				// this.disconnectGraph(cells);
 			}
 
 			for (var i = 0; i < cells.length; i++)
 			{
-				this.translateCell(cells[i], dx, dy);
-				
-				if (extend && this.isExtendParent(cells[i]))
-				{
-					this.extendParent(cells[i]);
-				}
-				else if (constrain)
-				{
-					this.constrainChild(cells[i]);
+				if(cells[i].style.indexOf('entryX') != -1 || cells[i].style.indexOf('exitX') != -1){//是连接线就不重新绘制
+					isConnectorMove = true;
+					// return;
+				}else{
+					this.translateCell(cells[i], dx, dy);
+					
+					if (extend && this.isExtendParent(cells[i]))
+					{
+						this.extendParent(cells[i]);
+					}
+					else if (constrain)
+					{
+						this.constrainChild(cells[i]);
+					}
 				}
 			}
 

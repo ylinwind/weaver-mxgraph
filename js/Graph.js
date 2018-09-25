@@ -1323,25 +1323,25 @@ Graph.prototype.init = function(container)
 				{
 					// Applies transform to labels outside of the SVG DOM
 					// Excluded via isCssTransformsSupported
-//					if (mxClient.NO_FO)
-//					{
-//						var transform = 'scale(' + this.currentScale + ')' + 'translate(' +
-//							this.currentTranslate.x + 'px,' + this.currentTranslate.y + 'px)';
-//							
-//						this.view.states.visit(mxUtils.bind(this, function(cell, state)
-//						{
-//							if (state.text != null && state.text.node != null)
-//							{
-//								// Stores initial CSS transform that is used for the label alignment
-//								if (state.text.originalTransform == null)
-//								{
-//									state.text.originalTransform = state.text.node.style.transform;
-//								}
-//								
-//								state.text.node.style.transform = transform + state.text.originalTransform;
-//							}
-//						}));
-//					}
+					// if (mxClient.NO_FO)
+					// {
+					// 	var transform = 'scale(' + this.currentScale + ')' + 'translate(' +
+					// 		this.currentTranslate.x + 'px,' + this.currentTranslate.y + 'px)';
+							
+					// 	this.view.states.visit(mxUtils.bind(this, function(cell, state)
+					// 	{
+					// 		if (state.text != null && state.text.node != null)
+					// 		{
+					// 			// Stores initial CSS transform that is used for the label alignment
+					// 			if (state.text.originalTransform == null)
+					// 			{
+					// 				state.text.originalTransform = state.text.node.style.transform;
+					// 			}
+								
+					// 			state.text.node.style.transform = transform + state.text.originalTransform;
+					// 		}
+					// 	}));
+					// }
 					// Workaround for https://bugs.webkit.org/show_bug.cgi?id=93358 in WebKit
 					// Adding an absolute position DIV before the SVG seems to mitigate the problem.
 					if (mxClient.IS_GC)

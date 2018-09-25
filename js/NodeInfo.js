@@ -18,8 +18,8 @@ function WfNodeInfo(editorUi, container) {
 	{
 		this.refresh();
     }));
-    this.refresh();
     this.init();
+    this.refresh();
 }
 WfNodeInfo.prototype.init = function(){
     this.drawHeader();
@@ -29,7 +29,6 @@ WfNodeInfo.prototype.drawHeader = function(){
     var elDiv = document.createElement('div');
     elDiv.className = 'nodeInfo-header';
     elDiv.innerHTML = '节点信息';
-    // elDiv.style.border = '1px solid #333';
     this.container.appendChild(elDiv);
 }
 
@@ -82,10 +81,69 @@ WfNodeInfo.prototype.initSelectionState = function()
 
 WfNodeInfo.prototype.nodeActions = function(){
     var cells = this.editorUi.editor.graph.getSelectionCells();
-    console.log(cells,'----')
+	var haveNode = false;
+	cells.map(v=>{
+		if(v instanceof mxCell){ //点击选中节点
+			//
+			if(document.getElementById('nodeInfo-no-node') != null){
+				this.container.removeChild(document.getElementById('nodeInfo-no-node'));
+			}
+			haveNode = true;
+			
+			this.drawNodeDetail();
+		}
+	});
+	if(!haveNode){//为点击节点
+		var elP = document.getElementById('nodeInfo-no-node');
+		if(document.getElementById('nodeInfo-node-detail') != null){
+			let _elDiv = document.getElementById('nodeInfo-node-detail');
+			this.container.removeChild(_elDiv);
+		}
+		if(elP == null){
+			elP = document.createElement('p');
+			elP.id = 'nodeInfo-no-node';
+			elP.innerHTML = '暂时没有节点信息';
+			this.container.appendChild(elP);
+		}
+	}
     // getSelectedElement
     // setSelectionCell
     // mxGraph.prototype.selectCellForEvent = function(cell, evt)
     // this.getSelectionModel().setCell(cell);
     // mxGraphSelectionModel
+}
+WfNodeInfo.prototype.drawNodeDetail = function(){
+	if(document.getElementById('nodeInfo-node-detail') != null){
+		let _elDiv = document.getElementById('nodeInfo-node-detail');
+		this.container.removeChild(_elDiv);
+	}
+	var detailArr = [
+		{label:'节点名称',value:''},
+		{label:'操作者',value:''},
+		{label:'表单内容',value:''},
+		{label:'操作菜单',value:''},
+		{label:'节点前附加操作',value:''},
+		{label:'节点后附加操作',value:''},
+		{label:'签字意见设置',value:''},
+		{label:'标题显示设置',value:''},
+		{label:'子流程设置',value:''},
+		{label:'流程异常处理',value:''},
+		{label:'节点字段校验',value:''}
+	];
+	var elDiv = document.createElement('div');
+	elDiv.id = 'nodeInfo-node-detail';
+	detailArr.map(v=>{
+		var elP = document.createElement('p');
+		var elSpanLeft = document.createElement('span');
+		var elSpanRight = document.createElement('span');
+		elP.className = 'nodeInfo-detail-item';
+		elSpanLeft.className = 'detail-item-left detail-item-span';
+		elSpanRight.className = 'detail-item-right detail-item-span';
+		elSpanLeft.innerHTML = v.label;
+
+		elP.appendChild(elSpanLeft);
+		elP.appendChild(elSpanRight);
+		elDiv.appendChild(elP);
+	});
+	this.container.appendChild(elDiv);
 }

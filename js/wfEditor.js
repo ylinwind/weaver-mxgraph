@@ -1,7 +1,7 @@
-var wfUi;
+var workflowUi;
 function WfPanel(editorUi, container) {
     this.editorUi = editorUi;
-    wfUi = editorUi;
+    workflowUi = editorUi;
 	this.container = container;
     this.palettes = new Object();
     // this.siderBar = new Sidebar(editorUi, container);
@@ -214,12 +214,12 @@ WfPanel.prototype.drawActions = function(){
         {icon:'icon-workflow-hengxiangfenzu',action:'',title:''},
         {icon:'icon-workflow-zongxiangfenzu',action:'',title:''},
 
-        {icon:'icon-workflow-kaozuoduiqi',action:'',title:''},
-        {icon:'icon-workflow-shangxiadengjian',action:'',title:''},
-        {icon:'icon-workflow-kaoyouduiqi',action:'',title:''},
-        {icon:'icon-workflow-kaoshangduiqi',action:'',title:''},
-        {icon:'icon-workflow-zuoyoudengjian',action:'',title:''},
-        {icon:'icon-workflow-kaoxiaduiqi',action:'',title:''},
+        {icon:'icon-workflow-kaozuoduiqi',action:'1',title:'左对齐'},
+        {icon:'icon-workflow-shangxiadengjian',action:'1',title:'垂直居中'},
+        {icon:'icon-workflow-kaoyouduiqi',action:'1',title:'右对齐'},
+        {icon:'icon-workflow-kaoshangduiqi',action:'1',title:'上对齐'},
+        {icon:'icon-workflow-zuoyoudengjian',action:'1',title:'水平居中'},
+        {icon:'icon-workflow-kaoxiaduiqi',action:'1',title:'下对齐'},
 
         {icon:'icon-workflow-biaochi',action:'1',title:'标尺'},
         {icon:'icon-workflow-wangge',action:'1',title:'网格'},
@@ -289,6 +289,15 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 		let gridEnables = graph.isRuleEnabled();
 		graph.setRuleEnabled(!gridEnables);
 		this.editorUi.fireEvent(new mxEventObject('ruleEnabledChanged'));
+	}else if(icon=='icon-workflow-kaozuoduiqi' || icon=='icon-workflow-shangxiadengjian' || icon=='icon-workflow-kaoyouduiqi' || icon=='icon-workflow-kaoshangduiqi'
+		|| icon=='icon-workflow-zuoyoudengjian' || icon=='icon-workflow-kaoxiaduiqi'){
+
+		icon=='icon-workflow-kaozuoduiqi' && graph.alignCells(mxConstants.ALIGN_LEFT);
+		icon=='icon-workflow-shangxiadengjian' && graph.alignCells(mxConstants.ALIGN_MIDDLE);
+		icon=='icon-workflow-kaoyouduiqi' && graph.alignCells(mxConstants.ALIGN_RIGHT);
+		icon=='icon-workflow-kaoshangduiqi' && graph.alignCells(mxConstants.ALIGN_TOP);
+		icon=='icon-workflow-zuoyoudengjian' && graph.alignCells(mxConstants.ALIGN_CENTER);
+		icon=='icon-workflow-kaoxiaduiqi' && graph.alignCells(mxConstants.ALIGN_BOTTOM);
 	}else{
         func.funct(evt);
         if(icon=='icon-workflow-suoxiao' || icon=='icon-workflow-fangda' || icon=='icon-workflow-huifuyuanbil'){//修改操作区域显示缩放值

@@ -113,12 +113,15 @@
     top: 0px;
     width: 240px;
     bottom: 0px;
-    border: 1px solid #999;
+    border: 1px solid #E2E2E2;
     border-top: none;
 }
 .wfNodeInfoContainer .nodeInfo-header{
     height:  44px;
     line-height: 44px;
     text-align: center;
-    border-bottom: 1px solid #999;
+    border-bottom: 1px solid #E2E2E2;
+}
+.wfNodeInfoContainer #nodeInfo-no-node{
+    text-align: center;
 }

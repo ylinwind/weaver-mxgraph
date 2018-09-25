@@ -1357,8 +1357,10 @@ EditorUi.prototype.initCanvas = function()
 	 */
 	graph.getPagePadding = function()
 	{
-		return new mxPoint(Math.max(0, Math.round((graph.container.offsetWidth - 34) / graph.view.scale)),
-				Math.max(0, Math.round((graph.container.offsetHeight - 34) / graph.view.scale)));
+		return new mxPoint(Math.max(0, 0),
+				Math.max(0, 0));
+		// return new mxPoint(Math.max(0, Math.round((graph.container.offsetWidth - 34) / graph.view.scale)),
+		// 		Math.max(0, Math.round((graph.container.offsetHeight - 34) / graph.view.scale)));
 	};
 
 	// Fits the number of background pages to the graph
@@ -1907,6 +1909,8 @@ EditorUi.prototype.initCanvas = function()
 				var size = this.getPageSize();
 				
 				// Updates the minimum graph size
+				// var minw = Math.ceil(pages.width * size.width);
+				// var minh = Math.ceil(pages.height * size.height);
 				var minw = Math.ceil(2 * pad.x + pages.width * size.width);
 				var minh = Math.ceil(2 * pad.y + pages.height * size.height);
 				
