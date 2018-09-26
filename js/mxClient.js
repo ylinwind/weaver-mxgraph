@@ -71746,7 +71746,9 @@ mxSelectionCellsHandler.prototype.mouseUp = function(sender, me)
 
 		this.handlers.visit(function(key, handler)
 		{
-			handler.mouseUp.apply(handler, args);
+			if((handler.isSource == false && handler.isTarget == false) || handler.currentTerminalState != null || handler.sizers != null){
+				handler.mouseUp.apply(handler, args);
+			}
 		});
 	}
 };
@@ -73492,7 +73494,9 @@ mxConnectionHandler.prototype.mouseUp = function(sender, me)
 				target = this.currentState.cell;
 			}
 			
-			this.connect(source, target, me.getEvent(), me.getCell());
+			if(target != null ){
+				this.connect(source, target, me.getEvent(), me.getCell());
+			}
 		}
 		else
 		{
@@ -75495,18 +75499,18 @@ mxVertexHandler.prototype.init = function()
 
 			if (resizable)
 			{
-				// if (!this.singleSizer)
-				// {
-				// 	this.sizers.push(this.createSizer('nw-resize', i++));
-				// 	this.sizers.push(this.createSizer('n-resize', i++));
-				// 	this.sizers.push(this.createSizer('ne-resize', i++));
-				// 	this.sizers.push(this.createSizer('w-resize', i++));
-				// 	this.sizers.push(this.createSizer('e-resize', i++));
-				// 	this.sizers.push(this.createSizer('sw-resize', i++));
-				// 	this.sizers.push(this.createSizer('s-resize', i++));
-				// }
+				if (!this.singleSizer)
+				{
+					this.sizers.push(this.createSizer('nw-resize', i++));
+					this.sizers.push(this.createSizer('n-resize', i++));
+					this.sizers.push(this.createSizer('ne-resize', i++));
+					this.sizers.push(this.createSizer('w-resize', i++));
+					this.sizers.push(this.createSizer('e-resize', i++));
+					this.sizers.push(this.createSizer('sw-resize', i++));
+					this.sizers.push(this.createSizer('s-resize', i++));
+				}
 				
-				// this.sizers.push(this.createSizer('se-resize', i++));
+				this.sizers.push(this.createSizer('se-resize', i++));
 			}
 			
 			var geo = this.graph.model.getGeometry(this.state.cell);

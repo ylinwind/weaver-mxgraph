@@ -81,9 +81,10 @@ WfNodeInfo.prototype.initSelectionState = function()
 
 WfNodeInfo.prototype.nodeActions = function(){
     var cells = this.editorUi.editor.graph.getSelectionCells();
+	console.log(cells,'celsss')
 	var haveNode = false;
 	cells.map(v=>{
-		if(v instanceof mxCell){ //点击选中节点
+		if(v instanceof mxCell && v.edge != 1){ //点击选中节点
 			//
 			if(document.getElementById('nodeInfo-no-node') != null){
 				this.container.removeChild(document.getElementById('nodeInfo-no-node'));

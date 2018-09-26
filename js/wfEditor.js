@@ -209,10 +209,10 @@ WfPanel.prototype.drawActions = function(){
         // {icon:'icon-workflow-hebing',action:'',title:''},
         // {icon:'icon-workflow-guidang',action:'',title:''},
 
-        {icon:'icon-workflow-tianjiafenzu',action:'',title:''},
-        {icon:'icon-workflow-ziti',action:'',title:''},
-        {icon:'icon-workflow-hengxiangfenzu',action:'',title:''},
-        {icon:'icon-workflow-zongxiangfenzu',action:'',title:''},
+        {icon:'icon-workflow-tianjiafenzu',action:'',title:'添加分组'},
+        {icon:'icon-workflow-ziti',action:'',title:'字体'},
+        {icon:'icon-workflow-hengxiangfenzu',action:{funct:this.drawRowGroup.bind(this)},title:'横向分组'},
+        {icon:'icon-workflow-zongxiangfenzu',action:'',title:'纵向分组'},
 
         {icon:'icon-workflow-kaozuoduiqi',action:'1',title:'左对齐'},
         {icon:'icon-workflow-shangxiadengjian',action:'1',title:'垂直居中'},
@@ -242,7 +242,12 @@ WfPanel.prototype.drawActions = function(){
             elDiv_tip.style.display = this.tipInfoDisplay;
             elDiv.appendChild(elDiv_tip);
         }
-        let spanEl = document.createElement('span');
+		let spanEl;
+		if(v.icon === 'icon-workflow-tianjiafenzu'){//添加分组
+			spanEl = this.drawGroup();
+		}else{
+        	spanEl = document.createElement('span');
+		}
         spanEl.className = `${v.icon} icon-workflow`;
         spanEl.title = v.title || 'title';
         spanEl.onclick = function(e){
@@ -261,7 +266,7 @@ WfPanel.prototype.drawActions = function(){
             elDiv.appendChild(input);
         }
 		// 
-
+		// 分界线
         if(i==4 || i==8 || i==14 || i==20 || i==22 || i==icons.length-1){
             this.container.appendChild(elDiv);
             if(i!=icons.length-1){
@@ -305,6 +310,46 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
             tips.innerHTML = `视图（${graph.view.scale*100}%）`
         }
     }
+}
+/**
+绘制横向分组
+ */
+WfPanel.prototype.drawRowGroup = function(){
+	var cells,
+		title='分组',
+		showLabel='分组',
+		showTitle='分组',
+		width=300,height=200,
+		allowCellsInserted,icon,
+		style=`rounded=1;arcSize=10;fillColor=none;dashed=1;strokeColor=#666666;strokeWidth=2;labelPosition=center;verticalLabelPosition=top;
+		align=center;verticalAlign=bottom;connectable=0;fontSize=18;fontStyle=1;fontFamily='宋体';`;
+	cells = [new mxCell( '分组', new mxGeometry(0, 0, width, height), style)];
+	cells[0].vertex = true;
+	var element = this.createItem(cells, title, showLabel, showTitle, width, height, allowCellsInserted,icon,true);
+	console.log(element,'element');
+}
+/**
+绘制横向分组
+ */
+WfPanel.prototype.drawColGroup = function(){
+
+}
+/**
+区域分组按钮
+ */
+WfPanel.prototype.drawGroup = function(){
+	var cells,
+		title='分组',
+		showLabel='分组',
+		showTitle='分组',
+		width=300,height=200,
+		allowCellsInserted,icon,
+		style=`rounded=1;arcSize=10;fillColor=none;dashed=1;strokeColor=#666666;strokeWidth=2;labelPosition=center;verticalLabelPosition=top;
+		align=center;verticalAlign=bottom;connectable=0;fontSize=18;fontStyle=1;fontFamily='宋体';`;
+	cells = [new mxCell( '分组', new mxGeometry(0, 0, width, height), style)];
+	cells[0].vertex = true;
+	var element = this.createItem(cells, title, showLabel, showTitle, width, height, allowCellsInserted,icon,true);
+	return element;
 }
 /**
 控制每块操作区域提示语
@@ -351,7 +396,7 @@ WfPanel.prototype.addGeneralPalette = function(expand)
 {
 	var sb = this;
 	var lineTags = 'line lines connector connectors connection connections arrow arrows ';
-	let wfStrokeStyle = 'fillColor=#BFF3C3;strokeColor=#5ABD6B;';
+	let wfStrokeStyle = 'fillColor=#BFF3C3;strokeColor=#5ABD6B;resizable=0;';
 
 	var fns = [
 	 	this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-ceshi"};'+wfStrokeStyle, 110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian'),
@@ -687,7 +732,7 @@ WfPanel.prototype.createThumb = function(cells, width, height, parent, title, sh
 /**
  * Creates and returns a new palette item for the given image.
  */
-WfPanel.prototype.createItem = function(cells, title, showLabel, showTitle, width, height, allowCellsInserted , icon='')
+WfPanel.prototype.createItem = function(cells, title, showLabel, showTitle, width, height, allowCellsInserted , icon='' , isGroup = false)
 {
 	// var elt = document.createElement('a');
 	// elt.setAttribute('href', 'javascript:void(0);');
@@ -718,7 +763,7 @@ WfPanel.prototype.createItem = function(cells, title, showLabel, showTitle, widt
 	if (cells.length > 1 || cells[0].vertex)
 	{
 		var ds = this.createDragSource(elt, this.createDropHandler(cells, true, allowCellsInserted,
-			bounds), this.createDragPreview(width, height), cells, bounds);
+			bounds), this.createDragPreview(width, height), cells, bounds,isGroup);
 		this.addClickHandler(elt, ds, cells);
 	
 		// Uses guides for vertices only if enabled in graph
@@ -730,12 +775,12 @@ WfPanel.prototype.createItem = function(cells, title, showLabel, showTitle, widt
 	else if (cells[0] != null && cells[0].edge)
 	{
 		var ds = this.createDragSource(elt, this.createDropHandler(cells, false, allowCellsInserted,
-			bounds), this.createDragPreview(width, height), cells, bounds);
+			bounds), this.createDragPreview(width, height), cells, bounds,isGroup);
 		this.addClickHandler(elt, ds, cells);
 	}
 	
 	// Shows a tooltip with the rendered cell
-	if (!mxClient.IS_IOS)
+	if (!mxClient.IS_IOS && !isGroup)
 	{
 		mxEvent.addGestureListeners(elt, null, mxUtils.bind(this, function(evt)
 		{
@@ -751,7 +796,7 @@ WfPanel.prototype.createItem = function(cells, title, showLabel, showTitle, widt
 /**
  * Creates a drag source for the given element.
  */
-WfPanel.prototype.createDragSource = function(elt, dropHandler, preview, cells, bounds)
+WfPanel.prototype.createDragSource = function(elt, dropHandler, preview, cells, bounds ,isGroup=false)
 {
 	// Checks if the cells contain any vertices
 	var ui = this.editorUi;
@@ -801,9 +846,10 @@ WfPanel.prototype.createDragSource = function(elt, dropHandler, preview, cells, 
 			dropHandler.apply(this, arguments);
 		}
 		
-		if (this.editorUi.hoverIcons != null)
+		if (this.editorUi.hoverIcons != null )
 		{
-			this.editorUi.hoverIcons.update(graph.view.getState(graph.getSelectionCell()));
+			this.editorUi.hoverIcons.update(graph.view.getState(graph.getSelectionCell()))
+			
 		}
 	}), preview, 0, 0, graph.autoscroll, true, true);
 	// var dragSource = elt ;
@@ -1182,7 +1228,7 @@ WfPanel.prototype.createDragSource = function(elt, dropHandler, preview, cells, 
 				}
 
 				bds.grow(this.graph.tolerance);
-				bds.grow(HoverIcons.prototype.arrowSpacing);
+				!isGroup && bds.grow(HoverIcons.prototype.arrowSpacing);
 				
 				var handler = this.graph.selectionCellsHandler.getHandler(currentTargetState.cell);
 				
@@ -1202,17 +1248,19 @@ WfPanel.prototype.createDragSource = function(elt, dropHandler, preview, cells, 
 						bds.add(handler.rotationShape.boundingBox);
 					}
 				}
+				if(!isGroup){
+					bbox.add(checkArrow(x, y, new mxRectangle(currentTargetState.getCenterX() - this.triangleUp.width / 2,
+						bds.y - this.triangleUp.height, this.triangleUp.width, this.triangleUp.height), arrowUp));
+					bbox.add(checkArrow(x, y, new mxRectangle(bds.x + bds.width,
+						currentTargetState.getCenterY() - this.triangleRight.height / 2,
+						this.triangleRight.width, this.triangleRight.height), arrowRight));
+					bbox.add(checkArrow(x, y, new mxRectangle(currentTargetState.getCenterX() - this.triangleDown.width / 2,
+							bds.y + bds.height, this.triangleDown.width, this.triangleDown.height), arrowDown));
+					bbox.add(checkArrow(x, y, new mxRectangle(bds.x - this.triangleLeft.width,
+							currentTargetState.getCenterY() - this.triangleLeft.height / 2,
+							this.triangleLeft.width, this.triangleLeft.height), arrowLeft));
+				}
 				
-				bbox.add(checkArrow(x, y, new mxRectangle(currentTargetState.getCenterX() - this.triangleUp.width / 2,
-					bds.y - this.triangleUp.height, this.triangleUp.width, this.triangleUp.height), arrowUp));
-				bbox.add(checkArrow(x, y, new mxRectangle(bds.x + bds.width,
-					currentTargetState.getCenterY() - this.triangleRight.height / 2,
-					this.triangleRight.width, this.triangleRight.height), arrowRight));
-				bbox.add(checkArrow(x, y, new mxRectangle(currentTargetState.getCenterX() - this.triangleDown.width / 2,
-						bds.y + bds.height, this.triangleDown.width, this.triangleDown.height), arrowDown));
-				bbox.add(checkArrow(x, y, new mxRectangle(bds.x - this.triangleLeft.width,
-						currentTargetState.getCenterY() - this.triangleLeft.height / 2,
-						this.triangleLeft.width, this.triangleLeft.height), arrowLeft));
 			}
 			
 			// Adds tolerance
@@ -1339,14 +1387,17 @@ WfPanel.prototype.createDragSource = function(elt, dropHandler, preview, cells, 
 					arrowLeft.style.left = Math.floor(bds.x - this.triangleLeft.width) + 'px';
 					arrowLeft.style.top = arrowRight.style.top;
 					
-					if (state.style['portConstraint'] != 'eastwest')
-					{
-						graph.container.appendChild(arrowUp);
-						graph.container.appendChild(arrowDown);
-					}
+					if(!isGroup){
+						if (state.style['portConstraint'] != 'eastwest')
+						{
+							graph.container.appendChild(arrowUp);
+							graph.container.appendChild(arrowDown);
+						}
 
-					graph.container.appendChild(arrowRight);
-					graph.container.appendChild(arrowLeft);
+						graph.container.appendChild(arrowRight);
+						graph.container.appendChild(arrowLeft);
+					}
+					
 				}
 				
 				// Hides handle for cell under mouse
