@@ -90,7 +90,7 @@
 				// /api/workflow/layout/getWfInfo?workflowId=20305 //获取节点信息
 				// /api/workflow/layout/getXml?workflowId=20305 //获取流程图信息
 				// /api/workflow/layout/saveLayout //保存
-				mxUtils.post('/api/workflow/layout/getXml', 'workflowId=20305', function(req)
+				mxUtils.post(WORKFLOW_GETWFINFO_PATH, 'workflowId=20305', function(req)
 				{
 					var request = req.request;
 					var response = request.response;
@@ -99,7 +99,7 @@
 					var doc = mxUtils.parseXml(json.xml);
 					sb.editor.graph.setSelectionCells(sb.editor.graph.importGraphModel(doc.documentElement));
 				});
-				mxUtils.post('/api/workflow/layout/getWfInfo', 'workflowId=20305', function(req)
+				mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, 'workflowId=20305', function(req)
 				{
 					var request = req.request;
 					var response = request.response;

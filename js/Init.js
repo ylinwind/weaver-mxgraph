@@ -17,6 +17,10 @@ window.STYLE_PATH = window.STYLE_PATH || 'styles';
 window.CSS_PATH = window.CSS_PATH || 'styles';
 window.OPEN_FORM = window.OPEN_FORM || 'open.html';
 
+window.WORKFLOW_GETWFINFO_PATH = '/api/workflow/layout/getXml';
+window.WORKFLOW_GETDETAILINFO_PATH = '/api/workflow/layout/getWfInfo';
+window.WORKFLOW_SAVEINFO_PATH = '/api/workflow/layout/saveLayout';
+
 // Sets the base path, the UI language via URL param and configures the
 // supported languages to avoid 404s. The loading of all core language
 // resources is disabled as all required resources are in grapheditor.
