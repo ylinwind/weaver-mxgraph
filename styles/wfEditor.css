@@ -125,3 +125,19 @@
 .wfNodeInfoContainer #nodeInfo-no-node{
     text-align: center;
 }
+.wfNodeInfoContainer #nodeInfo-node-detail .nodeInfo-detail-item{
+    padding: 0 10px;
+    font-size: 15px;
+}
+.nodeInfo-detail-item .detail-item-span{
+    display: inline-block;
+    width: 50%;
+}
+.nodeInfo-detail-item .icon-workflow-shezhi{
+    cursor: pointer;
+    font-size: 18px;
+}
+.nodeInfo-detail-item .icon-workflow-duigou{
+    color: #70D256;
+    margin-left: 8px;
+}

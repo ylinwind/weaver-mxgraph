@@ -41940,12 +41940,13 @@ mxCellAttributeChange.prototype.execute = function()
  * geometry - Optional <mxGeometry> that specifies the geometry.
  * style - Optional formatted string that defines the style.
  */
-function mxCell(value, geometry, style)
+function mxCell(value, geometry, style,nodeType='')
 {
 	this.value = value;
 	this.setGeometry(geometry);
 	this.setStyle(style);
-	
+	this.nodeType = nodeType;
+
 	if (this.onInit != null)
 	{
 		this.onInit();
@@ -47424,7 +47425,7 @@ mxCellEditor.prototype.stopEditing = function(cancel)
 {
 	cancel = cancel || false;
 	
-	if (this.editingCell != null)
+	if (this.editingCell != null && this.editingCell !== 'null')
 	{
 		if (this.textNode != null)
 		{
@@ -73495,7 +73496,11 @@ mxConnectionHandler.prototype.mouseUp = function(sender, me)
 			}
 			
 			if(target != null ){
-				this.connect(source, target, me.getEvent(), me.getCell());
+				if(target.nodeType == 'oneToBranch' && source.nodeType == 'branchCenter'){
+					mxUtils.alert('分叉中间点只能指向本分支中间节点或合并节点！');
+				}else{
+					this.connect(source, target, me.getEvent(), me.getCell());
+				}
 			}
 		}
 		else

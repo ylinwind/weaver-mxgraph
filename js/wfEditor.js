@@ -71,6 +71,9 @@ WfPanel.prototype.init = function (){
     WfPanel.prototype.refreshTarget = HoverIcons.prototype.refreshTarget;
     WfPanel.prototype.roundDrop = HoverIcons.prototype.roundDrop;
 
+	WfPanel.prototype.rowGroups = [];
+	WfPanel.prototype.colGroups = [];
+
     this.drawActions();//绘制操作区域
     this.addGeneralPalette(true);
     
@@ -193,6 +196,7 @@ WfPanel.prototype.defaultImageHeight = 80;
  */
 WfPanel.prototype.drawActions = function(){
     let iconActions = this.editorUi.actions;
+	var graph = this.editorUi.editor.graph;
     var _this = this;
     let icons = [ //所有的操作按钮
         {icon:'icon-workflow-baocun',action:iconActions.get('save'),title:'save'},
@@ -211,7 +215,7 @@ WfPanel.prototype.drawActions = function(){
 
         {icon:'icon-workflow-tianjiafenzu',action:'',title:'添加分组'},
         {icon:'icon-workflow-ziti',action:'',title:'字体'},
-        {icon:'icon-workflow-hengxiangfenzu',action:{funct:this.drawRowGroup.bind(this)},title:'横向分组'},
+        {icon:'icon-workflow-hengxiangfenzu',action:'',title:'横向分组'},
         {icon:'icon-workflow-zongxiangfenzu',action:'',title:'纵向分组'},
 
         {icon:'icon-workflow-kaozuoduiqi',action:'1',title:'左对齐'},
@@ -244,7 +248,11 @@ WfPanel.prototype.drawActions = function(){
         }
 		let spanEl;
 		if(v.icon === 'icon-workflow-tianjiafenzu'){//添加分组
-			spanEl = this.drawGroup();
+			spanEl = _this.drawAreaGroup();
+		}else if(v.icon === 'icon-workflow-hengxiangfenzu'){
+			spanEl = this.drawRowGroup();
+		}else if(v.icon === 'icon-workflow-zongxiangfenzu'){
+			spanEl = this.drawColGroup();
 		}else{
         	spanEl = document.createElement('span');
 		}
@@ -259,9 +267,11 @@ WfPanel.prototype.drawActions = function(){
             let input = document.createElement('INPUT');
             input.type = 'range';
             input.className = 'wf-view-range';
-            input.onclick = (val)=>{console.log('click',val,input)};
             input.onchange = function(val){
-                console.log(val,'vvvvvv')
+				let value = val.target.value;
+				input.value = value;
+				input.style.backgroundSize = `${value}% 100%`;
+				// graph.zoomTo(value);
             }
             elDiv.appendChild(input);
         }
@@ -303,6 +313,10 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 		icon=='icon-workflow-kaoshangduiqi' && graph.alignCells(mxConstants.ALIGN_TOP);
 		icon=='icon-workflow-zuoyoudengjian' && graph.alignCells(mxConstants.ALIGN_CENTER);
 		icon=='icon-workflow-kaoxiaduiqi' && graph.alignCells(mxConstants.ALIGN_BOTTOM);
+	// }else if(icon=='icon-workflow-hengxiangfenzu'){
+	// 	this.drawRowGroup();
+	// }else if(icon=='icon-workflow-zongxiangfenzu'){
+	// 	this.drawColGroup();
 	}else{
         func.funct(evt);
         if(icon=='icon-workflow-suoxiao' || icon=='icon-workflow-fangda' || icon=='icon-workflow-huifuyuanbil'){//修改操作区域显示缩放值
@@ -319,25 +333,40 @@ WfPanel.prototype.drawRowGroup = function(){
 		title='分组',
 		showLabel='分组',
 		showTitle='分组',
-		width=300,height=200,
+		width=300,height=10,
 		allowCellsInserted,icon,
-		style=`rounded=1;arcSize=10;fillColor=none;dashed=1;strokeColor=#666666;strokeWidth=2;labelPosition=center;verticalLabelPosition=top;
-		align=center;verticalAlign=bottom;connectable=0;fontSize=18;fontStyle=1;fontFamily='宋体';`;
-	cells = [new mxCell( '分组', new mxGeometry(0, 0, width, height), style)];
+		style=`line;strokeWidth=2;html=1;connectable=0;resizable=0;dashed=1;`;
+		
+	cells = [new mxCell( '', new mxGeometry(0, 0, width, height), style)];
 	cells[0].vertex = true;
+
 	var element = this.createItem(cells, title, showLabel, showTitle, width, height, allowCellsInserted,icon,true);
-	console.log(element,'element');
+	return element;
 }
 /**
 绘制横向分组
  */
 WfPanel.prototype.drawColGroup = function(){
+	var cells,
+		title='分组',
+		showLabel='分组',
+		showTitle='分组',
+		width=10,height=300,
+		allowCellsInserted,icon,
+		style=`line;direction=south;strokeWidth=2;html=1;connectable=0;resizable=0;dashed=1;`;
+		
+	cells = [new mxCell( '', new mxGeometry(0, 0, width, height), style)];
+	cells[0].vertex = true;
+	// var fn = this.createVertexTemplateEntry(style, width, height, '分组', '分组');
+	// var fn_1 = fn();
 
+	var element = this.createItem(cells, title, showLabel, showTitle, width, height, allowCellsInserted,icon,true);
+	return element;
 }
 /**
 区域分组按钮
  */
-WfPanel.prototype.drawGroup = function(){
+WfPanel.prototype.drawAreaGroup = function(){
 	var cells,
 		title='分组',
 		showLabel='分组',
@@ -346,11 +375,119 @@ WfPanel.prototype.drawGroup = function(){
 		allowCellsInserted,icon,
 		style=`rounded=1;arcSize=10;fillColor=none;dashed=1;strokeColor=#666666;strokeWidth=2;labelPosition=center;verticalLabelPosition=top;
 		align=center;verticalAlign=bottom;connectable=0;fontSize=18;fontStyle=1;fontFamily='宋体';`;
-	cells = [new mxCell( '分组', new mxGeometry(0, 0, width, height), style)];
+		
+	cells = [new mxCell( '分组', new mxGeometry(10, 10, width, height), style)];
 	cells[0].vertex = true;
+	// var fn = this.createVertexTemplateEntry(style, width, height, '分组', '分组');
+	// var fn_1 = fn();
+
 	var element = this.createItem(cells, title, showLabel, showTitle, width, height, allowCellsInserted,icon,true);
 	return element;
 }
+/**
+绘制分组
+ */
+WfPanel.prototype.drawGroup = function(){
+	console.log(this.rowGroups,'this.rowGroups',this.colGroups,window.innerWidth);
+	var maxWidth = window.innerWidth - 240;
+	var maxHeight = window.innerHeight - 135;
+
+	var graph = this.editorUi.editor.graph;
+	var svgCanvas = graph.getSvg();
+	
+	console.log(svgCanvas,'svgCanvas',graph.svgCanvas);
+	var view = graph.view;
+	var __root = view.getDrawPane().ownerSVGElement;
+
+	var svgG;
+	if(document.getElementById('groups-line') == null){
+		svgG = graph.svgCanvas.createElement('g');
+		svgG.setAttribute('id','groups-line');
+	}else{
+		svgG = document.getElementById('groups-line');
+		svgG.innerHTML = '';
+	}
+	this.rowGroups.map(v=>{
+		var svgEl_1 = graph.svgCanvas.createElement('g');
+		var svgEl = graph.svgCanvas.createElement('path');
+		var _svgEl = graph.svgCanvas.createElement('path');
+		svgEl.setAttribute('id',v.id);
+		svgEl.setAttribute('d',`M0 100 L${maxWidth} 100`);
+		_svgEl.setAttribute('d',`M0 100 L${maxWidth} 100`);
+		_svgEl.setAttribute('visibility',"hidden");
+		_svgEl.style="stroke:#fff;stroke-width:10;stroke-dasharray:5;stroke-miterlimit:10;";
+		svgEl.style=v.style;
+
+		svgEl_1.addEventListener("mouseenter", this.enterChangeGroupLineState.bind(this,'row'), false);
+		svgEl_1.addEventListener("mouseout", this.outChangeGroupLineState.bind(this,'row'), false);
+
+		svgEl_1.appendChild(svgEl);
+		svgEl_1.appendChild(_svgEl);
+		svgG.appendChild(svgEl_1);
+	});
+	this.colGroups.map(v=>{
+		var svgEl = graph.svgCanvas.createElement('line');
+		svgEl.setAttribute('id',v.id);
+		svgEl.setAttribute('x1',v.x1);
+		svgEl.setAttribute('y1',v.y1);
+		svgEl.setAttribute('x2',v.x2);
+		svgEl.setAttribute('y2',v.y2);
+		svgEl.style=v.style;
+
+		svgEl.addEventListener("mouseenter", this.enterChangeGroupLineState.bind(this,'col'), false);
+		svgEl.addEventListener("mouseout", this.outChangeGroupLineState.bind(this,'col'), false);
+
+		svgG.appendChild(svgEl);
+	})
+
+	
+	__root.appendChild(svgG);
+}
+/**
+enter
+改变分组线条样式
+ */
+WfPanel.prototype.enterChangeGroupLineState = function(type,e){
+	console.log('ininenterini enter',e,type);
+	e.target.childNodes[0].style="stroke:#000;stroke-width:2;stroke-dasharray:5;cursor:move;stroke-miterlimit:10;";
+	// e.target.style="stroke:#000;stroke-width:2;stroke-dasharray:5;cursor:move;stroke-miterlimit:10;";
+
+	// var datas;
+	// type=='row' ? datas = this.rowGroups : datas = this.colGroups;
+	// for(let i = 0 ,len = datas.length;i<len;++i){
+	// 	if(datas[i].id == e.target.id){
+	// 		console.log('---ooo-');
+	// 		datas[i].style="stroke:#000;stroke-width:2;stroke-dasharray:5;";
+	// 		break;
+	// 	}
+	// }
+	// type=='row' ? this.rowGroups = datas : this.colGroups = datas ;
+
+	// this.drawGroup();
+}	
+/**
+out
+改变分组线条样式
+ */
+WfPanel.prototype.outChangeGroupLineState = function(type,e){
+	console.log('ininenterini out',e,type);
+	// e.target.childNodes[0].style="stroke:#999;stroke-width:2;stroke-dasharray:5;cursor:default;stroke-miterlimit:10;";
+	e.target.style="stroke:#999;stroke-width:2;stroke-dasharray:5;cursor:default;stroke-miterlimit:10;";
+
+	// var datas;
+	// type=='row' ? datas = this.rowGroups : datas = this.colGroups;
+	// for(let i = 0 ,len = datas.length;i<len;++i){
+	// 	if(datas[i].id == e.target.id){
+	// 		console.log('---ooo-');
+	// 		datas[i].style="stroke:#999;stroke-width:2;stroke-dasharray:5;";
+	// 		break;
+	// 	}
+	// }
+	// type=='row' ? this.rowGroups = datas : this.colGroups = datas ;
+	
+	// this.drawGroup();
+	// console.log('ininenterini out',e,type)
+}	
 /**
 控制每块操作区域提示语
  */
@@ -399,17 +536,19 @@ WfPanel.prototype.addGeneralPalette = function(expand)
 	let wfStrokeStyle = 'fillColor=#BFF3C3;strokeColor=#5ABD6B;resizable=0;';
 
 	var fns = [
-	 	this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-ceshi"};'+wfStrokeStyle, 110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian'),
-	 	this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha","right":"icon-workflow-fencha"};'+wfStrokeStyle, 110, 70, '处理', '处理', null, null, 'rect rectangle box','icon-workflow-chuli'),
-        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha","right":"icon-workflow-fencha"};'+wfStrokeStyle, 130, 80, '审批', '审批', null, null, 
+	 	this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-ceshi"};'+wfStrokeStyle, 
+		 110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian'),
+	 	this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '处理', '处理', null, null, 'rect rectangle box','icon-workflow-chuli'),
+        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '审批', '审批', null, null, 
         'diamond rhombus if condition decision conditional question test','icon-workflow-shenpi'),
-
-        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha","right":"icon-workflow-fencha"};'+wfStrokeStyle, 110, 70,
-        //  `<span class='icon-workflow-fencha icon-left-style'></span>分叉<span class='icon-workflow-fencha icon-right-style'></span>`, `分叉`,
-         `分叉`, `分叉`,
-         null, null, 'rect rectangle box','icon-workflow-fencha'),
-        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha","right":"icon-workflow-fencha"};'+wfStrokeStyle, 110, 70, '分叉中间点', '分叉中间点', null, null, 'rect rectangle box','icon-workflow-fenchazhongjiandian'),
-        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha","right":"icon-workflow-fencha"};'+wfStrokeStyle, 110, 70, '合并节点', '合并节点', null, null, 'rect rectangle box','icon-workflow-hebing'),
+        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha"};'+wfStrokeStyle, 130, 80,`分叉`, `分叉`,
+         null, null, 'rect rectangle box','icon-workflow-fencha','oneToBranch'),
+        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fenchazhongjiandian"};'+wfStrokeStyle,
+		 130, 80, '分叉中间点', '分叉中间点', null, null, 'rect rectangle box','icon-workflow-fenchazhongjiandian','branchCenter'),
+        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-hebing"};'+wfStrokeStyle,
+		 130, 80, '合并节点', '合并节点', null, null, 'rect rectangle box','icon-workflow-hebing','branchToOne'),
+	 	this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-guidang"};'+wfStrokeStyle,
+		 110, 70, '归档', '归档', null, null, 'rounded rect rectangle box','icon-workflow-guidang'),
 
 	 	// Explicit strokecolor/fillcolor=none is a workaround to maintain transparent background regardless of current style
             // this.createVertexTemplateEntry('text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;',
@@ -419,7 +558,7 @@ WfPanel.prototype.addGeneralPalette = function(expand)
             //     'Textbox', null, null, 'text textbox textarea','icon-workflow-fenchazhongjiandian'),
             // this.createVertexTemplateEntry('shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;', 120, 60, '', 'Process', null, null, 'process task','icon-workflow-hebing'),
 	 	
-	 	// 自定义
+	 	/*// 自定义
 		this.addEntry('shape group container', function()
 		{
 		    var cell = new mxCell(`<span class='icon-workflow-chuli' style="font-size:20px";></span>`, new mxGeometry(0, 0, 110, 70),
@@ -431,7 +570,7 @@ WfPanel.prototype.addGeneralPalette = function(expand)
 			cell.insert(symbol);
 	    	
     		return sb.createVertexTemplateFromCells([cell], cell.geometry.width, cell.geometry.height, 'Shape Group','','','','icon-workflow-guidang');
-		})
+		})*/
     ]
     this.addPaletteFunctions('1', '111', (expand != null) ? expand : true, fns);
 }
@@ -573,21 +712,22 @@ WfPanel.prototype.addFoldingHandler = function(title, content, funct)
 /**
  * Creates a drop handler for inserting the given cells.
  */
-WfPanel.prototype.createVertexTemplateEntry = function(style, width, height, value, title, showLabel, showTitle, tags,icon)
+//  ('line;strokeWidth=2;html=1;', 160, 10, '', 'Horizontal Line')
+WfPanel.prototype.createVertexTemplateEntry = function(style, width, height, value, title, showLabel, showTitle, tags,icon,nodeType='')
 {
 	tags = (tags != null && tags.length > 0) ? tags : title.toLowerCase();
 	
 	return this.addEntry(tags, mxUtils.bind(this, function()
  	{
- 		return this.createVertexTemplate(style, width, height, value, title, showLabel, showTitle,'',icon);
+ 		return this.createVertexTemplate(style, width, height, value, title, showLabel, showTitle,'',icon,nodeType);
  	}));
 }
 /**
  * Creates a drop handler for inserting the given cells.
  */
-WfPanel.prototype.createVertexTemplate = function(style, width, height, value, title, showLabel, showTitle, allowCellsInserted,icon)
+WfPanel.prototype.createVertexTemplate = function(style, width, height, value, title, showLabel, showTitle, allowCellsInserted,icon,nodeType='')
 {
-	var cells = [new mxCell((value != null) ? value : '', new mxGeometry(0, 0, width, height), style)];
+	var cells = [new mxCell((value != null) ? value : '', new mxGeometry(0, 0, width, height), style , nodeType)];
 	cells[0].vertex = true;
 	
 	return this.createVertexTemplateFromCells(cells, width, height, title, showLabel, showTitle, allowCellsInserted,icon);
@@ -1228,7 +1368,7 @@ WfPanel.prototype.createDragSource = function(elt, dropHandler, preview, cells, 
 				}
 
 				bds.grow(this.graph.tolerance);
-				!isGroup && bds.grow(HoverIcons.prototype.arrowSpacing);
+				bds.grow(HoverIcons.prototype.arrowSpacing);
 				
 				var handler = this.graph.selectionCellsHandler.getHandler(currentTargetState.cell);
 				
@@ -1248,18 +1388,17 @@ WfPanel.prototype.createDragSource = function(elt, dropHandler, preview, cells, 
 						bds.add(handler.rotationShape.boundingBox);
 					}
 				}
-				if(!isGroup){
-					bbox.add(checkArrow(x, y, new mxRectangle(currentTargetState.getCenterX() - this.triangleUp.width / 2,
-						bds.y - this.triangleUp.height, this.triangleUp.width, this.triangleUp.height), arrowUp));
-					bbox.add(checkArrow(x, y, new mxRectangle(bds.x + bds.width,
-						currentTargetState.getCenterY() - this.triangleRight.height / 2,
-						this.triangleRight.width, this.triangleRight.height), arrowRight));
-					bbox.add(checkArrow(x, y, new mxRectangle(currentTargetState.getCenterX() - this.triangleDown.width / 2,
-							bds.y + bds.height, this.triangleDown.width, this.triangleDown.height), arrowDown));
-					bbox.add(checkArrow(x, y, new mxRectangle(bds.x - this.triangleLeft.width,
-							currentTargetState.getCenterY() - this.triangleLeft.height / 2,
-							this.triangleLeft.width, this.triangleLeft.height), arrowLeft));
-				}
+				bbox.add(checkArrow(x, y, new mxRectangle(currentTargetState.getCenterX() - this.triangleUp.width / 2,
+					bds.y - this.triangleUp.height, this.triangleUp.width, this.triangleUp.height), arrowUp));
+				bbox.add(checkArrow(x, y, new mxRectangle(bds.x + bds.width,
+					currentTargetState.getCenterY() - this.triangleRight.height / 2,
+					this.triangleRight.width, this.triangleRight.height), arrowRight));
+				bbox.add(checkArrow(x, y, new mxRectangle(currentTargetState.getCenterX() - this.triangleDown.width / 2,
+						bds.y + bds.height, this.triangleDown.width, this.triangleDown.height), arrowDown));
+				bbox.add(checkArrow(x, y, new mxRectangle(bds.x - this.triangleLeft.width,
+						currentTargetState.getCenterY() - this.triangleLeft.height / 2,
+						this.triangleLeft.width, this.triangleLeft.height), arrowLeft));
+				
 				
 			}
 			
@@ -1387,16 +1526,15 @@ WfPanel.prototype.createDragSource = function(elt, dropHandler, preview, cells, 
 					arrowLeft.style.left = Math.floor(bds.x - this.triangleLeft.width) + 'px';
 					arrowLeft.style.top = arrowRight.style.top;
 					
-					if(!isGroup){
-						if (state.style['portConstraint'] != 'eastwest')
-						{
-							graph.container.appendChild(arrowUp);
-							graph.container.appendChild(arrowDown);
-						}
-
-						graph.container.appendChild(arrowRight);
-						graph.container.appendChild(arrowLeft);
+					if (state.style['portConstraint'] != 'eastwest')
+					{
+						graph.container.appendChild(arrowUp);
+						graph.container.appendChild(arrowDown);
 					}
+
+					graph.container.appendChild(arrowRight);
+					graph.container.appendChild(arrowLeft);
+					
 					
 				}
 				
@@ -1660,6 +1798,413 @@ WfPanel.prototype.addClickHandler = function(elt, ds, cells)
 		// Blocks tooltips on this element after single click
 		sb.currentElt = elt;
 	};
+};
+/**
+ * Adds a handler for inserting the cell with a single click.
+ */
+WfPanel.prototype.itemClicked = function(cells, ds, evt, elt)
+{
+	var graph = this.editorUi.editor.graph;
+	graph.container.focus();
+	
+	// Alt+Click inserts and connects
+	if (mxEvent.isAltDown(evt))
+	{
+		if (graph.getSelectionCount() == 1 && graph.model.isVertex(graph.getSelectionCell()))
+		{
+			var firstVertex = null;
+			
+			for (var i = 0; i < cells.length && firstVertex == null; i++)
+			{
+				if (graph.model.isVertex(cells[i]))
+				{
+					firstVertex = i;
+				}
+			}
+			
+			if (firstVertex != null)
+			{
+				graph.setSelectionCells(this.dropAndConnect(graph.getSelectionCell(), cells, (mxEvent.isMetaDown(evt) || mxEvent.isControlDown(evt)) ?
+					(mxEvent.isShiftDown(evt) ? mxConstants.DIRECTION_WEST : mxConstants.DIRECTION_NORTH) : 
+					(mxEvent.isShiftDown(evt) ? mxConstants.DIRECTION_EAST : mxConstants.DIRECTION_SOUTH),
+					firstVertex, evt));
+				graph.scrollCellToVisible(graph.getSelectionCell());
+			}
+		}
+	}
+	// Shift+Click updates shape
+	else if (mxEvent.isShiftDown(evt) && !graph.isSelectionEmpty())
+	{
+		this.updateShapes(cells[0], graph.getSelectionCells());
+		graph.scrollCellToVisible(graph.getSelectionCell());
+	}
+	else
+	{
+		var pt = graph.getFreeInsertPoint();
+		ds.drop(graph, evt, null, pt.x, pt.y, true);
+		
+		if (this.editorUi.hoverIcons != null && (mxEvent.isTouchEvent(evt) || mxEvent.isPenEvent(evt)))
+		{
+			this.editorUi.hoverIcons.update(graph.view.getState(graph.getSelectionCell()));
+		}
+	}
+};
+/**
+ * Creates a drop handler for inserting the given cells.
+ */
+WfPanel.prototype.updateShapes = function(source, targets)
+{
+	var graph = this.editorUi.editor.graph;
+	var sourceCellStyle = graph.getCellStyle(source);
+	var result = [];
+	
+	graph.model.beginUpdate();
+	try
+	{
+		var cellStyle = graph.getModel().getStyle(source);
+
+		// Lists the styles to carry over from the existing shape
+		var styles = ['shadow', 'dashed', 'dashPattern', 'fontFamily', 'fontSize', 'fontColor', 'align', 'startFill',
+		              'startSize', 'endFill', 'endSize', 'strokeColor', 'strokeWidth', 'fillColor', 'gradientColor',
+		              'html', 'part', 'noEdgeStyle', 'edgeStyle', 'elbow', 'childLayout', 'recursiveResize',
+		              'container', 'collapsible', 'connectable'];
+		
+		for (var i = 0; i < targets.length; i++)
+		{
+			var targetCell = targets[i];
+			
+			if ((graph.getModel().isVertex(targetCell) == graph.getModel().isVertex(source)) ||
+				(graph.getModel().isEdge(targetCell) == graph.getModel().isEdge(source)))
+			{
+				var state = graph.view.getState(targetCell);
+				var style = (state != null) ? state.style : graph.getCellStyle(targets[i]);
+				graph.getModel().setStyle(targetCell, cellStyle);
+				
+				// Removes all children of composite cells
+				if (state != null && mxUtils.getValue(state.style, 'composite', '0') == '1')
+				{
+					var childCount = graph.model.getChildCount(targetCell);
+					
+					for (var j = childCount; j >= 0; j--)
+					{
+						graph.model.remove(graph.model.getChildAt(targetCell, j));
+					}
+				}
+
+				if (style != null)
+				{
+					// Replaces the participant style in the lifeline shape with the target shape
+					if (style[mxConstants.STYLE_SHAPE] == 'umlLifeline' &&
+						sourceCellStyle[mxConstants.STYLE_SHAPE] != 'umlLifeline')
+					{
+						graph.setCellStyles(mxConstants.STYLE_SHAPE, 'umlLifeline', [targetCell]);
+						graph.setCellStyles('participant', sourceCellStyle[mxConstants.STYLE_SHAPE], [targetCell]);
+					}
+					
+					for (var j = 0; j < styles.length; j++)
+					{
+						var value = style[styles[j]];
+						
+						if (value != null)
+						{
+							graph.setCellStyles(styles[j], value, [targetCell]);
+						}
+					}
+				}
+				
+				result.push(targetCell);
+			}
+		}
+	}
+	finally
+	{
+		graph.model.endUpdate();
+	}
+	
+	return result;
+};
+/**
+ * Creates a drag source for the given element.
+ */
+WfPanel.prototype.dropAndConnect = function(source, targets, direction, dropCellIndex, evt)
+{
+	var geo = this.getDropAndConnectGeometry(source, targets[dropCellIndex], direction, targets);
+	
+	// Targets without the new edge for selection
+	var tmp = [];
+	
+	if (geo != null)
+	{
+		var graph = this.editorUi.editor.graph;
+		var editingCell = null;
+
+		graph.model.beginUpdate();
+		try
+		{
+			var sourceGeo = graph.getCellGeometry(source);
+			var geo2 = graph.getCellGeometry(targets[dropCellIndex]);
+
+			// Handles special case where target should be ignored for stack layouts
+			var targetParent = graph.model.getParent(source);
+			var validLayout = true;
+			
+			// Ignores parent if it has a stack layout
+			if (graph.layoutManager != null)
+			{
+				var layout = graph.layoutManager.getLayout(targetParent);
+			
+				// LATER: Use parent of parent if valid layout
+				if (layout != null && layout.constructor == mxStackLayout)
+				{
+					validLayout = false;
+
+					var tmp = graph.view.getState(targetParent);
+					
+					// Offsets by parent position
+					if (tmp != null)
+					{
+						var offset = new mxPoint((tmp.x / graph.view.scale - graph.view.translate.x),
+								(tmp.y / graph.view.scale - graph.view.translate.y));
+						geo.x += offset.x;
+						geo.y += offset.y;
+						var pt = geo.getTerminalPoint(false);
+						
+						if (pt != null)
+						{
+							pt.x += offset.x;
+							pt.y += offset.y;
+						}
+					}
+				}
+			}
+			
+			var dx = geo2.x;
+			var dy = geo2.y;
+			
+			// Ignores geometry of edges
+			if (graph.model.isEdge(targets[dropCellIndex]))
+			{
+				dx = 0;
+				dy = 0;
+			}
+			
+			var useParent = graph.model.isEdge(source) || (sourceGeo != null && !sourceGeo.relative && validLayout);
+			targets = graph.importCells(targets, (geo.x - (useParent ? dx : 0)),
+					(geo.y - (useParent ? dy : 0)), (useParent) ? targetParent : null);
+			tmp = targets;
+			
+			if (graph.model.isEdge(source))
+			{
+				// Adds new terminal to edge
+				// LATER: Push new terminal out radially from edge start point
+				graph.model.setTerminal(source, targets[dropCellIndex], direction == mxConstants.DIRECTION_NORTH);
+			}
+			else if (graph.model.isEdge(targets[dropCellIndex]))
+			{
+				// Adds new outgoing connection to vertex and clears points
+				graph.model.setTerminal(targets[dropCellIndex], source, true);
+				var geo3 = graph.getCellGeometry(targets[dropCellIndex]);
+				geo3.points = null;
+				
+				if (geo3.getTerminalPoint(false) != null)
+				{
+					geo3.setTerminalPoint(geo.getTerminalPoint(false), false);
+				}
+				else if (useParent && graph.model.isVertex(targetParent))
+				{
+					// Adds parent offset to other nodes
+					var tmpState = graph.view.getState(targetParent);
+					var offset = (tmpState.cell != graph.view.currentRoot) ?
+						new mxPoint((tmpState.x / graph.view.scale - graph.view.translate.x),
+						(tmpState.y / graph.view.scale - graph.view.translate.y)) : new mxPoint(0, 0);
+
+					graph.cellsMoved(targets, offset.x, offset.y, null, null, true);
+				}
+			}
+			else
+			{
+				geo2 = graph.getCellGeometry(targets[dropCellIndex]);
+				dx = geo.x - Math.round(geo2.x);
+				dy = geo.y - Math.round(geo2.y);
+				geo.x = Math.round(geo2.x);
+				geo.y = Math.round(geo2.y);
+				graph.model.setGeometry(targets[dropCellIndex], geo);
+				graph.cellsMoved(targets, dx, dy, null, null, true);
+				tmp = targets.slice();
+				editingCell = (tmp.length == 1) ? tmp[0] : null;
+				targets.push(graph.insertEdge(null, null, '', source, targets[dropCellIndex],
+					graph.createCurrentEdgeStyle()));
+			}
+			
+			graph.fireEvent(new mxEventObject('cellsInserted', 'cells', targets));
+		}
+		finally
+		{
+			graph.model.endUpdate();
+		}
+		
+		if (graph.editAfterInsert && evt != null && mxEvent.isMouseEvent(evt) &&
+			editingCell != null)
+		{
+			window.setTimeout(function()
+			{
+				graph.startEditing(editingCell);
+			}, 0);
+		}
+	}
+	
+	return tmp;
+};
+/**
+ * Creates a drag source for the given element.
+ */
+WfPanel.prototype.getDropAndConnectGeometry = function(source, target, direction, targets)
+{
+	var graph = this.editorUi.editor.graph;
+	var view = graph.view;
+	var keepSize = targets.length > 1;
+	var geo = graph.getCellGeometry(source);
+	var geo2 = graph.getCellGeometry(target);
+	
+	if (geo != null && geo2 != null)
+	{
+		geo2 = geo2.clone();
+
+		if (graph.model.isEdge(source))
+		{
+			var state = graph.view.getState(source);
+			var pts = state.absolutePoints;
+			var p0 = pts[0];
+			var pe = pts[pts.length - 1];
+			
+			if (direction == mxConstants.DIRECTION_NORTH)
+			{
+				geo2.x = p0.x / view.scale - view.translate.x - geo2.width / 2;
+				geo2.y = p0.y / view.scale - view.translate.y - geo2.height / 2;
+			}
+			else
+			{
+				geo2.x = pe.x / view.scale - view.translate.x - geo2.width / 2;
+				geo2.y = pe.y / view.scale - view.translate.y - geo2.height / 2;
+			}
+		}
+		else
+		{
+			if (geo.relative)
+			{
+				var state = graph.view.getState(source);
+				geo = geo.clone();
+				geo.x = (state.x - view.translate.x) / view.scale;
+				geo.y = (state.y - view.translate.y) / view.scale;
+			}
+			
+			var length = graph.defaultEdgeLength;
+			
+			// Maintains edge length
+			if (graph.model.isEdge(target) && geo2.getTerminalPoint(true) != null && geo2.getTerminalPoint(false) != null)
+			{
+				var p0 = geo2.getTerminalPoint(true);
+				var pe = geo2.getTerminalPoint(false);
+				var dx = pe.x - p0.x;
+				var dy = pe.y - p0.y;
+				
+				length = Math.sqrt(dx * dx + dy * dy);
+				
+				geo2.x = geo.getCenterX();
+				geo2.y = geo.getCenterY();
+				geo2.width = 1;
+				geo2.height = 1;
+				
+				if (direction == mxConstants.DIRECTION_NORTH)
+				{
+					geo2.height = length
+					geo2.y = geo.y - length;
+					geo2.setTerminalPoint(new mxPoint(geo2.x, geo2.y), false);
+				}
+				else if (direction == mxConstants.DIRECTION_EAST)
+				{
+					geo2.width = length
+					geo2.x = geo.x + geo.width;
+					geo2.setTerminalPoint(new mxPoint(geo2.x + geo2.width, geo2.y), false);
+				}
+				else if (direction == mxConstants.DIRECTION_SOUTH)
+				{
+					geo2.height = length
+					geo2.y = geo.y + geo.height;
+					geo2.setTerminalPoint(new mxPoint(geo2.x, geo2.y + geo2.height), false);
+				}
+				else if (direction == mxConstants.DIRECTION_WEST)
+				{
+					geo2.width = length
+					geo2.x = geo.x - length;
+					geo2.setTerminalPoint(new mxPoint(geo2.x, geo2.y), false);
+				}
+			}
+			else
+			{
+				// Try match size or ignore if width or height < 45 which
+				// is considered special enough to be ignored here
+				if (!keepSize && geo2.width > 45 && geo2.height > 45 &&
+					geo.width > 45 && geo.height > 45)
+				{
+					geo2.width = geo2.width * (geo.height / geo2.height);
+					geo2.height = geo.height;
+				}
+	
+				geo2.x = geo.x + geo.width / 2 - geo2.width / 2;
+				geo2.y = geo.y + geo.height / 2 - geo2.height / 2;
+
+				if (direction == mxConstants.DIRECTION_NORTH)
+				{
+					geo2.y = geo2.y - geo.height / 2 - geo2.height / 2 - length;
+				}
+				else if (direction == mxConstants.DIRECTION_EAST)
+				{
+					geo2.x = geo2.x + geo.width / 2 + geo2.width / 2 + length;
+				}
+				else if (direction == mxConstants.DIRECTION_SOUTH)
+				{
+					geo2.y = geo2.y + geo.height / 2 + geo2.height / 2 + length;
+				}
+				else if (direction == mxConstants.DIRECTION_WEST)
+				{
+					geo2.x = geo2.x - geo.width / 2 - geo2.width / 2 - length;
+				}
+				
+				// Adds offset to match cells without connecting edge
+				if (graph.model.isEdge(target) && geo2.getTerminalPoint(true) != null && target.getTerminal(false) != null)
+				{
+					var targetGeo = graph.getCellGeometry(target.getTerminal(false));
+					
+					if (targetGeo != null)
+					{
+						if (direction == mxConstants.DIRECTION_NORTH)
+						{
+							geo2.x -= targetGeo.getCenterX();
+							geo2.y -= targetGeo.getCenterY() + targetGeo.height / 2;
+						}
+						else if (direction == mxConstants.DIRECTION_EAST)
+						{
+							geo2.x -= targetGeo.getCenterX() - targetGeo.width / 2;
+							geo2.y -= targetGeo.getCenterY();
+						}
+						else if (direction == mxConstants.DIRECTION_SOUTH)
+						{
+							geo2.x -= targetGeo.getCenterX();
+							geo2.y -= targetGeo.getCenterY() - targetGeo.height / 2;
+						}
+						else if (direction == mxConstants.DIRECTION_WEST)
+						{
+							geo2.x -= targetGeo.getCenterX() + targetGeo.width / 2;
+							geo2.y -= targetGeo.getCenterY();
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	return geo2;
 };
 /**
  * Adds all palettes to the sidebar.

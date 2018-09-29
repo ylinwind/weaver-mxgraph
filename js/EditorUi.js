@@ -66,16 +66,16 @@ EditorUi = function(editor, container, lightbox)
 			evt = window.event;
 		}
 		
-		return (this.isSelectionAllowed(evt) || graph.isEditing());
+		return (this.isSelectionAllowed(evt) || graph.isEditing() || (evt && evt.target.tagName == 'INPUT'));
 	});
 
 	// Disables text selection while not editing and no dialog visible
 	if (this.container == document.body)
 	{
-		this.wfNodeInfoContainer.onselectstart = textEditing;
-		this.wfNodeInfoContainer.onmousedown = textEditing;
-		this.wfEditorContainer.onselectstart = textEditing;
-		this.wfEditorContainer.onmousedown = textEditing;
+		// this.wfNodeInfoContainer.onselectstart = textEditing;
+		// this.wfNodeInfoContainer.onmousedown = textEditing;
+		// this.wfEditorContainer.onselectstart = textEditing;
+		// this.wfEditorContainer.onmousedown = textEditing;
 		this.menubarContainer.onselectstart = textEditing;
 		this.menubarContainer.onmousedown = textEditing;
 		this.toolbarContainer.onselectstart = textEditing;
@@ -3539,8 +3539,14 @@ EditorUi.prototype.save = function(name)
 		}
 		
 		var xml = mxUtils.getXml(this.editor.getGraphXml());
+		xml = xml.replace(/&quot;/g,'"'); //因xml中的双引号被转义，这里将其替换回双引号
 		try
 		{
+			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId = 20305 & xml = ${xml}`, function(req)
+			{
+				console.log(req,'req')
+			});
+			/*
 			// if (Editor.useLocalStorage)
 			if (true)
 			{
@@ -3572,6 +3578,7 @@ EditorUi.prototype.save = function(name)
 			this.editor.setModified(false);
 			this.editor.setFilename(name);
 			this.updateDocumentTitle();
+			*/
 		}
 		catch (e)
 		{

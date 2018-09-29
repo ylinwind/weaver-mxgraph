@@ -80,12 +80,15 @@ WfNodeInfo.prototype.initSelectionState = function()
 };
 
 WfNodeInfo.prototype.nodeActions = function(){
-    var cells = this.editorUi.editor.graph.getSelectionCells();
-	console.log(cells,'celsss')
+	var graph = this.editorUi.editor.graph;
+    var cells = graph.getSelectionCells();
+	console.log(cells,'celsss');
 	var haveNode = false;
 	cells.map(v=>{
-		if(v instanceof mxCell && v.edge != 1){ //点击选中节点
-			//
+		if(v.style.indexOf('fillColor=none;') != -1 && v.style.indexOf('connectable=0;') != -1){ //区域分组
+			graph.orderCells(true)
+		}
+		if(v instanceof mxCell &&  cells.length==1){ //点击选中节点 v.edge != 1 &&
 			if(document.getElementById('nodeInfo-no-node') != null){
 				this.container.removeChild(document.getElementById('nodeInfo-no-node'));
 			}
@@ -114,32 +117,93 @@ WfNodeInfo.prototype.nodeActions = function(){
     // mxGraphSelectionModel
 }
 WfNodeInfo.prototype.drawNodeDetail = function(){
+	var graph = this.editorUi.editor.graph;
+	var _workflowDetailDatas = graph.workflowDetailDatas;
+	var nowCell = graph.getSelectionCell();
+	console.log(_workflowDetailDatas,'graph workflowDetailDatas',nowCell)
+	var isEage = false ,//是否是连接线
+		detailDatas = {} , //当前显示数据
+		isCouldShow = false;//是否设置完成，在返回数据当中存在，不存在提示保存后显示
+
+	if(nowCell.edge) isEage = true;
+	
+	if(nowCell.nodeId != null)  isCouldShow = true;
+
+	if(_workflowDetailDatas != null){
+		let mapDatas = null;
+		if(isEage){
+			mapDatas = _workflowDetailDatas.linkDatas || {};
+		}else{
+			mapDatas = _workflowDetailDatas.nodeDatas || {};
+		}
+		for(let i in mapDatas){
+			if((!isEage && i == nowCell.nodeId) || (isEage && i == nowCell.linkId)){
+				detailDatas = mapDatas[i];
+			}
+		}
+	}
+
 	if(document.getElementById('nodeInfo-node-detail') != null){
 		let _elDiv = document.getElementById('nodeInfo-node-detail');
 		this.container.removeChild(_elDiv);
 	}
-	var detailArr = [
-		{label:'节点名称',value:''},
-		{label:'操作者',value:''},
-		{label:'表单内容',value:''},
-		{label:'操作菜单',value:''},
-		{label:'节点前附加操作',value:''},
-		{label:'节点后附加操作',value:''},
-		{label:'签字意见设置',value:''},
-		{label:'标题显示设置',value:''},
-		{label:'子流程设置',value:''},
-		{label:'流程异常处理',value:''},
-		{label:'节点字段校验',value:''}
+
+	var nodeDetailArr = [
+		{label:'节点名称',value:'',key:'name'},
+		{label:'操作者',value:'operators'},
+		{label:'表单内容',value:'',key:'hasNodeForFie'},
+		{label:'操作菜单',value:'',key:'hasCusRigKey'},
+		{label:'节点前附加操作',value:'',key:'hasNodeBefAddOpr'},
+		{label:'节点后附加操作',value:'',key:'hasNodeAftAddOpr'},
+		{label:'签字意见设置',value:'',key:'hasOperateSign'},
+		{label:'标题显示设置',value:'',key:'hasOperateTitle'},
+		{label:'子流程设置',value:'',key:'hasOperateSubwf'},
+		{label:'流程异常处理',value:'',key:'hasOperateException'},
+		{label:'节点字段校验',value:'',key:'hasNodePro'}
 	];
+	var linkDetailArr = [
+		{label:'出口名称',value:'',key:'name'},
+		{label:'目标节点',value:''},
+		{label:'生成编号',value:'',key:'isBuildCode'},
+		{label:'条件',value:'',key:'hasCondition'},
+		{label:'附加规则',value:'',key:'hasRole'},
+		{label:'出口提示信息',value:'',key:'remindMsg'}
+	];
+	var labelShowDatas = isEage ? linkDetailArr : nodeDetailArr;
 	var elDiv = document.createElement('div');
 	elDiv.id = 'nodeInfo-node-detail';
-	detailArr.map(v=>{
+	
+	labelShowDatas.map(v=>{
 		var elP = document.createElement('p');
 		var elSpanLeft = document.createElement('span');
-		var elSpanRight = document.createElement('span');
+		var elSpanRight = document.createElement('div');
+
 		elP.className = 'nodeInfo-detail-item';
 		elSpanLeft.className = 'detail-item-left detail-item-span';
 		elSpanRight.className = 'detail-item-right detail-item-span';
+		
+		if(v.key === 'name'){
+			let nowNodeName = document.createElement('input');
+			nowNodeName.className = 'detail-item-nowNodeName';
+			nowNodeName.type = 'text';
+			// nowNodeName.value = detailDatas[v.key];
+			nowNodeName.value = isEage ? detailDatas[v.key] : nowCell.value;
+			nowNodeName.style.width = '100%';
+			nowNodeName.onchange = function(v){
+				let val = v.target.value;
+				nowCell.setValue(val);
+			}
+			elSpanRight.appendChild(nowNodeName);
+		}else{
+			var checkSpanIcon = document.createElement('span');
+			checkSpanIcon.className = 'icon-workflow-shezhi';
+			elSpanRight.appendChild(checkSpanIcon);
+		}
+		if(detailDatas[v.key] == 'true'){//已经设置打√
+			var checkSpanIcon = document.createElement('span');
+			checkSpanIcon.className = 'icon-workflow-duigou';
+			elSpanRight.appendChild(checkSpanIcon);
+		}
 		elSpanLeft.innerHTML = v.label;
 
 		elP.appendChild(elSpanLeft);

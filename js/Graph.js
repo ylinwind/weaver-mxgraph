@@ -936,6 +936,10 @@ mxUtils.extend(Graph, mxGraph);
 /**
  * Allows all values in fit.
  */
+Graph.prototype.workflowDetailDatas = null;
+/**
+ * Allows all values in fit.
+ */
 Graph.prototype.minFitScale = null;
 
 /**
@@ -6205,6 +6209,8 @@ if (typeof mxVertexHandler != 'undefined')
 			    // Renders graph. Offset will be multiplied with state's scale when painting state.
 				// TextOffset only seems to affect FF output but used everywhere for consistency.
 				var svgCanvas = this.createSvgCanvas(node);
+				Graph.prototype.svgCanvas = svgCanvas;
+
 				svgCanvas.foOffset = (crisp) ? -0.5 : 0;
 				svgCanvas.textOffset = (crisp) ? -0.5 : 0;
 				svgCanvas.imageOffset = (crisp) ? -0.5 : 0;
