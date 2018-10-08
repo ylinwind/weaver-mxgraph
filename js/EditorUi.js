@@ -3539,7 +3539,7 @@ EditorUi.prototype.save = function(name)
 		}
 		
 		var xml = mxUtils.getXml(this.editor.getGraphXml());
-		xml = xml.replace(/&quot;/g,'"'); //因xml中的双引号被转义，这里将其替换回双引号
+		xml = xml.replace(/&quot;/g,'_quot_'); //因xml中的双引号被转义，这里将其替换回双引号
 		try
 		{
 			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId = 20305 & xml = ${xml}`, function(req)

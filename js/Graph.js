@@ -7097,7 +7097,7 @@ if (typeof mxVertexHandler != 'undefined')
 					}
 									
 					this.textarea.style.left = Math.round(this.bounds.x) + 'px';
-					this.textarea.style.top = Math.round(this.bounds.y) + 'px';
+					this.textarea.style.top = Math.round(this.bounds.y)-16 + 'px';
 		
 					if (mxClient.IS_VML)
 					{

@@ -216,7 +216,7 @@ WfPanel.prototype.drawActions = function(){
         {icon:'icon-workflow-tianjiafenzu',action:'',title:'添加分组'},
         {icon:'icon-workflow-ziti',action:'',title:'字体'},
         {icon:'icon-workflow-hengxiangfenzu',action:'',title:'横向分组'},
-        {icon:'icon-workflow-zongxiangfenzu',action:'',title:'纵向分组'},
+        {icon:'icon-workflow-zongxiangfenzu',action:'1',title:'纵向分组'},
 
         {icon:'icon-workflow-kaozuoduiqi',action:'1',title:'左对齐'},
         {icon:'icon-workflow-shangxiadengjian',action:'1',title:'垂直居中'},
@@ -251,8 +251,8 @@ WfPanel.prototype.drawActions = function(){
 			spanEl = _this.drawAreaGroup();
 		}else if(v.icon === 'icon-workflow-hengxiangfenzu'){
 			spanEl = this.drawRowGroup();
-		}else if(v.icon === 'icon-workflow-zongxiangfenzu'){
-			spanEl = this.drawColGroup();
+		// }else if(v.icon === 'icon-workflow-zongxiangfenzu'){
+		// 	spanEl = this.drawColGroup();
 		}else{
         	spanEl = document.createElement('span');
 		}
@@ -315,8 +315,8 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 		icon=='icon-workflow-kaoxiaduiqi' && graph.alignCells(mxConstants.ALIGN_BOTTOM);
 	// }else if(icon=='icon-workflow-hengxiangfenzu'){
 	// 	this.drawRowGroup();
-	// }else if(icon=='icon-workflow-zongxiangfenzu'){
-	// 	this.drawColGroup();
+	}else if(icon=='icon-workflow-zongxiangfenzu'){
+		this.drawColGroup();
 	}else{
         func.funct(evt);
         if(icon=='icon-workflow-suoxiao' || icon=='icon-workflow-fangda' || icon=='icon-workflow-huifuyuanbil'){//修改操作区域显示缩放值
@@ -339,12 +339,13 @@ WfPanel.prototype.drawRowGroup = function(){
 		
 	cells = [new mxCell( '', new mxGeometry(0, 0, width, height), style)];
 	cells[0].vertex = true;
+	cells[0].isRowGroup = true;
 
 	var element = this.createItem(cells, title, showLabel, showTitle, width, height, allowCellsInserted,icon,true);
 	return element;
 }
 /**
-绘制横向分组
+绘制纵向分组
  */
 WfPanel.prototype.drawColGroup = function(){
 	var cells,
@@ -357,11 +358,18 @@ WfPanel.prototype.drawColGroup = function(){
 		
 	cells = [new mxCell( '', new mxGeometry(0, 0, width, height), style)];
 	cells[0].vertex = true;
+	cells[0].isColGroup = true;
 	// var fn = this.createVertexTemplateEntry(style, width, height, '分组', '分组');
 	// var fn_1 = fn();
 
-	var element = this.createItem(cells, title, showLabel, showTitle, width, height, allowCellsInserted,icon,true);
-	return element;
+	// var element = this.createItem(cells, title, showLabel, showTitle, width, height, allowCellsInserted,icon,true);
+	// return element;
+
+	var _container = document.getElementsByClassName('geBackgroundPage')[0];
+	var colGroup = document.createElement('p');
+	console.log(_container,';_container')
+	colGroup.className = 'workflow-col-group';
+	_container.appendChild(colGroup);
 }
 /**
 区域分组按钮
@@ -378,6 +386,7 @@ WfPanel.prototype.drawAreaGroup = function(){
 		
 	cells = [new mxCell( '分组', new mxGeometry(10, 10, width, height), style)];
 	cells[0].vertex = true;
+	cells[0].isGroupArea = true;
 	// var fn = this.createVertexTemplateEntry(style, width, height, '分组', '分组');
 	// var fn_1 = fn();
 
@@ -536,20 +545,24 @@ WfPanel.prototype.addGeneralPalette = function(expand)
 	let wfStrokeStyle = 'fillColor=#BFF3C3;strokeColor=#5ABD6B;resizable=0;';
 
 	var fns = [
-	 	this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-ceshi"};'+wfStrokeStyle, 
-		 110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian'),
-	 	this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '处理', '处理', null, null, 'rect rectangle box','icon-workflow-chuli'),
-        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '审批', '审批', null, null, 
-        'diamond rhombus if condition decision conditional question test','icon-workflow-shenpi'),
+		this.createVertexTemplateEntry('shape=mxgraph.flowchart.terminator;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-ceshi"};'+wfStrokeStyle, 
+		 110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian','','0'),
+	 	// this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-ceshi"};'+wfStrokeStyle, 
+		//  110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian','','0'),
+	 	this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '处理', '处理', null, null,
+		'rect rectangle box','icon-workflow-chuli','','2'),
+        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;'+wfStrokeStyle, 130, 80, '审批', '审批', null, null, 
+        'diamond rhombus if condition decision conditional question test','icon-workflow-shenpi','','1'),
         this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha"};'+wfStrokeStyle, 130, 80,`分叉`, `分叉`,
          null, null, 'rect rectangle box','icon-workflow-fencha','oneToBranch'),
         this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fenchazhongjiandian"};'+wfStrokeStyle,
 		 130, 80, '分叉中间点', '分叉中间点', null, null, 'rect rectangle box','icon-workflow-fenchazhongjiandian','branchCenter'),
         this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-hebing"};'+wfStrokeStyle,
 		 130, 80, '合并节点', '合并节点', null, null, 'rect rectangle box','icon-workflow-hebing','branchToOne'),
-	 	this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-guidang"};'+wfStrokeStyle,
-		 110, 70, '归档', '归档', null, null, 'rounded rect rectangle box','icon-workflow-guidang'),
-
+	 	// this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-guidang"};'+wfStrokeStyle,
+		//  110, 70, '归档', '归档', null, null, 'rounded rect rectangle box','icon-workflow-guidang','','3'),
+	 	this.createVertexTemplateEntry('shape=mxgraph.flowchart.terminator;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-guidang"};'+wfStrokeStyle,
+		 110, 70, '归档', '归档', null, null, 'rounded rect rectangle box','icon-workflow-guidang','','3'),
 	 	// Explicit strokecolor/fillcolor=none is a workaround to maintain transparent background regardless of current style
             // this.createVertexTemplateEntry('text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;',
             //     40, 20, 'Text', '', null, null, 'text textbox textarea label','icon-workflow-fencha'),
@@ -713,23 +726,28 @@ WfPanel.prototype.addFoldingHandler = function(title, content, funct)
  * Creates a drop handler for inserting the given cells.
  */
 //  ('line;strokeWidth=2;html=1;', 160, 10, '', 'Horizontal Line')
-WfPanel.prototype.createVertexTemplateEntry = function(style, width, height, value, title, showLabel, showTitle, tags,icon,nodeType='')
+WfPanel.prototype.createVertexTemplateEntry = function(style, width, height, value, title, showLabel, showTitle, tags,icon,nodeType='',cellType='')
 {
+	/**
+	nodeType:为了区分分叉节点类型
+	cellType：为了区分节点类型，创建，处理，审批等
+	 */
 	tags = (tags != null && tags.length > 0) ? tags : title.toLowerCase();
 	
 	return this.addEntry(tags, mxUtils.bind(this, function()
  	{
- 		return this.createVertexTemplate(style, width, height, value, title, showLabel, showTitle,'',icon,nodeType);
+ 		return this.createVertexTemplate(style, width, height, value, title, showLabel, showTitle,'',icon,nodeType,cellType);
  	}));
 }
 /**
  * Creates a drop handler for inserting the given cells.
  */
-WfPanel.prototype.createVertexTemplate = function(style, width, height, value, title, showLabel, showTitle, allowCellsInserted,icon,nodeType='')
+WfPanel.prototype.createVertexTemplate = function(style, width, height, value, title, showLabel, showTitle, allowCellsInserted,icon,nodeType='',cellType='')
 {
 	var cells = [new mxCell((value != null) ? value : '', new mxGeometry(0, 0, width, height), style , nodeType)];
 	cells[0].vertex = true;
-	
+	cells[0].nodeType = cellType;
+
 	return this.createVertexTemplateFromCells(cells, width, height, title, showLabel, showTitle, allowCellsInserted,icon);
 };
 /**

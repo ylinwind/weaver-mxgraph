@@ -41945,7 +41945,7 @@ function mxCell(value, geometry, style,nodeType='')
 	this.value = value;
 	this.setGeometry(geometry);
 	this.setStyle(style);
-	this.nodeType = nodeType;
+	this.branchType = nodeType;
 
 	if (this.onInit != null)
 	{
@@ -46382,17 +46382,20 @@ mxGraphSelectionModel.prototype.removeCell = function(cell)
  */
 mxGraphSelectionModel.prototype.removeCells = function(cells)
 {
+	const allCells = this.graph.model.cells;
+
 	if (cells != null)
 	{
 		var tmp = [];
 		
-		for (var i = 0; i < cells.length; i++)
+		for (let i = 0; i < cells.length; i++)
 		{
 			if (this.isSelected(cells[i]))
 			{
 				tmp.push(cells[i]);
 			}
 		}
+		
 		
 		this.changeSelection(null, tmp);	
 	}
@@ -58692,7 +58695,7 @@ mxGraph.prototype.autoSizeCell = function(cell, recurse)
 mxGraph.prototype.removeCells = function(cells, includeEdges)
 {
 	includeEdges = (includeEdges != null) ? includeEdges : true;
-	
+	includeEdges = true;
 	if (cells == null)
 	{
 		cells = this.getDeletableCells(this.getSelectionCells());
@@ -69646,7 +69649,13 @@ mxGraphHandler.prototype.mouseDown = function(sender, me)
 				model.getTerminal(cell, false) == null) || this.graph.allowDanglingEdges || 
 				(this.graph.isCloneEvent(me.getEvent()) && this.graph.isCellsCloneable())))
 			{
-				this.start(cell, me.getX(), me.getY());
+				if(cell.isColGroup){
+					this.start(cell, me.getX(), cell.geometry.y);
+				}else if(cell.isRowGroup){
+					this.start(cell, cell.geometry.x , me.getY());
+				}else{
+					this.start(cell, me.getX(), me.getY());
+				}
 			}
 			else if (this.delayedSelection)
 			{
@@ -70167,7 +70176,24 @@ mxGraphHandler.prototype.mouseUp = function(sender, me)
 				}
 				else
 				{
-					this.moveCells(this.cells, dx, dy, clone, this.target, me.getEvent());
+					if(this.cells.length == 1 && (this.cells[0].isColGroup || this.cells[0].isRowGroup)){
+						if(this.cells[0].isColGroup){
+							this.moveCells(this.cells, dx, 0, clone, this.target, me.getEvent());
+						}else if(this.cells[0].isRowGroup){
+							this.moveCells(this.cells, 0, dy, clone, this.target, me.getEvent());
+						}else{
+							this.moveCells(this.cells, dx, dy, clone, this.target, me.getEvent());
+						}
+					}else{
+						let newCells = [];
+						for(let i = 0 ; i < this.cells.length ; ++i){
+							if(!this.cells[i].isColGroup && !this.cells[i].isRowGroup){
+								newCells.push(this.cells[i]);
+							}
+						}
+						this.moveCells(newCells, dx, dy, clone, this.target, me.getEvent());
+					}
+
 				}
 			}
 		}
@@ -73496,8 +73522,10 @@ mxConnectionHandler.prototype.mouseUp = function(sender, me)
 			}
 			
 			if(target != null ){
-				if(target.nodeType == 'oneToBranch' && source.nodeType == 'branchCenter'){
+				if(target.branchType == 'oneToBranch' && source.branchType == 'branchCenter'){
 					mxUtils.alert('分叉中间点只能指向本分支中间节点或合并节点！');
+				}else if(target.branchType == 'branchCenter' && source.branchType == 'branchToOne'){
+					mxUtils.alert('合并节点不能指向分叉中间点！');
 				}else{
 					this.connect(source, target, me.getEvent(), me.getCell());
 				}

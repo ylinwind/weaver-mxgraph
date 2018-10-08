@@ -88,7 +88,7 @@ WfNodeInfo.prototype.nodeActions = function(){
 		if(v.style.indexOf('fillColor=none;') != -1 && v.style.indexOf('connectable=0;') != -1){ //区域分组
 			graph.orderCells(true)
 		}
-		if(v instanceof mxCell &&  cells.length==1){ //点击选中节点 v.edge != 1 &&
+		if(v instanceof mxCell &&  cells.length==1 && !v.isGroupArea && v.nodeId){ //点击选中节点 v.edge != 1 && 不是区域分组 并且有nodeId(校验下nodeId为0的情况)
 			if(document.getElementById('nodeInfo-no-node') != null){
 				this.container.removeChild(document.getElementById('nodeInfo-no-node'));
 			}
@@ -110,11 +110,6 @@ WfNodeInfo.prototype.nodeActions = function(){
 			this.container.appendChild(elP);
 		}
 	}
-    // getSelectedElement
-    // setSelectionCell
-    // mxGraph.prototype.selectCellForEvent = function(cell, evt)
-    // this.getSelectionModel().setCell(cell);
-    // mxGraphSelectionModel
 }
 WfNodeInfo.prototype.drawNodeDetail = function(){
 	var graph = this.editorUi.editor.graph;
