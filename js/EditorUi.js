@@ -3537,12 +3537,42 @@ EditorUi.prototype.save = function(name)
 		{
 			this.editor.graph.stopEditing();
 		}
-		
+
 		var xml = mxUtils.getXml(this.editor.getGraphXml());
+
+		var initParams = this.editor.graph.existParams;
+		var doc = mxUtils.parseXml(xml);
+
+		var graph = this.editor.graph;
+		var startX = graph.minimumGraphSize.x;
+		var startY = graph.minimumGraphSize.y;
+		var graphWidth = graph.minimumGraphSize.width;
+		var graphHeight = graph.minimumGraphSize.height;
+		var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+
+		var edges = allCells.filter(v=>v.edge);
+		var nodes = allCells.filter(v=>!v.edge);
+		var nowNodes = [] , nowLinks = [];
+		nodes.map(c=>{
+			if(c && c.nodeId){
+				nowNodes.push(c.nodeId);
+			}
+		});
+		edges.map(c=>{
+			if(c && c.linkId){
+				nowLinks.push(c.linkId);
+			}
+		});
+
+		var deleteNodeIds = initParams.nodeIds.filter(v=>nowNodes.indexOf(v)<0);
+		var deleteLinkIds = initParams.linkIds.filter(v=>nowLinks.indexOf(v)<0);
+		
+
 		xml = xml.replace(/&quot;/g,'_quot_'); //因xml中的双引号被转义，这里将其替换回双引号
+
 		try
 		{
-			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId = 20305 & xml = ${xml}`, function(req)
+			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId=21644&xml=${xml}&deleteLinks=${deleteLinkIds.join(',')}&deleteNodes=${deleteNodeIds.join(',')}`, function(req)
 			{
 				console.log(req,'req')
 			});

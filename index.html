@@ -90,16 +90,26 @@
 				// /api/workflow/layout/getWfInfo?workflowId=20305 //获取节点信息
 				// /api/workflow/layout/getXml?workflowId=20305 //获取流程图信息
 				// /api/workflow/layout/saveLayout //保存
-				mxUtils.post(WORKFLOW_GETWFINFO_PATH, 'workflowId=20305', function(req)
+				mxUtils.post(WORKFLOW_GETWFINFO_PATH, 'workflowId=21644', function(req)
 				{
 					var request = req.request;
 					var response = request.response;
 					var json = JSON.parse(response);
-
 					var doc = mxUtils.parseXml(json.xml);
-					sb.editor.graph.setSelectionCells(sb.editor.graph.importGraphModel(doc.documentElement));
+
+					var allCells = sb.editor.graph.importGraphModel(doc.documentElement);
+					var existParams = {nodeIds:[],linkIds:[]};//初始节点出口值；
+					allCells.map(v=>{
+						if(v && v.nodeId){
+							existParams['nodeIds'].push(v.nodeId);
+						}else if(v && v.linkId){
+							existParams['linkIds'].push(v.linkId);
+						}
+					})
+					sb.editor.graph.existParams = existParams;
+					sb.editor.graph.setSelectionCells(allCells);
 				});
-				mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, 'workflowId=20305', function(req)
+				mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, 'workflowId=21644', function(req)
 				{
 					var request = req.request;
 					var response = request.response;

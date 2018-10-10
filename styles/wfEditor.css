@@ -153,3 +153,13 @@
     border-color: #000;
     cursor: ns-resize;
 }
+/* 流程测试 */
+.workfow-test{
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: rgb(197, 72, 72);
+    border-radius: 50%;
+    position: absolute;
+    transition: all .5s;
+}

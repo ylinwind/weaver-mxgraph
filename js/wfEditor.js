@@ -232,7 +232,7 @@ WfPanel.prototype.drawActions = function(){
         {icon:'icon-workflow-suoxiao',action:iconActions.get('zoomOut'),title:'缩小'},
         {icon:'icon-workflow-fangda',action:iconActions.get('zoomIn'),title:'放大'},
 
-        {icon:'icon-workflow-ceshi',action:'',title:''},
+        {icon:'icon-workflow-ceshi',action:'1',title:''},
         {icon:'icon-workflow-tingzhi',action:'',title:''},
     ]
     let elDiv;
@@ -317,6 +317,8 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 	// 	this.drawRowGroup();
 	}else if(icon=='icon-workflow-zongxiangfenzu'){
 		this.drawColGroup();
+	}else if(icon=='icon-workflow-ceshi'){
+		this.doWorkflowTest();
 	}else{
         func.funct(evt);
         if(icon=='icon-workflow-suoxiao' || icon=='icon-workflow-fangda' || icon=='icon-workflow-huifuyuanbil'){//修改操作区域显示缩放值
@@ -516,6 +518,142 @@ WfPanel.prototype.setTipInfoShow = function(){
 		}
 	}
 	this.tipInfoDisplay = this.tipInfoDisplay=='none'?this.tipInfoDisplay='block':this.tipInfoDisplay='none';
+}
+/**
+流程测试
+ */
+WfPanel.prototype.doWorkflowTest = function(){
+	var graph = this.editorUi.editor.graph;
+	var view = graph.view;
+	var startX = graph.minimumGraphSize.x;
+	var startY = graph.minimumGraphSize.y;
+	var graphWidth = graph.minimumGraphSize.width;
+	var graphHeight = graph.minimumGraphSize.height;
+
+	var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+	var allEdges = [];
+	var testWaysObj = {} //存放测试路径数据，有可能有多条路线
+
+	var theStartCell = null;
+	for(let i = 0 , len = allCells.length; i < len ; ++i){
+		if(allCells[i].nodeType == 0){
+			theStartCell = allCells[i] ;
+		}
+		if(allCells[i].edge){
+			allEdges.push(allCells[i]);
+		}
+	}
+	this.workflowTestV2(theStartCell);
+	//
+	/* 
+	for(let i = 0 , len = allEdges.length; i < len ; ++i){
+		if(allEdges[i].source.nodeType == 0){
+			testWaysObj['way_'+i] = this.getTestWayEdgePoints(allEdges[i],graph);
+		}
+	}
+	for(let i in testWaysObj){
+		this.startWorkflowTest(testWaysObj[i]);
+	}
+	console.log(graph,'graph',allCells,allEdges,testWaysObj);
+	*/
+}
+WfPanel.prototype.getTestWayEdgePoints = function(edge,graph,points=[]){
+	var view = graph.view;
+	points = points.concat(view.getState(edge).absolutePoints);
+	if(edge.target != null && edge.target.edges != null && edge.target.edges.length > 0 && edge.target.id != edge.source.id){
+		let subEdgs = edge.target.edges;
+		for(let i = 0 , len = subEdgs.length; i < len ; ++i){
+			if(subEdgs[i].source.id == edge.target.id){// 新问题，a->b-c c->a die!!!
+				let arr ;
+				if(subEdgs[i].target.id == edge.source.id){
+					arr = points.concat(view.getState(subEdgs[i]).absolutePoints);
+				}else{
+					arr = this.getTestWayEdgePoints(subEdgs[i],graph,points);
+				}
+				points = arr;
+			}
+		}
+	}
+	return points;
+}
+/**开始测试 */
+WfPanel.prototype.startWorkflowTest = function(pointArr=[],nowEdge){
+	var graph = this.editorUi.editor.graph;
+	var sb = this;
+
+	if(pointArr.length > 0 && pointArr[0]){
+		var _container = document.getElementsByClassName('geBackgroundPage')[0];
+		var eltSpan = document.createElement('span');
+		eltSpan.className = 'workfow-test';
+		eltSpan.style.left = pointArr[0].x - 5 + 'px';
+		eltSpan.style.top = pointArr[0].y - 5 + 'px';
+		_container.appendChild(eltSpan);
+
+		let transX=0 , transY=0 , timeout = null;
+		for(let i = 0 , len = pointArr.length ; i < len ; ++i){
+			if(pointArr[i-1]){
+				let _transX=transX , _transY=transY , index = i;
+				if(pointArr[i].x == pointArr[i-1].x){ //纵向移动
+					_transY += pointArr[i].y - pointArr[i-1].y;
+					transY = _transY;
+				}
+				if(pointArr[i].y == pointArr[i-1].y){//横向移动
+					_transX += pointArr[i].x - pointArr[i-1].x;
+					transX = _transX;
+				}
+				timeout = setTimeout(()=>{
+					eltSpan.style.transform = `translate(${_transX}px,${_transY}px)`;
+					if(index == pointArr.length -1){
+						clearTimeout(timeout);
+						let _time = setTimeout(()=>{
+							_container.removeChild(eltSpan);
+							clearTimeout(_time);
+							sb.workflowTestV2(nowEdge.target);
+						},1000)
+					}
+				},i==1?0:(i-1)*1000)
+			}
+		}
+	}
+}
+/**
+流程测试 v2
+ */
+WfPanel.prototype.workflowTestV2 = function(cellNode){
+	console.log(cellNode,'startNode');
+	var graph = this.editorUi.editor.graph;
+	var model = graph.model;
+	var view = graph.view;
+
+	var edges = null;
+	if(cellNode != null && cellNode.edges != null && cellNode.edges.length > 0){
+		edges = cellNode.edges;
+		let haveExit = false;
+		edges.map(v=>{
+			if(v.source.id == cellNode.id){
+				haveExit = true;
+				let edgePoints = [];
+				model.beginUpdate();
+				try
+				{
+					var style = mxUtils.setStyle(model.getStyle(v), 'strokeColor', '#FFFF66');
+					// model.setStyle(v, style);
+					// v.setStyle(style);
+				}
+				finally
+				{
+					model.endUpdate();
+					edgePoints = view.getState(v).absolutePoints
+					this.startWorkflowTest(edgePoints,v);
+				}
+			}
+		});
+		if(!haveExit){
+			mxUtils.alert('出口设置不正确！');
+		}
+	}else{
+		mxUtils.alert('出口设置不正确！');
+	}
 }
 /**
  * Hides the current tooltip.

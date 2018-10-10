@@ -13308,20 +13308,39 @@ mxDragSource.prototype.reset = function()
  */
 mxDragSource.prototype.mouseDown = function(evt)
 {
+	var graph = workflowUi.editor.graph;
+	var startX = graph.minimumGraphSize.x;
+	var startY = graph.minimumGraphSize.y;
+	var graphWidth = graph.minimumGraphSize.width;
+	var graphHeight = graph.minimumGraphSize.height;
+	var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+
 	console.log('down--- sider')
-	if (this.enabled && !mxEvent.isConsumed(evt) && this.mouseMoveHandler == null)
-	{
-		this.startDrag(evt);
-		this.mouseMoveHandler = mxUtils.bind(this, this.mouseMove);
-		this.mouseUpHandler = mxUtils.bind(this, this.mouseUp);		
-		mxEvent.addGestureListeners(document, null, this.mouseMoveHandler, this.mouseUpHandler);
-		
-		if (mxClient.IS_TOUCH && !mxEvent.isMouseEvent(evt))
-		{
-			this.eventSource = mxEvent.getSource(evt);
-			mxEvent.addGestureListeners(this.eventSource, null, this.mouseMoveHandler, this.mouseUpHandler);
+	var coundAddCell = true;
+	for(let i = 0 , len = allCells.length ; i<len ; ++i){
+		// if(evt.currentTarget != null && evt.currentTarget.nodeType == 0 &&  allCells[i].nodeType == 0){
+		if(evt.currentTarget != null && evt.currentTarget.className.indexOf('chuangjian') != -1 &&  allCells[i].nodeType == 0){
+			coundAddCell = false;
 		}
 	}
+	if(coundAddCell){
+		if (this.enabled && !mxEvent.isConsumed(evt) && this.mouseMoveHandler == null)
+		{
+			this.startDrag(evt);
+			this.mouseMoveHandler = mxUtils.bind(this, this.mouseMove);
+			this.mouseUpHandler = mxUtils.bind(this, this.mouseUp);		
+			mxEvent.addGestureListeners(document, null, this.mouseMoveHandler, this.mouseUpHandler);
+			
+			if (mxClient.IS_TOUCH && !mxEvent.isMouseEvent(evt))
+			{
+				this.eventSource = mxEvent.getSource(evt);
+				mxEvent.addGestureListeners(this.eventSource, null, this.mouseMoveHandler, this.mouseUpHandler);
+			}
+		}
+	}else{
+		mxUtils.alert('只能有一个创建节点！');
+	}
+	
 };
 
 /**
@@ -42116,8 +42135,15 @@ mxCell.prototype.setValue = function(value)
  */
 mxCell.prototype.valueChanged = function(newValue)
 {
+	newValue = newValue.replace(/&nbsp;/g,'');
+	newValue = newValue.replace(/<br>/g,'');
 	var previous = this.getValue();
-	this.setValue(newValue);
+	if(newValue.trim() != ''){
+		this.setValue(newValue);
+	}else{
+		mxUtils.alert('节点名称不能为空！');
+		this.setValue(previous);
+	}
 	
 	return previous;
 };
@@ -47018,12 +47044,12 @@ mxCellEditor.prototype.resize = function()
 			if (document.documentMode == 8 || mxClient.IS_QUIRKS)
 			{
 				this.textarea.style.left = Math.round(this.bounds.x) + 'px';
-				this.textarea.style.top = Math.round(this.bounds.y) + 'px';
+				this.textarea.style.top = Math.round(this.bounds.y)-3 + 'px';
 			}
 			else
 			{
 				this.textarea.style.left = Math.max(0, Math.round(this.bounds.x + 1)) + 'px';
-				this.textarea.style.top = Math.max(0, Math.round(this.bounds.y + 1)) + 'px';
+				this.textarea.style.top = Math.max(0, Math.round(this.bounds.y + 1))-3 + 'px';
 			}
 			
 			// Installs native word wrapping and avoids word wrap for empty label placeholder
@@ -47158,7 +47184,7 @@ mxCellEditor.prototype.resize = function()
 			{
 				// LATER: Scaled wrapping and position is wrong in IE8
 				this.textarea.style.left = Math.max(0, Math.ceil((this.bounds.x - m.x * (this.bounds.width - (ow + 1) * scale) + ow * (scale - 1) * 0 + (m.x + 0.5) * 2) / scale)) + 'px';
-				this.textarea.style.top = Math.max(0, Math.ceil((this.bounds.y - m.y * (this.bounds.height - (oh + 0.5) * scale) + oh * (scale - 1) * 0 + Math.abs(m.y + 0.5) * 1) / scale)) + 'px';
+				this.textarea.style.top = Math.max(0, Math.ceil((this.bounds.y - m.y * (this.bounds.height - (oh + 0.5) * scale) + oh * (scale - 1) * 0 + Math.abs(m.y + 0.5) * 1) / scale))-3 + 'px';
 				// Workaround for wrong event handling width and height
 				this.textarea.style.width = Math.round(ow * scale) + 'px';
 				this.textarea.style.height = Math.round(oh * scale) + 'px';
@@ -47166,12 +47192,12 @@ mxCellEditor.prototype.resize = function()
 			else if (mxClient.IS_QUIRKS)
 			{			
 				this.textarea.style.left = Math.max(0, Math.ceil(this.bounds.x - m.x * (this.bounds.width - (ow + 1) * scale) + ow * (scale - 1) * 0 + (m.x + 0.5) * 2)) + 'px';
-				this.textarea.style.top = Math.max(0, Math.ceil(this.bounds.y - m.y * (this.bounds.height - (oh + 0.5) * scale) + oh * (scale - 1) * 0 + Math.abs(m.y + 0.5) * 1)) + 'px';
+				this.textarea.style.top = Math.max(0, Math.ceil(this.bounds.y - m.y * (this.bounds.height - (oh + 0.5) * scale) + oh * (scale - 1) * 0 + Math.abs(m.y + 0.5) * 1))-3 + 'px';
 			}
 			else
 			{
 				this.textarea.style.left = Math.max(0, Math.round(this.bounds.x - m.x * (this.bounds.width - 2)) + 1) + 'px';
-				this.textarea.style.top = Math.max(0, Math.round(this.bounds.y - m.y * (this.bounds.height - 4) + ((m.y == -1) ? 3 : 0)) + 1) + 'px';
+				this.textarea.style.top = Math.max(0, Math.round(this.bounds.y - m.y * (this.bounds.height - 4) + ((m.y == -1) ? 3 : 0)) + 1)-3 + 'px';
 			}
 	 	}
 
@@ -47287,7 +47313,8 @@ mxCellEditor.prototype.startEditing = function(cell, trigger)
 				mxConstants.FONT_UNDERLINE) == mxConstants.FONT_UNDERLINE;
 		
 		this.textarea.style.lineHeight = (mxConstants.ABSOLUTE_LINE_HEIGHT) ? Math.round(size * mxConstants.LINE_HEIGHT) + 'px' : mxConstants.LINE_HEIGHT;
-		this.textarea.style.backgroundColor = this.getBackgroundColor(state);
+		// this.textarea.style.backgroundColor = this.getBackgroundColor(state);
+		this.textarea.style.backgroundColor = 'white';
 		this.textarea.style.textDecoration = (uline) ? 'underline' : '';
 		this.textarea.style.fontWeight = (bold) ? 'bold' : 'normal';
 		this.textarea.style.fontStyle = (italic) ? 'italic' : '';
@@ -66077,6 +66104,10 @@ mxGraph.prototype.createHandler = function(state)
 		}
 		else
 		{
+			state.x = state.origin.x - 5;
+			state.y = state.origin.y - 5;
+			state.width = state.cellBounds.width + 10;
+			state.height = state.cellBounds.height + 10;;
 			result = this.createVertexHandler(state);
 		}
 	}

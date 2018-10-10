@@ -81,6 +81,7 @@ WfNodeInfo.prototype.initSelectionState = function()
 
 WfNodeInfo.prototype.nodeActions = function(){
 	var graph = this.editorUi.editor.graph;
+	var _workflowDetailDatas = graph.workflowDetailDatas;
     var cells = graph.getSelectionCells();
 	console.log(cells,'celsss');
 	var haveNode = false;
@@ -88,25 +89,43 @@ WfNodeInfo.prototype.nodeActions = function(){
 		if(v.style.indexOf('fillColor=none;') != -1 && v.style.indexOf('connectable=0;') != -1){ //区域分组
 			graph.orderCells(true)
 		}
-		if(v instanceof mxCell &&  cells.length==1 && !v.isGroupArea && v.nodeId){ //点击选中节点 v.edge != 1 && 不是区域分组 并且有nodeId(校验下nodeId为0的情况)
-			if(document.getElementById('nodeInfo-no-node') != null){
-				this.container.removeChild(document.getElementById('nodeInfo-no-node'));
+		if(v instanceof mxCell &&  cells.length==1 && !v.isGroupArea &&( v.nodeId || v.linkId)){ //点击选中节点 v.edge != 1 && 不是区域分组 并且有nodeId(校验下nodeId为0的情况)
+			if(document.getElementById('nodeInfo-no-node1') != null){
+				this.container.removeChild(document.getElementById('nodeInfo-no-node1'));
 			}
 			haveNode = true;
 			
 			this.drawNodeDetail();
 		}
 	});
-	if(!haveNode){//为点击节点
-		var elP = document.getElementById('nodeInfo-no-node');
+	if(!haveNode){//
+		/*var elP = document.getElementById('nodeInfo-no-node');
+		if(document.getElementById('nodeInfo-node-detail') != null){
+			let _elDiv = document.getElementById('nodeInfo-node-detail');
+			this.container.removeChild(_elDiv);
+		}*/
+		var elP = document.getElementById('nodeInfo-no-node1');
 		if(document.getElementById('nodeInfo-node-detail') != null){
 			let _elDiv = document.getElementById('nodeInfo-node-detail');
 			this.container.removeChild(_elDiv);
 		}
 		if(elP == null){
-			elP = document.createElement('p');
+			/*elP = document.createElement('p');
 			elP.id = 'nodeInfo-no-node';
-			elP.innerHTML = '暂时没有节点信息';
+			elP.innerHTML = '暂时没有节点信息';*/
+			elP = document.createElement('p');
+			let elSpanLeft = document.createElement('span');
+			let elSpanRight = document.createElement('div');
+			elP.id = 'nodeInfo-no-node1';
+			elP.className = 'nodeInfo-detail-item';
+			elSpanLeft.className = 'detail-item-left detail-item-span';
+			elSpanRight.className = 'detail-item-right detail-item-span';
+			elP.appendChild(elSpanLeft);
+			elP.appendChild(elSpanRight);
+			
+			elSpanLeft.innerHTML = '流程名称';
+			elSpanRight.innerHTML = _workflowDetailDatas&&_workflowDetailDatas.workflowDatas.workflowName || 'workfflowName';
+
 			this.container.appendChild(elP);
 		}
 	}
@@ -177,7 +196,7 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 		elSpanLeft.className = 'detail-item-left detail-item-span';
 		elSpanRight.className = 'detail-item-right detail-item-span';
 		
-		if(v.key === 'name'){
+		if(v.key === 'name'){//节点名称
 			let nowNodeName = document.createElement('input');
 			nowNodeName.className = 'detail-item-nowNodeName';
 			nowNodeName.type = 'text';
@@ -186,7 +205,12 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 			nowNodeName.style.width = '100%';
 			nowNodeName.onchange = function(v){
 				let val = v.target.value;
-				nowCell.setValue(val);
+				if(val.trim() == ''){
+					mxUtils.alert('节点名称不能为空！');
+					v.target.value = nowCell.value;
+				}else{
+					nowCell.valueChanged(val);
+				}
 			}
 			elSpanRight.appendChild(nowNodeName);
 		}else{
