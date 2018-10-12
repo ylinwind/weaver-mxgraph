@@ -4,6 +4,7 @@ function WfNodeInfo(editorUi, container) {
     this.container = container;
     var graph = editor.graph;
 	
+	this.nodePanelHide = false;
 	this.update = mxUtils.bind(this, function(sender, evt)
 	{
 		this.clearSelectionState();
@@ -23,6 +24,7 @@ function WfNodeInfo(editorUi, container) {
 }
 WfNodeInfo.prototype.init = function(){
     this.drawHeader();
+	this.drawFoder();
 }
 // paint header
 WfNodeInfo.prototype.drawHeader = function(){
@@ -134,31 +136,28 @@ WfNodeInfo.prototype.renderWorkdlowItem = function(){
 	var _workflowDetailDatas = graph.workflowDetailDatas;
 
 	var elP = document.getElementById('nodeInfo-no-node1');
-		if(document.getElementById('nodeInfo-node-detail') != null){
-			let _elDiv = document.getElementById('nodeInfo-node-detail');
-			this.container.removeChild(_elDiv);
-		}
-		if(elP == null){
-			/*elP = document.createElement('p');
-			elP.id = 'nodeInfo-no-node';
-			elP.innerHTML = '暂时没有节点信息';*/
-			elP = document.createElement('p');
-			let elSpanLeft = document.createElement('span');
-			let elSpanRight = document.createElement('div');
-			elP.id = 'nodeInfo-no-node1';
-			elP.className = 'nodeInfo-detail-item';
-			elSpanLeft.className = 'detail-item-left detail-item-span';
-			elSpanRight.className = 'detail-item-right detail-item-span';
-			elP.appendChild(elSpanLeft);
-			elP.appendChild(elSpanRight);
-			
-			elSpanLeft.innerHTML = '流程名称';
-			elSpanRight.innerHTML = _workflowDetailDatas&&_workflowDetailDatas.workflowDatas.workflowName || 'workflowName';
+	if(document.getElementById('nodeInfo-node-detail') != null){
+		let _elDiv = document.getElementById('nodeInfo-node-detail');
+		this.container.removeChild(_elDiv);
+	}
+	if(elP == null){
+		elP = document.createElement('p');
+		let elSpanLeft = document.createElement('span');
+		let elSpanRight = document.createElement('div');
+		elP.id = 'nodeInfo-no-node1';
+		elP.className = 'nodeInfo-detail-item';
+		elSpanLeft.className = 'detail-item-left detail-item-span';
+		elSpanRight.className = 'detail-item-right detail-item-span';
+		elP.appendChild(elSpanLeft);
+		elP.appendChild(elSpanRight);
+		
+		elSpanLeft.innerHTML = '流程名称';
+		elSpanRight.innerHTML = _workflowDetailDatas&&_workflowDetailDatas.workflowDatas.workflowName || 'workflowName';
 
-			this.container.appendChild(elP);
-		}else{
-			elP.childNodes[1].innerHTML = _workflowDetailDatas&&_workflowDetailDatas.workflowDatas.workflowName || 'workflowName';
-		}
+		this.container.appendChild(elP);
+	}else{
+		elP.childNodes[1].innerHTML = _workflowDetailDatas&&_workflowDetailDatas.workflowDatas.workflowName || 'workflowName';
+	}
 }
 WfNodeInfo.prototype.drawNodeDetail = function(){
 	var graph = this.editorUi.editor.graph;
@@ -216,43 +215,52 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 	var labelShowDatas = isEage ? linkDetailArr : nodeDetailArr;
 	var elDiv = document.createElement('div');
 	elDiv.id = 'nodeInfo-node-detail';
+
 	var elNodeLinkDetail;
-		elNodeLinkDetail = document.createElement('div');
-		elNodeLinkDetail.id = 'nodeInfo-detail-nodeLinkDetail';
+	elNodeLinkDetail = document.createElement('div');
+	elNodeLinkDetail.id = 'nodeInfo-detail-nodeLinkDetail';
 
 	labelShowDatas.map(v=>{
-		var elP = document.createElement('p');
-		var elSpanLeft = document.createElement('span');
-		var elSpanRight = document.createElement('div');
-
-		elP.className = 'nodeInfo-detail-item';
-		elSpanLeft.className = 'detail-item-left detail-item-span';
-		elSpanRight.className = 'detail-item-right detail-item-span';
-		
-		if(v.key === 'name'){//节点名称
-			let wfNameElt = this.createNodeNameElement(isEage,v.key,detailDatas,nowCell);
-			elSpanRight.appendChild(wfNameElt);
-		}else if(v.key === 'operators'){
-			let operatorEle = this.createOperatorElement();
-			elSpanRight.appendChild(operatorEle);
-		}else{
-			var checkSpanIcon = document.createElement('span');
-			checkSpanIcon.className = 'icon-workflow-shezhi';
-			elSpanRight.appendChild(checkSpanIcon);
-		}
-		if(detailDatas[v.key] == 'true'){//已经设置打√
-			var checkSpanIcon = document.createElement('span');
-			checkSpanIcon.className = 'icon-workflow-duigou';
-			elSpanRight.appendChild(checkSpanIcon);
-		}
-		elSpanLeft.innerHTML = v.label;
-
-		elP.appendChild(elSpanLeft);
-		elP.appendChild(elSpanRight);
-		elNodeLinkDetail.appendChild(elP);
+		let item = this.createNodeItem(isEage,v,detailDatas,nowCell);
+		elNodeLinkDetail.appendChild(item);
 	});
 	elDiv.appendChild(elNodeLinkDetail);
 	this.container.appendChild(elDiv);
+}
+/**
+创建节点信息的每项信息
+ */
+WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
+	var elP = document.createElement('p');
+	var elSpanLeft = document.createElement('span');
+	var elSpanRight = document.createElement('div');
+
+	elP.className = 'nodeInfo-detail-item';
+	elSpanLeft.className = 'detail-item-left detail-item-span';
+	elSpanRight.className = 'detail-item-right detail-item-span';
+	
+	if(v.key === 'name'){//节点名称
+		let wfNameElt = this.createNodeNameElement(isEage,v.key,detailDatas,nowCell);
+		elSpanRight.appendChild(wfNameElt);
+	}else if(v.key === 'operators'){
+		let operatorEle = this.createOperatorElement();
+		elSpanRight.appendChild(operatorEle);
+	}else{
+		var checkSpanIcon = document.createElement('span');
+		checkSpanIcon.className = 'icon-workflow-shezhi';
+		elSpanRight.appendChild(checkSpanIcon);
+	}
+	if(detailDatas[v.key] == 'true'){//已经设置打√
+		var checkSpanIcon = document.createElement('span');
+		checkSpanIcon.className = 'icon-workflow-duigou';
+		elSpanRight.appendChild(checkSpanIcon);
+	}
+	elSpanLeft.innerHTML = v.label;
+
+	elP.appendChild(elSpanLeft);
+	elP.appendChild(elSpanRight);
+
+	return elP;
 }
 /**
 创建节点名称元素
@@ -303,4 +311,50 @@ WfNodeInfo.prototype.createOperatorElement = function(){
 	operatorArea.appendChild(rightArea);
 
 	return operatorArea;
+}
+/**
+*绘制折叠展开按钮
+*
+*/
+WfNodeInfo.prototype.drawFoder = function(){
+	var elDiv = document.createElement('div');
+    elDiv.className = 'nodeInfo-panel-folder';
+	elDiv.innerHTML = '>';
+	this.container.appendChild(elDiv);
+
+	elDiv.onclick = this.clickNodeFolder.bind(this,elDiv);
+}
+WfNodeInfo.prototype.clickNodeFolder = function(elt){
+	var wfEditor = this.editorUi.wfEditor;
+	var diagramContainer = this.editorUi.diagramContainer;
+	var graph = this.editorUi.editor.graph;
+	var model = graph.model;
+
+	this.nodePanelHide = !this.nodePanelHide;
+	//加与不加update都一样
+	// model.beginUpdate();
+	try
+	{
+		if(this.nodePanelHide){//隐藏 向右移动隐藏
+			wfEditor.container.style.width = '100%';
+			diagramContainer.style.width = '100%';
+			graph.pageFormat.width = window.innerWidth-2;
+			this.container.style.transform = 'translateX(240px)';
+			elt.style.left = '-18px';
+			elt.innerHTML = '<';
+		}else{//显示 向左移动显示
+			this.container.style.transform = 'translateX(0)';
+			elt.style.left = '0';
+			elt.innerHTML = '>';
+			wfEditor.container.style.width = 'calc(100% - 240px)';
+			diagramContainer.style.width = 'calc(100% - 240px)';
+			graph.pageFormat.width = window.innerWidth - 250;
+		}
+		graph.refresh();
+	}
+	finally
+	{
+		// model.endUpdate();
+	}
+	
 }

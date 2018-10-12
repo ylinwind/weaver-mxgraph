@@ -112,7 +112,7 @@
 /* wfNodeInfoContainer */
 .wfNodeInfoContainer{
     position: absolute;
-    background: #F9F9F9;
+    background: #fff;
     right: 0px;
     z-index: 1;
     top: 0px;
@@ -120,12 +120,16 @@
     bottom: 0px;
     border: 1px solid #E2E2E2;
     border-top: none;
+    transition: all .5s;
 }
 .wfNodeInfoContainer .nodeInfo-header{
     height:  44px;
     line-height: 44px;
     text-align: center;
     border-bottom: 1px solid #E2E2E2;
+    background: #F4F4F4;
+    color: #333;
+    font-size: 14px;
 }
 .wfNodeInfoContainer #nodeInfo-no-node{
     text-align: center;
@@ -138,13 +142,15 @@
 }
 .nodeInfo-detail-item .detail-item-span{
     display: inline-block;
-    width: 50%;
+    width: 45%;
     vertical-align: middle;
+    padding-left: 5%;
 }
 .nodeInfo-detail-item .icon-workflow-shezhi{
     cursor: pointer;
     font-size: 18px;
     vertical-align: middle;
+    color: #B2B2B2;
 }
 .nodeInfo-detail-item .icon-workflow-duigou{
     color: #70D256;
@@ -152,6 +158,20 @@
     font-weight: bolder;
     font-size: 16px;
     vertical-align: middle;
+}
+/* 折叠 收缩按钮 */
+.nodeInfo-panel-folder{
+    position: absolute;
+    left: 0;
+    top: 50%;
+    /* bottom: 0; */
+    width: 15px;
+    height: 50px;
+    border: 1px solid #B2B2B2;
+    line-height: 50px;
+    text-align: center;
+    cursor: pointer;
+    background: #fff;
 }
 /* 操作者 */
 .detail-item-right .operators-area{
