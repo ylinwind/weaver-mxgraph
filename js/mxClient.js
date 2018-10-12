@@ -11155,7 +11155,9 @@ mxXmlRequest.prototype.setRequestHeaders = function(request, params)
 {
 	if (params != null)
 	{
-		request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=utf-8');
+		// request.setRequestHeader('Content-Type', 'text/html; charset=utf-8');
+		// request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
 	}
 };
 
@@ -19595,6 +19597,7 @@ mxSvgCanvas2D.prototype.convertHtml = function(val)
  */
 mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow)
 {
+	var shape = this.canvasStyle.shape;
 	var s = this.state;
 
 	// Inline block for rendering HTML background over SVG in Safari
@@ -19648,13 +19651,15 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 	}
 	// 
 	
-
 	if (!mxUtils.isNode(val))
 	{
 		val = this.convertHtml(val);
-		
 		if (overflow != 'fill' && overflow != 'width')
 		{
+			if (shape=='rhombus')
+			{
+				css += 'width:75%;';
+			}
 			// Inner div always needed to measure wrapped text
 			val = '<div class="wf-word-line" xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;position:relative;' + css + '">' + val + '</div>';
 		}
@@ -19690,7 +19695,7 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 		else
 		{
 			let span = document.createElement('span');
-			span.className = 'nodeVal';
+			span.className = 'wf-nodeVal';
 			span.innerHTML = val
 			div.appendChild(span);
 		}
@@ -19700,11 +19705,19 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 		if(nodeIcons&&nodeIcons.hasOwnProperty('left')){
 			let span = document.createElement('span');
 			span.className = `${nodeIcons.left} nodeIconLeft`;
+			if (shape=='rhombus')
+			{
+				span.style.marginLeft = '10px';
+			}
 			iconDiv.appendChild(span);
 		}
 		if(nodeIcons&&nodeIcons.hasOwnProperty('right')){
 			let span = document.createElement('span');
 			span.className = `${nodeIcons.right} nodeIconRight`;
+			if (shape=='rhombus')
+			{
+				span.style.marginRight = '10px';
+			}
 			iconDiv.appendChild(span);
 		}
 		div.appendChild(iconDiv);
@@ -73553,10 +73566,12 @@ mxConnectionHandler.prototype.mouseUp = function(sender, me)
 			}
 			
 			if(target != null ){
-				if(target.branchType == 'oneToBranch' && source.branchType == 'branchCenter'){
+				if(source.branchType == 'branchCenter' && !(target.branchType == 'branchCenter' || target.branchType == 'branchToOne')){
 					mxUtils.alert('分叉中间点只能指向本分支中间节点或合并节点！');
 				}else if(target.branchType == 'branchCenter' && source.branchType == 'branchToOne'){
 					mxUtils.alert('合并节点不能指向分叉中间点！');
+				}else if(target.branchType == 'branchToOne' && source.branchType == 'oneToBranch'){
+					mxUtils.alert('起始节点不能指向合并节点！');
 				}else{
 					this.connect(source, target, me.getEvent(), me.getCell());
 				}

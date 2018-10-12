@@ -3501,6 +3501,18 @@ EditorUi.prototype.isCompatibleString = function(data)
  */
 EditorUi.prototype.saveFile = function(forceDialog)
 {
+	var modified = this.editor.modified;
+	var wfEditor = this.wfEditor;
+	if(modified){
+		var res = mxUtils.confirm('改动未进行测试，是否需要测试？');
+		if(res){
+			wfEditor.doWorkflowTest();
+		}else{
+			this.save(1);
+		}
+	}
+	console.log(this,'this')
+	/*
 	if (!forceDialog && this.editor.filename != null)
 	{
 		this.save(this.editor.getOrCreateFilename());
@@ -3523,7 +3535,7 @@ EditorUi.prototype.saveFile = function(forceDialog)
 		}));
 		this.showDialog(dlg.container, 300, 100, true, true);
 		dlg.init();
-	}
+	}*/
 };
 
 /**

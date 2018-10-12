@@ -82,10 +82,14 @@
     border-top: none;
 }
 /* 节点 */
-
+.wf-nodeVal{
+    display: inline-block;
+    width: 100%;
+}
 .wf-word-line{
-    width: 90px;
-    padding: 0 10px;
+    width: 100%;
+    top: -6px;
+    /* padding: 0 10px; */
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -95,12 +99,12 @@
 .nodeIcon{
     position: relative;
     top: -10px;
-    font-size: 20px;
+    font-size: 18px;
     color: #5ABD6B;
 }
 .nodeIcon .nodeIconLeft{
     float: left;
-    margin-left: 10px;
+    /* margin-left: 10px; */
 }
 .nodeIcon .nodeIconRight{
     float: right;
@@ -127,21 +131,54 @@
     text-align: center;
 }
 .wfNodeInfoContainer #nodeInfo-node-detail .nodeInfo-detail-item{
-    padding: 0 10px;
-    font-size: 15px;
+    padding: 10px 10px;
+    margin: 0;
+    font-size: 12px;
+    border-bottom: 1px solid #E2E2E2;
 }
 .nodeInfo-detail-item .detail-item-span{
     display: inline-block;
     width: 50%;
+    vertical-align: middle;
 }
 .nodeInfo-detail-item .icon-workflow-shezhi{
     cursor: pointer;
     font-size: 18px;
+    vertical-align: middle;
 }
 .nodeInfo-detail-item .icon-workflow-duigou{
     color: #70D256;
     margin-left: 8px;
+    font-weight: bolder;
+    font-size: 16px;
+    vertical-align: middle;
 }
+/* 操作者 */
+.detail-item-right .operators-area{
+    border: 1px solid #E2E2E2;
+    min-height: 30px;
+}
+.detail-item-right .operators-area .operators-left-area{
+    height: 30px;
+    width: calc(100% - 31px);
+    background: #fff;
+    display: inline-block;
+    vertical-align: middle;
+}
+.detail-item-right .operators-area .operators-right-area{
+    width: 30px;
+    height: 30px;
+    line-height: 28px;
+    text-align: center;
+    background: #F6F6F6;
+    font-size: 21px;
+    color: #B2B2B2;
+    display: inline-block;
+    vertical-align: middle;
+    border-left: 1px solid #E2E2E2;
+    cursor: pointer;
+}
+/*  */
 .workflow-col-group{
     border-bottom: 2px dashed #999;
     position: absolute;

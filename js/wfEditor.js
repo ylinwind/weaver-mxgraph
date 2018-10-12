@@ -12,7 +12,7 @@ function WfPanel(editorUi, container) {
 	this.graph.container.style.visibility = 'hidden';
 	document.body.appendChild(this.graph.container);
     this.init();
-    this.setTipInfoBtn();
+    // this.setTipInfoBtn();
     this.tipInfoDisplay = 'block';
     // 创建处理函数-----------------
     this.pointerUpHandler = mxUtils.bind(this, function()
@@ -233,7 +233,7 @@ WfPanel.prototype.drawActions = function(){
         {icon:'icon-workflow-fangda',action:iconActions.get('zoomIn'),title:'放大'},
 
         {icon:'icon-workflow-ceshi',action:'1',title:''},
-        {icon:'icon-workflow-tingzhi',action:'',title:''},
+        {icon:'icon-workflow-tingzhi',action:'1',title:''},
     ]
     let elDiv;
     icons.map((v,i)=>{
@@ -319,6 +319,8 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 		this.drawColGroup();
 	}else if(icon=='icon-workflow-ceshi'){
 		this.doWorkflowTest();
+	}else if(icon=='icon-workflow-tingzhi'){
+		this.stopWorkflowTest();
 	}else{
         func.funct(evt);
         if(icon=='icon-workflow-suoxiao' || icon=='icon-workflow-fangda' || icon=='icon-workflow-huifuyuanbil'){//修改操作区域显示缩放值
@@ -534,48 +536,29 @@ WfPanel.prototype.doWorkflowTest = function(){
 	var allEdges = [];
 	var testWaysObj = {} //存放测试路径数据，有可能有多条路线
 
-	var theStartCell = null;
+	var theStartCell = null , haveAEndCell = false; //haveAEndCell : 是否有归档节点
 	for(let i = 0 , len = allCells.length; i < len ; ++i){
 		if(allCells[i].nodeType == 0){
 			theStartCell = allCells[i] ;
+		}
+		if(allCells[i].nodeType == 3){
+			haveAEndCell = true ;
 		}
 		if(allCells[i].edge){
 			allEdges.push(allCells[i]);
 		}
 	}
-	this.workflowTestV2(theStartCell);
-	//
-	/* 
-	for(let i = 0 , len = allEdges.length; i < len ; ++i){
-		if(allEdges[i].source.nodeType == 0){
-			testWaysObj['way_'+i] = this.getTestWayEdgePoints(allEdges[i],graph);
+	if(!theStartCell){
+		mxUtils.alert('必须有一个创建节点！');
+	}else{
+		if(haveAEndCell){
+			this.workflowTestV2(theStartCell);
+		}else{
+			mxUtils.alert('至少有一个归档节点！');
 		}
 	}
-	for(let i in testWaysObj){
-		this.startWorkflowTest(testWaysObj[i]);
-	}
-	console.log(graph,'graph',allCells,allEdges,testWaysObj);
-	*/
 }
-WfPanel.prototype.getTestWayEdgePoints = function(edge,graph,points=[]){
-	var view = graph.view;
-	points = points.concat(view.getState(edge).absolutePoints);
-	if(edge.target != null && edge.target.edges != null && edge.target.edges.length > 0 && edge.target.id != edge.source.id){
-		let subEdgs = edge.target.edges;
-		for(let i = 0 , len = subEdgs.length; i < len ; ++i){
-			if(subEdgs[i].source.id == edge.target.id){// 新问题，a->b-c c->a die!!!
-				let arr ;
-				if(subEdgs[i].target.id == edge.source.id){
-					arr = points.concat(view.getState(subEdgs[i]).absolutePoints);
-				}else{
-					arr = this.getTestWayEdgePoints(subEdgs[i],graph,points);
-				}
-				points = arr;
-			}
-		}
-	}
-	return points;
-}
+WfPanel.prototype.wfTestTimeout = null;
 /**开始测试 */
 WfPanel.prototype.startWorkflowTest = function(pointArr=[],nowEdge){
 	var graph = this.editorUi.editor.graph;
@@ -589,7 +572,7 @@ WfPanel.prototype.startWorkflowTest = function(pointArr=[],nowEdge){
 		eltSpan.style.top = pointArr[0].y - 5 + 'px';
 		_container.appendChild(eltSpan);
 
-		let transX=0 , transY=0 , timeout = null;
+		let transX=0 , transY=0 , timeout;
 		for(let i = 0 , len = pointArr.length ; i < len ; ++i){
 			if(pointArr[i-1]){
 				let _transX=transX , _transY=transY , index = i;
@@ -603,15 +586,15 @@ WfPanel.prototype.startWorkflowTest = function(pointArr=[],nowEdge){
 				}
 				timeout = setTimeout(()=>{
 					eltSpan.style.transform = `translate(${_transX}px,${_transY}px)`;
-					if(index == pointArr.length -1){
+					if(index == pointArr.length -1){//当前运动路径最后一个点
 						clearTimeout(timeout);
 						let _time = setTimeout(()=>{
-							_container.removeChild(eltSpan);
+							eltSpan && _container.removeChild(eltSpan);
 							clearTimeout(_time);
 							sb.workflowTestV2(nowEdge.target);
-						},1000)
+						},800)
 					}
-				},i==1?0:(i-1)*1000)
+				},i==1?0:(i-1)*800)
 			}
 		}
 	}
@@ -620,11 +603,14 @@ WfPanel.prototype.startWorkflowTest = function(pointArr=[],nowEdge){
 流程测试 v2
  */
 WfPanel.prototype.workflowTestV2 = function(cellNode){
-	console.log(cellNode,'startNode');
 	var graph = this.editorUi.editor.graph;
 	var model = graph.model;
 	var view = graph.view;
-
+	/**
+	如果cellNode没有出口&&不是归档节点
+	如果cellNode是归档节点
+	测试结束
+	 */
 	var edges = null;
 	if(cellNode != null && cellNode.edges != null && cellNode.edges.length > 0){
 		edges = cellNode.edges;
@@ -639,20 +625,58 @@ WfPanel.prototype.workflowTestV2 = function(cellNode){
 					var style = mxUtils.setStyle(model.getStyle(v), 'strokeColor', '#FFFF66');
 					// model.setStyle(v, style);
 					// v.setStyle(style);
+					// v.setAttribute('style',style);
 				}
 				finally
 				{
 					model.endUpdate();
 					edgePoints = view.getState(v).absolutePoints
-					this.startWorkflowTest(edgePoints,v);
+					!v.isTested && this.startWorkflowTest(edgePoints,v);
+					v.isTested = true;
+					v.setAttribute('isTested',true);
 				}
 			}
 		});
 		if(!haveExit){
+			console.log(cellNode,'startNode');
 			mxUtils.alert('出口设置不正确！');
 		}
+	// }else if(cellNode != null && cellNode.edges != null && cellNode.edges.length > 0){
+	// 	edges = cellNode.edges;
+	// 	let shouldEndTest = false;
+	// 	if(cellNode.nodeType == '3'){
+	// 		shouldEndTest = true;
+	// 	}
+	// 	edges.map(v=>{
+	// 		if(v.source.id == cellNode.id){
+
+	// 		}
+	// 	})
 	}else{
+		console.log(cellNode,'startNode');
 		mxUtils.alert('出口设置不正确！');
+	}
+}
+/**
+停止流程测试
+ */
+WfPanel.prototype.stopWorkflowTest = function(){
+	var graph = this.editorUi.editor.graph;
+	var view = graph.view;
+	var startX = graph.minimumGraphSize.x;
+	var startY = graph.minimumGraphSize.y;
+	var graphWidth = graph.minimumGraphSize.width;
+	var graphHeight = graph.minimumGraphSize.height;
+
+	var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+	var allEdges = [];
+
+	var theStartCell = null;
+	for(let i = 0 , len = allCells.length; i < len ; ++i){
+		if(allCells[i].edge){
+			// allEdges.push(allCells[i]);
+			allCells[i].isTested = false;
+		}
 	}
 }
 /**
@@ -684,23 +708,23 @@ WfPanel.prototype.addGeneralPalette = function(expand)
 
 	var fns = [
 		this.createVertexTemplateEntry('shape=mxgraph.flowchart.terminator;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-ceshi"};'+wfStrokeStyle, 
-		 110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian','','0'),
+		 110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian','','0','0'),
 	 	// this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-ceshi"};'+wfStrokeStyle, 
 		//  110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian','','0'),
 	 	this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '处理', '处理', null, null,
-		'rect rectangle box','icon-workflow-chuli','','2'),
+		'rect rectangle box','icon-workflow-chuli','','2','0'),
         this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;'+wfStrokeStyle, 130, 80, '审批', '审批', null, null, 
-        'diamond rhombus if condition decision conditional question test','icon-workflow-shenpi','','1'),
-        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha"};'+wfStrokeStyle, 130, 80,`分叉`, `分叉`,
-         null, null, 'rect rectangle box','icon-workflow-fencha','oneToBranch'),
-        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fenchazhongjiandian"};'+wfStrokeStyle,
-		 130, 80, '分叉中间点', '分叉中间点', null, null, 'rect rectangle box','icon-workflow-fenchazhongjiandian','branchCenter'),
-        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-hebing"};'+wfStrokeStyle,
-		 130, 80, '合并节点', '合并节点', null, null, 'rect rectangle box','icon-workflow-hebing','branchToOne'),
+        'diamond rhombus if condition decision conditional question test','icon-workflow-shenpi','','1','0'),
+        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha"};'+wfStrokeStyle, 110, 70,`分叉`, `分叉`,
+         null, null, 'rect rectangle box','icon-workflow-fencha','oneToBranch','2','1'),
+        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fenchazhongjiandian"};'+wfStrokeStyle,
+		 110, 70, '分叉中间点', '分叉中间点', null, null, 'rect rectangle box','icon-workflow-fenchazhongjiandian','branchCenter','2','2'),
+        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-hebing"};'+wfStrokeStyle,
+		 110, 70, '合并节点', '合并节点', null, null, 'rect rectangle box','icon-workflow-hebing','branchToOne','2','3'),
 	 	// this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-guidang"};'+wfStrokeStyle,
 		//  110, 70, '归档', '归档', null, null, 'rounded rect rectangle box','icon-workflow-guidang','','3'),
 	 	this.createVertexTemplateEntry('shape=mxgraph.flowchart.terminator;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-guidang"};'+wfStrokeStyle,
-		 110, 70, '归档', '归档', null, null, 'rounded rect rectangle box','icon-workflow-guidang','','3'),
+		 110, 70, '归档', '归档', null, null, 'rounded rect rectangle box','icon-workflow-guidang','','3','0'),
 	 	// Explicit strokecolor/fillcolor=none is a workaround to maintain transparent background regardless of current style
             // this.createVertexTemplateEntry('text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;',
             //     40, 20, 'Text', '', null, null, 'text textbox textarea label','icon-workflow-fencha'),
@@ -709,19 +733,6 @@ WfPanel.prototype.addGeneralPalette = function(expand)
             //     'Textbox', null, null, 'text textbox textarea','icon-workflow-fenchazhongjiandian'),
             // this.createVertexTemplateEntry('shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;', 120, 60, '', 'Process', null, null, 'process task','icon-workflow-hebing'),
 	 	
-	 	/*// 自定义
-		this.addEntry('shape group container', function()
-		{
-		    var cell = new mxCell(`<span class='icon-workflow-chuli' style="font-size:20px";></span>`, new mxGeometry(0, 0, 110, 70),
-				'rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle);
-		    cell.vertex = true;
-		    
-			var symbol = new mxCell('', new mxGeometry(20, 15, 20, 30), 'triangle;html=1;whiteSpace=wrap;');
-			symbol.vertex = true;
-			cell.insert(symbol);
-	    	
-    		return sb.createVertexTemplateFromCells([cell], cell.geometry.width, cell.geometry.height, 'Shape Group','','','','icon-workflow-guidang');
-		})*/
     ]
     this.addPaletteFunctions('1', '111', (expand != null) ? expand : true, fns);
 }
@@ -864,7 +875,7 @@ WfPanel.prototype.addFoldingHandler = function(title, content, funct)
  * Creates a drop handler for inserting the given cells.
  */
 //  ('line;strokeWidth=2;html=1;', 160, 10, '', 'Horizontal Line')
-WfPanel.prototype.createVertexTemplateEntry = function(style, width, height, value, title, showLabel, showTitle, tags,icon,nodeType='',cellType='')
+WfPanel.prototype.createVertexTemplateEntry = function(style, width, height, value, title, showLabel, showTitle, tags,icon,nodeType='',cellType='',nodeAttriBute='0')
 {
 	/**
 	nodeType:为了区分分叉节点类型
@@ -874,17 +885,18 @@ WfPanel.prototype.createVertexTemplateEntry = function(style, width, height, val
 	
 	return this.addEntry(tags, mxUtils.bind(this, function()
  	{
- 		return this.createVertexTemplate(style, width, height, value, title, showLabel, showTitle,'',icon,nodeType,cellType);
+ 		return this.createVertexTemplate(style, width, height, value, title, showLabel, showTitle,'',icon,nodeType,cellType,nodeAttriBute);
  	}));
 }
 /**
  * Creates a drop handler for inserting the given cells.
  */
-WfPanel.prototype.createVertexTemplate = function(style, width, height, value, title, showLabel, showTitle, allowCellsInserted,icon,nodeType='',cellType='')
+WfPanel.prototype.createVertexTemplate = function(style, width, height, value, title, showLabel, showTitle, allowCellsInserted,icon,nodeType='',cellType='',nodeAttriBute)
 {
 	var cells = [new mxCell((value != null) ? value : '', new mxGeometry(0, 0, width, height), style , nodeType)];
 	cells[0].vertex = true;
 	cells[0].nodeType = cellType;
+	cells[0].nodeAttriBute = nodeAttriBute;
 
 	return this.createVertexTemplateFromCells(cells, width, height, title, showLabel, showTitle, allowCellsInserted,icon);
 };

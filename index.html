@@ -119,6 +119,22 @@
 				// var xml = localStorage.getItem('Drawing1.xml');
 				// var doc = mxUtils.parseXml(``);
 				// this.editor.graph.setSelectionCells(this.editor.graph.importGraphModel(doc.documentElement));
+				
+				/*var xhr = ajaxFunction();
+				xhr.onreadystatechange = function(){
+					alert(xhr.readyState);
+					//alert(xhr.status);
+					if(xhr.readyState==4){
+						if(xhr.status==200||xhr.status==304){
+							var data = xhr.responseText;
+							// alert(data);
+							console.log(data)
+						}
+					}
+				}
+				xhr.open("POST",WORKFLOW_GETWFINFO_PATH,true);
+				xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded;charset=utf-8");
+				xhr.send("workflowId=21644"); */
 			};
 			
 			// Adds required resources (disables loading of fallback properties, this can only
@@ -144,6 +160,25 @@
 				document.body.innerHTML = '<center style="margin-top:10%;">Error loading resource files. Please check browser console.</center>';
 			});
 		})();
+		function ajaxFunction(){
+			var xmlHttp;
+			try{ // Firefox, Opera 8.0+, Safari
+					xmlHttp=new XMLHttpRequest();
+				}
+				catch (e){
+				try{// Internet Explorer
+						xmlHttp=new ActiveXObject("Msxml2.XMLHTTP");
+					}
+					catch (e){
+					try{
+						xmlHttp=new ActiveXObject("Microsoft.XMLHTTP");
+					}
+					catch (e){}
+					}
+				}
+
+				return xmlHttp;
+			}
 	</script>
 </body>
 </html>
