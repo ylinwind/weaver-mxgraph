@@ -199,29 +199,35 @@ Actions.prototype.init = function()
 		
 		if (cells != null && cells.length > 0)
 		{
-			var res = mxUtils.confirm('确定要删除吗？');
-			if(res){
-				var parents = graph.model.getParents(cells);
-				graph.removeCells(cells, includeEdges);
-				
-				// Selects parents for easier editing of groups
-				if (parents != null)
-				{
-					var select = [];
+			wfModal.confirm({
+				title: wfGetLabel(131329, "信息确认"),
+				content:'确定要删除吗？',
+				okText: wfGetLabel(83446, "确定"),
+				cancelText: wfGetLabel(31129, "取消"),
+				onOk:()=>{
+					var parents = graph.model.getParents(cells);
+					graph.removeCells(cells, includeEdges);
 					
-					for (var i = 0; i < parents.length; i++)
+					// Selects parents for easier editing of groups
+					if (parents != null)
 					{
-						if (graph.model.contains(parents[i]) &&
-							(graph.model.isVertex(parents[i]) ||
-							graph.model.isEdge(parents[i])))
+						var select = [];
+						
+						for (var i = 0; i < parents.length; i++)
 						{
-							select.push(parents[i]);
+							if (graph.model.contains(parents[i]) &&
+								(graph.model.isVertex(parents[i]) ||
+								graph.model.isEdge(parents[i])))
+							{
+								select.push(parents[i]);
+							}
 						}
+						
+						graph.setSelectionCells(select);
 					}
-					
-					graph.setSelectionCells(select);
-				}
-			}
+				},
+				onCancel:()=>{},
+			});
 		}
 	};
 	

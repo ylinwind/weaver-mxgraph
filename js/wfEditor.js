@@ -587,12 +587,22 @@ WfPanel.prototype.doWorkflowTest = function(){
 		}
 	}
 	if(!theStartCell){
-		mxUtils.alert('必须有一个创建节点！');
+		wfModal.warning({
+			title: wfGetLabel(131329, "信息确认"),
+			content:'必须有一个创建节点！',
+			okText: wfGetLabel(83446, "确定"),
+			onOk:()=>{console.log('ok')},
+		});
 	}else{
 		if(haveAEndCell){
 			this.workflowTestV2(theStartCell);
 		}else{
-			mxUtils.alert('至少有一个归档节点！');
+			wfModal.warning({
+				title: wfGetLabel(131329, "信息确认"),
+				content:'至少有一个归档节点！',
+				okText: wfGetLabel(83446, "确定"),
+				onOk:()=>{console.log('ok')},
+			});
 		}
 	}
 }
@@ -676,8 +686,12 @@ WfPanel.prototype.workflowTestV2 = function(cellNode){
 			}
 		});
 		if(!haveExit){
-			console.log(cellNode,'startNode');
-			mxUtils.alert('出口设置不正确！');
+			wfModal.warning({
+				title: wfGetLabel(131329, "信息确认"),
+				content:'出口设置不正确！',
+				okText: wfGetLabel(83446, "确定"),
+				onOk:()=>{console.log('ok')},
+			});
 		}
 	// }else if(cellNode != null && cellNode.edges != null && cellNode.edges.length > 0){
 	// 	edges = cellNode.edges;
@@ -691,8 +705,12 @@ WfPanel.prototype.workflowTestV2 = function(cellNode){
 	// 		}
 	// 	})
 	}else{
-		console.log(cellNode,'startNode');
-		mxUtils.alert('出口设置不正确！');
+		wfModal.warning({
+			title: wfGetLabel(131329, "信息确认"),
+			content:'出口设置不正确！',
+			okText: wfGetLabel(83446, "确定"),
+			onOk:()=>{console.log('ok')},
+		});
 	}
 }
 /**

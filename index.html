@@ -97,8 +97,16 @@
 	<script type="text/javascript" src="/spa/sapIntegration/index_sapBrowse.js"></script>
 	<link rel="stylesheet" href="/spa/sapIntegration/index.css">
 	<script type="text/javascript" src="/spa/sapIntegration/index.js"></script>  -->
-	<script type="text/javascript" src="/spa/workflow/static4engine/engine.js?9ed4d7a8023a5ff85b59"></script>
-	<script type="text/javascript" src="/spa/workflow/static4engine/engine4single.js?9ed4d7a8023a5ff85b59"></script>
+	
+	<!-- 门户主题 -->
+	<!-- <link rel="stylesheet" type="text/css" href="/spa/theme/static4engine/engine.css">
+	<script type="text/javascript" src="/spa/theme/static4engine/engine.js"></script> -->
+	<!-- 引擎入口 -->
+	<!-- <script type="text/javascript" src="/spa/main/engine.js?v=20171214"></script> -->
+	
+	<!-- <script type="text/javascript" src="/spa/workflow/global.js"></script> -->
+	<script type="text/javascript" src="/spa/workflow/static4engine/engine.js"></script>
+	<script type="text/javascript" src="/spa/workflow/static4engine/engine4single.js"></script>
 <!--  -->
 	<link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
 	<link rel="stylesheet" type="text/css" href="styles/style-icon.css">
@@ -110,9 +118,13 @@
 			
 			var editorUiInit = EditorUi.prototype.init;
 			var message = window.antd && window.antd.message;
-			var getLabel = window.ecCo && window.ecCom.WeaLocaleProvider && window.ecCom.WeaLocaleProvider.getLabel;
+			var getLabel = window.ecCom && window.ecCom.WeaLocaleProvider && window.ecCom.WeaLocaleProvider.getLabel;
+			var formatMultiLang = window.ecCom && window.ecCom.WeaLocaleProvider && window.ecCom.WeaLocaleProvider.formatMultiLang;
+			var modal = window.antd && window.antd.Modal && window.antd.Modal;
 			
 			window.wfGetLabel = getLabel; //国际化方法
+			window.wfFormatMultiLang = formatMultiLang; //转换为当前语言
+			window.wfModal = modal; //modal 弹框
 
 			EditorUi.prototype.init = function()
 			{
@@ -172,7 +184,8 @@
 						}else if(v && v.linkId){
 							existParams['linkIds'].push(v.linkId);
 						}
-					})
+						// v.value = wfFormatMultiLang(v.value);
+					});
 					sb.editor.graph.existParams = existParams;
 					sb.editor.graph.setSelectionCells(allCells);
 				});

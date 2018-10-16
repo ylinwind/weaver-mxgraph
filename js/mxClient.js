@@ -13340,7 +13340,13 @@ mxDragSource.prototype.mouseDown = function(evt)
 			}
 		}
 	}else{
-		mxUtils.alert('只能有一个创建节点！');
+		wfModal.warning({
+			title: wfGetLabel(131329, "信息确认"),
+			content:'只能有一个创建节点！',
+			okText: wfGetLabel(83446, "确定"),
+			onOk:()=>{console.log('ok')},
+		});
+		// mxUtils.alert('只能有一个创建节点！');
 	}
 	
 };
@@ -19597,6 +19603,7 @@ mxSvgCanvas2D.prototype.convertHtml = function(val)
  */
 mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow)
 {
+	str = wfFormatMultiLang(str);
 	var shape = this.canvasStyle.shape;
 	var s = this.state;
 
@@ -42154,7 +42161,13 @@ mxCell.prototype.valueChanged = function(newValue)
 	if(newValue.trim() != ''){
 		this.setValue(newValue);
 	}else{
-		mxUtils.alert('节点名称不能为空！');
+		// mxUtils.alert('节点名称不能为空！');
+		wfModal.warning({
+			title: wfGetLabel(131329, "信息确认"),
+			content:'节点名称不能为空！',
+			okText: wfGetLabel(83446, "确定"),
+			onOk:()=>{console.log('ok')},
+		});
 		this.setValue(previous);
 	}
 	
@@ -73567,11 +73580,29 @@ mxConnectionHandler.prototype.mouseUp = function(sender, me)
 			
 			if(target != null ){
 				if(source.branchType == 'branchCenter' && !(target.branchType == 'branchCenter' || target.branchType == 'branchToOne')){
-					mxUtils.alert('分叉中间点只能指向本分支中间节点或合并节点！');
+					// mxUtils.alert('分叉中间点只能指向本分支中间节点或合并节点！');
+					wfModal.warning({
+						title: wfGetLabel(131329, "信息确认"),
+						content:'分叉中间点只能指向本分支中间节点或合并节点！',
+						okText: wfGetLabel(83446, "确定"),
+						onOk:()=>{console.log('ok')},
+					});
 				}else if(target.branchType == 'branchCenter' && source.branchType == 'branchToOne'){
-					mxUtils.alert('合并节点不能指向分叉中间点！');
+					// mxUtils.alert('合并节点不能指向分叉中间点！');
+					wfModal.warning({
+						title: wfGetLabel(131329, "信息确认"),
+						content:'合并节点不能指向分叉中间点！',
+						okText: wfGetLabel(83446, "确定"),
+						onOk:()=>{console.log('ok')},
+					});
 				}else if(target.branchType == 'branchToOne' && source.branchType == 'oneToBranch'){
-					mxUtils.alert('起始节点不能指向合并节点！');
+					// mxUtils.alert('起始节点不能指向合并节点！');
+					wfModal.warning({
+						title: wfGetLabel(131329, "信息确认"),
+						content:'起始节点不能指向合并节点！',
+						okText: wfGetLabel(83446, "确定"),
+						onOk:()=>{console.log('ok')},
+					});
 				}else{
 					this.connect(source, target, me.getEvent(), me.getCell());
 				}

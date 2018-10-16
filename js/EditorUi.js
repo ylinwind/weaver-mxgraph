@@ -3504,12 +3504,14 @@ EditorUi.prototype.saveFile = function(forceDialog)
 	var modified = this.editor.modified;
 	var wfEditor = this.wfEditor;
 	if(modified){
-		var res = mxUtils.confirm('改动未进行测试，是否需要测试？');
-		if(res){
-			wfEditor.doWorkflowTest();
-		}else{
-			this.save(1);
-		}
+		wfModal.confirm({
+			title: wfGetLabel(131329, "信息确认"),
+			content:'改动未进行测试，是否需要测试？',
+			okText: wfGetLabel(83446, "确定"),
+			cancelText: wfGetLabel(31129, "取消"),
+			onOk:()=>{wfEditor.doWorkflowTest()},
+			onCancel:()=>{this.save(1)}
+		});
 	}
 	/*
 	if (!forceDialog && this.editor.filename != null)
@@ -3588,11 +3590,17 @@ EditorUi.prototype.save = function(name)
 			let workflowId = window.urlParams.workflowId || '';
 			message.destroy();
 			message && message.loading('正在保存...',0);
-			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId=${workflowId}&xml=${xml}&deleteLinks=${deleteLinkIds.join(',')}&deleteNodes=${deleteNodeIds.join(',')}`, function(req)
+			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId=${workflowId}&xml=${xml}&deleteLinks=${deleteLinkIds.join(',')}&deleteNodes=${deleteNodeIds.join(',')}`, function(req,res)
 			{
-				console.log(req,'req');
+				var response = req.request.response;
+				var resObj = JSON.parse(response);
+				// console.log(req,'req',response,resObj);
 				message.destroy();
-				message && message.success('保存成功！',3);
+				if(resObj.result){
+					message && message.success('保存成功！',2);
+				}else{
+					message && message.error('保存失败！',2);
+				}
 			});
 			/*
 			// if (Editor.useLocalStorage)

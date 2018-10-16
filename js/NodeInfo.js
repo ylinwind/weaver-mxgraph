@@ -207,7 +207,7 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 	];
 	var linkDetailArr = [
 		{label:'出口名称',value:'',key:'name'},
-		{label:'目标节点',value:''},
+		{label:'目标节点',value:'',key:'targetCell'},
 		{label:'生成编号',value:'',key:'isBuildCode'},
 		{label:'条件',value:'',key:'hasCondition'},
 		{label:'附加规则',value:'',key:'hasRole'},
@@ -238,7 +238,8 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 
 	elP.className = 'nodeInfo-detail-item';
 	elSpanLeft.className = 'detail-item-left detail-item-span';
-	elSpanRight.className = `detail-item-right detail-item-span ${v.key === 'operators' || v.key === 'name'  ? 'isEcComs-item':''}`;
+	elSpanRight.className = `detail-item-right detail-item-span 
+		${v.key === 'operators' || v.key === 'name' || v.key === 'targetCell' || v.key === 'isBuildCode' || v.key === 'remindMsg'  ? 'isEcComs-item':''}`;
 	
 	if(v.key === 'name'){//节点名称
 		let operatorArea = document.createElement('div');
@@ -257,7 +258,34 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 
 		let _sb = this;
 		setTimeout(() => {
-			_sb.createOperatorElement();
+			_sb.createOperatorElement(isEage,v.key,detailDatas,nowCell);
+		}, 0);
+	}else if(v.key === 'targetCell'){//出口-目标节点
+		let operatorArea = document.createElement('div');
+		operatorArea.id = 'targetCell-container';
+		elSpanRight.appendChild(operatorArea);
+
+		let _sb = this;
+		setTimeout(() => {
+			_sb.createTargetNodeElement(isEage,v.key,detailDatas,nowCell);
+		}, 0);
+	}else if(v.key === 'isBuildCode'){//出口-生成编号
+		let operatorArea = document.createElement('div');
+		operatorArea.id = 'isBuildCode-container';
+		elSpanRight.appendChild(operatorArea);
+
+		let _sb = this;
+		setTimeout(() => {
+			_sb.createBuildCodeElement(isEage,v.key,detailDatas,nowCell);
+		}, 0);
+	}else if(v.key === 'remindMsg'){//出口-出口提示信息
+		let operatorArea = document.createElement('div');
+		operatorArea.id = 'remindMsg-container';
+		elSpanRight.appendChild(operatorArea);
+
+		let _sb = this;
+		setTimeout(() => {
+			_sb.createRemindMsgElement(isEage,v.key,detailDatas,nowCell);
 		}, 0);
 	}else{
 		var checkSpanIcon = document.createElement('span');
@@ -278,6 +306,60 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 	return elP;
 }
 /**
+创建出口-目标节点
+ */
+WfNodeInfo.prototype.createTargetNodeElement = function(isEage,key,detailDatas,nowCell){
+	
+	var graph = this.editorUi.editor.graph;
+	var model = graph.model;
+	let WeaSelect = window.ecCom.WeaSelect;
+
+	ReactDOM.render(
+		React.createElement(WeaSelect,
+		{
+			
+		}),
+		document.getElementById("targetCell-container")
+	);
+}
+/**
+创建出口-生成编号
+ */
+WfNodeInfo.prototype.createBuildCodeElement = function(isEage,key,detailDatas,nowCell){
+	
+	var graph = this.editorUi.editor.graph;
+	var model = graph.model;
+	let WeaCheckbox = window.ecCom.WeaCheckbox;
+
+	ReactDOM.render(
+		React.createElement(WeaCheckbox,
+		{
+			value:detailDatas[key] == 'true' ? true : false,
+		}),
+		document.getElementById("isBuildCode-container")
+	);
+}
+/**
+创建出口-出口提示信息
+ */
+WfNodeInfo.prototype.createRemindMsgElement = function(isEage,key,detailDatas,nowCell){
+	
+	var graph = this.editorUi.editor.graph;
+	var model = graph.model;
+	let WeaInput = window.ecCom.WeaInput;
+
+	ReactDOM.render(
+		React.createElement(WeaInput,
+		{
+			value:isEage ? detailDatas[key] : nowCell.value,
+			inputType:"multilang",
+			isBase64:true,
+			layout:document.getElementById("remindMsg-container"),
+		}),
+		document.getElementById("remindMsg-container")
+	);
+}
+/**
 创建节点名称元素
  */
 WfNodeInfo.prototype.createNodeNameElement = function(isEage,key,detailDatas,nowCell){
@@ -289,13 +371,22 @@ WfNodeInfo.prototype.createNodeNameElement = function(isEage,key,detailDatas,now
 	ReactDOM.render(
 		React.createElement(WeaInput,
 		{
+			viewAttr:3,
 			value:isEage ? detailDatas[key] : nowCell.value,
+			inputType:"multilang",
+			isBase64:true,
+			layout:document.body,
 			// onChange : (v)=>{
 			// 	console.log(v,'----------')
 			// },
 			onBlur:(v)=>{
 				if(v.trim() == ''){
-					mxUtils.alert('节点名称不能为空！');
+					wfModal.warning({
+						title: wfGetLabel(131329, "信息确认"),
+						content:'节点名称不能为空！',
+						okText: wfGetLabel(83446, "确定"),
+						onOk:()=>{console.log('ok')},
+					});
 					this.nodeNameRef.refs.inputNormal.setValue(nowCell.value.trim());
 				}else{
 					model.beginUpdate();
@@ -317,23 +408,33 @@ WfNodeInfo.prototype.createNodeNameElement = function(isEage,key,detailDatas,now
 /**
 创建操作者元素
  */
-WfNodeInfo.prototype.createOperatorElement = function(){
+WfNodeInfo.prototype.createOperatorElement = function(isEage,key,detailDatas,nowCell){
 	let browserComs = window.ecCom.WeaBrowser;
+	detailDatas.operatorGroups.map((v,i)=>{
+		detailDatas.operatorGroups[i].id = Number(v.id);
+		detailDatas.operatorGroups[i].name = `<a onclick="window.workflowUi.wfNodeInfo.opertorItemClick(${v.id})">${wfFormatMultiLang(v.name)}</a>`;//wfFormatMultiLang
+	});
 
 	ReactDOM.render(
 		React.createElement(browserComs,
 		{
-			type:'1',
+			// type:'7',
 			viewAttr : 1 ,
 			hasAddBtn:true,
-			addOnClick:()=>{console.log('addOnClick')},
-			replaceDatas:[{id:'1',name:'aaa'}],
+			isSingle:false,
+			replaceDatas:detailDatas.operatorGroups || [],
 			whiteBackground:true,
-			hasBorder:true
+			hasBorder:true,
+			addOnClick:()=>{console.log('addOnClick')},
+			// linkUrl:'#',
+			layout:document.body,
 		}),
 		document.getElementById("operators-container")
 	);	
 
+}
+WfNodeInfo.prototype.opertorItemClick = function(id){
+	console.log('omininin',id)
 }
 /**
 *绘制折叠展开按钮

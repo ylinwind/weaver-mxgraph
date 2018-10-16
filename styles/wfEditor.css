@@ -1,3 +1,14 @@
+.ant-modal-content [class^="icon-"], .ant-modal-content [class*=" icon-"] ,.wea-select [class^="icon-"], .wea-select [class*=" icon-"] {
+    font-family: icon-coms!important;
+    speak: none;
+    font-style: normal;
+    font-weight: 400;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 .wfEditorContainer{
     width: calc( 100% - 240px);
     background: #F9F9F9;
@@ -122,6 +133,7 @@
     border: 1px solid #E2E2E2;
     border-top: none;
     transition: all .1s;
+    /* overflow-y: auto; */
 }
 .wfNodeInfoContainer .nodeInfo-header{
     height:  44px;
@@ -153,6 +165,9 @@
 }
 #operators-container .wea-browser{
     display: inline-block;
+    width: 100%;
+}
+#targetCell-container .wea-select  {
     width: 100%;
 }
 .nodeInfo-detail-item .icon-workflow-shezhi{
