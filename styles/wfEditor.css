@@ -46,6 +46,7 @@
 }
 /* range custom style */
 .wfEditorContainer input[type=range]{ 
+    display: inline-block;
     vertical-align: middle;
     outline: none; 
     -webkit-appearance: none;/*清除系统默认样式*/  
@@ -120,7 +121,7 @@
     bottom: 0px;
     border: 1px solid #E2E2E2;
     border-top: none;
-    transition: all .5s;
+    transition: all .1s;
 }
 .wfNodeInfoContainer .nodeInfo-header{
     height:  44px;
@@ -145,6 +146,14 @@
     width: 45%;
     vertical-align: middle;
     padding-left: 5%;
+}
+/* 修改引用的组件库组件样式  */
+.nodeInfo-detail-item .isEcComs-item{
+    width: 55%;
+}
+#operators-container .wea-browser{
+    display: inline-block;
+    width: 100%;
 }
 .nodeInfo-detail-item .icon-workflow-shezhi{
     cursor: pointer;

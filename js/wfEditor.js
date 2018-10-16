@@ -227,7 +227,7 @@ WfPanel.prototype.drawActions = function(){
 
         {icon:'icon-workflow-biaochi',action:'1',title:'标尺'},
         {icon:'icon-workflow-wangge',action:'1',title:'网格'},
-        {icon:'icon-workflow-xianshifenzu',action:{funct:_this.setTipInfoShow},title:'显示分组'},
+        {icon:'icon-workflow-xianshifenzu',action:{funct:_this.setTipInfoShow.bind(_this)},title:'显示分组'},
         {icon:'icon-workflow-huifuyuanbil',action:iconActions.get('resetView'),title:'恢复原比例'},
         {icon:'icon-workflow-suoxiao',action:iconActions.get('zoomOut'),title:'缩小'},
         {icon:'icon-workflow-fangda',action:iconActions.get('zoomIn'),title:'放大'},
@@ -271,7 +271,18 @@ WfPanel.prototype.drawActions = function(){
 				let value = val.target.value;
 				input.value = value;
 				input.style.backgroundSize = `${value}% 100%`;
+				let viewVal = value/50;
+
+				if(viewVal <= 0.2){
+					graph.zoomTo(0.2);
+				}else{
+					graph.zoomTo(viewVal);
+				}
+				console.log(value,'dddddddddd',viewVal)
 				// graph.zoomTo(value);
+				//  0.2 - 2   0 - 100
+				var tips = document.getElementsByClassName('action-area-tip')[4];
+            	tips.innerHTML = `视图（${Math.round(viewVal*100)}%）`;
             }
             elDiv.appendChild(input);
         }
@@ -308,10 +319,10 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 		|| icon=='icon-workflow-zuoyoudengjian' || icon=='icon-workflow-kaoxiaduiqi'){
 
 		icon=='icon-workflow-kaozuoduiqi' && graph.alignCells(mxConstants.ALIGN_LEFT);
-		icon=='icon-workflow-shangxiadengjian' && graph.alignCells(mxConstants.ALIGN_MIDDLE);
+		icon=='icon-workflow-shangxiadengjian' && graph.alignCells(mxConstants.ALIGN_CENTER);
 		icon=='icon-workflow-kaoyouduiqi' && graph.alignCells(mxConstants.ALIGN_RIGHT);
 		icon=='icon-workflow-kaoshangduiqi' && graph.alignCells(mxConstants.ALIGN_TOP);
-		icon=='icon-workflow-zuoyoudengjian' && graph.alignCells(mxConstants.ALIGN_CENTER);
+		icon=='icon-workflow-zuoyoudengjian' && graph.alignCells(mxConstants.ALIGN_MIDDLE);
 		icon=='icon-workflow-kaoxiaduiqi' && graph.alignCells(mxConstants.ALIGN_BOTTOM);
 	// }else if(icon=='icon-workflow-hengxiangfenzu'){
 	// 	this.drawRowGroup();
@@ -325,7 +336,11 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
         func.funct(evt);
         if(icon=='icon-workflow-suoxiao' || icon=='icon-workflow-fangda' || icon=='icon-workflow-huifuyuanbil'){//修改操作区域显示缩放值
             var tips = document.getElementsByClassName('action-area-tip')[4];
-            tips.innerHTML = `视图（${graph.view.scale*100}%）`
+            tips.innerHTML = `视图（${Math.round(graph.view.scale*100)}%）`;
+
+			var inputRange = document.getElementsByClassName('wf-view-range')[0];
+            inputRange.value = graph.view.scale * 50;
+			inputRange.style.backgroundSize = `${graph.view.scale * 50}% 100%`;
         }
     }
 }
@@ -464,19 +479,6 @@ WfPanel.prototype.enterChangeGroupLineState = function(type,e){
 	console.log('ininenterini enter',e,type);
 	e.target.childNodes[0].style="stroke:#000;stroke-width:2;stroke-dasharray:5;cursor:move;stroke-miterlimit:10;";
 	// e.target.style="stroke:#000;stroke-width:2;stroke-dasharray:5;cursor:move;stroke-miterlimit:10;";
-
-	// var datas;
-	// type=='row' ? datas = this.rowGroups : datas = this.colGroups;
-	// for(let i = 0 ,len = datas.length;i<len;++i){
-	// 	if(datas[i].id == e.target.id){
-	// 		console.log('---ooo-');
-	// 		datas[i].style="stroke:#000;stroke-width:2;stroke-dasharray:5;";
-	// 		break;
-	// 	}
-	// }
-	// type=='row' ? this.rowGroups = datas : this.colGroups = datas ;
-
-	// this.drawGroup();
 }	
 /**
 out
@@ -486,20 +488,6 @@ WfPanel.prototype.outChangeGroupLineState = function(type,e){
 	console.log('ininenterini out',e,type);
 	// e.target.childNodes[0].style="stroke:#999;stroke-width:2;stroke-dasharray:5;cursor:default;stroke-miterlimit:10;";
 	e.target.style="stroke:#999;stroke-width:2;stroke-dasharray:5;cursor:default;stroke-miterlimit:10;";
-
-	// var datas;
-	// type=='row' ? datas = this.rowGroups : datas = this.colGroups;
-	// for(let i = 0 ,len = datas.length;i<len;++i){
-	// 	if(datas[i].id == e.target.id){
-	// 		console.log('---ooo-');
-	// 		datas[i].style="stroke:#999;stroke-width:2;stroke-dasharray:5;";
-	// 		break;
-	// 	}
-	// }
-	// type=='row' ? this.rowGroups = datas : this.colGroups = datas ;
-	
-	// this.drawGroup();
-	// console.log('ininenterini out',e,type)
 }	
 /**
 控制每块操作区域提示语
@@ -507,7 +495,7 @@ WfPanel.prototype.outChangeGroupLineState = function(type,e){
 WfPanel.prototype.setTipInfoBtn = function(){
     let tipBtn = document.createElement('button');
     tipBtn.innerHTML = 'show tip'
-    tipBtn.onclick = this.setTipInfoShow;
+    tipBtn.onclick = this.setTipInfoShow.bind(this);
     this.container.appendChild(tipBtn);
 }
 WfPanel.prototype.setTipInfoShow = function(){
@@ -520,6 +508,56 @@ WfPanel.prototype.setTipInfoShow = function(){
 		}
 	}
 	this.tipInfoDisplay = this.tipInfoDisplay=='none'?this.tipInfoDisplay='block':this.tipInfoDisplay='none';
+	this.reDrawGraphSize(this.tipInfoDisplay=='block'?true:false);
+}
+/**
+重绘 绘制区域大小
+ */
+WfPanel.prototype.reDrawGraphSize = function(show=true){
+	var wfEditor = this.editorUi.wfEditor;
+	var diagramContainer = this.editorUi.diagramContainer;
+	var graph = this.editorUi.editor.graph;
+	var model = graph.model;
+
+	this.nodePanelHide = !this.nodePanelHide;
+	try
+	{
+		if(show){//隐藏 向右移动隐藏
+			wfEditor.container.style.height = '150px';
+			diagramContainer.style.top = '135px';
+			graph.pageFormat.height = graph.pageFormat.height - 35;
+		}else{//显示 向左移动显示
+			wfEditor.container.style.height = '100px';
+			diagramContainer.style.top = '100px';
+			graph.pageFormat.height = graph.pageFormat.height + 35;
+		}
+		graph.refresh();
+	}
+	finally
+	{
+		// model.endUpdate();
+	}
+	
+}
+/**gg */
+WfPanel.prototype.__test = function(show=true){
+	/*ReactDOM.render(
+		React.createElement(antd.Table,
+		{
+			// loading:true,
+			columns:[{
+				dataIndex:"a",
+				title:"a",
+				render(text,record) {
+					return React.createElement("div",{
+						dangerouslySetInnerHTML:{__html:"<a href='[图片][图片]https://www.baidu.com' target='_blank'>"+text+"</a>"}
+					})
+				}
+			}],
+			dataSource:[{a:1}]
+		}),
+		document.getElementById("container"));
+	*/
 }
 /**
 流程测试

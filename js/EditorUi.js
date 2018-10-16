@@ -3511,7 +3511,6 @@ EditorUi.prototype.saveFile = function(forceDialog)
 			this.save(1);
 		}
 	}
-	console.log(this,'this')
 	/*
 	if (!forceDialog && this.editor.filename != null)
 	{
@@ -3576,17 +3575,24 @@ EditorUi.prototype.save = function(name)
 			}
 		});
 
-		var deleteNodeIds = initParams.nodeIds.filter(v=>nowNodes.indexOf(v)<0);
-		var deleteLinkIds = initParams.linkIds.filter(v=>nowLinks.indexOf(v)<0);
+		var deleteNodeIds = initParams ? initParams.nodeIds.filter(v=>nowNodes.indexOf(v)<0) : '';
+		var deleteLinkIds = initParams ? initParams.linkIds.filter(v=>nowLinks.indexOf(v)<0) : '';
 		
 
 		xml = xml.replace(/&quot;/g,'_quot_'); //因xml中的双引号被转义，这里将其替换回双引号
 
 		try
 		{
-			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId=21644&xml=${xml}&deleteLinks=${deleteLinkIds.join(',')}&deleteNodes=${deleteNodeIds.join(',')}`, function(req)
+			var message = window.antd && window.antd.message;
+
+			let workflowId = window.urlParams.workflowId || '';
+			message.destroy();
+			message && message.loading('正在保存...',0);
+			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId=${workflowId}&xml=${xml}&deleteLinks=${deleteLinkIds.join(',')}&deleteNodes=${deleteNodeIds.join(',')}`, function(req)
 			{
-				console.log(req,'req')
+				console.log(req,'req');
+				message.destroy();
+				message && message.success('保存成功！',3);
 			});
 			/*
 			// if (Editor.useLocalStorage)

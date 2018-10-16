@@ -21,6 +21,7 @@ function WfNodeInfo(editorUi, container) {
     }));
     this.init();
     this.refresh();
+	this.nodeNameRef = null;
 }
 WfNodeInfo.prototype.init = function(){
     this.drawHeader();
@@ -237,17 +238,31 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 
 	elP.className = 'nodeInfo-detail-item';
 	elSpanLeft.className = 'detail-item-left detail-item-span';
-	elSpanRight.className = 'detail-item-right detail-item-span';
+	elSpanRight.className = `detail-item-right detail-item-span ${v.key === 'operators' || v.key === 'name'  ? 'isEcComs-item':''}`;
 	
 	if(v.key === 'name'){//节点名称
-		let wfNameElt = this.createNodeNameElement(isEage,v.key,detailDatas,nowCell);
-		elSpanRight.appendChild(wfNameElt);
+		let operatorArea = document.createElement('div');
+		operatorArea.id = 'nodeName-container';
+		elSpanRight.appendChild(operatorArea);
+
+		let _sb = this;
+		setTimeout(() => {
+			_sb.createNodeNameElement(isEage,v.key,detailDatas,nowCell);
+		}, 0);
+
 	}else if(v.key === 'operators'){
-		let operatorEle = this.createOperatorElement();
-		elSpanRight.appendChild(operatorEle);
+		let operatorArea = document.createElement('div');
+		operatorArea.id = 'operators-container';
+		elSpanRight.appendChild(operatorArea);
+
+		let _sb = this;
+		setTimeout(() => {
+			_sb.createOperatorElement();
+		}, 0);
 	}else{
 		var checkSpanIcon = document.createElement('span');
 		checkSpanIcon.className = 'icon-workflow-shezhi';
+		checkSpanIcon.onclick = this.createDetailDialog.bind(this,v.key,v.label,nowCell.nodeId?nowCell.nodeId:nowCell.linkId);
 		elSpanRight.appendChild(checkSpanIcon);
 	}
 	if(detailDatas[v.key] == 'true'){//已经设置打√
@@ -266,51 +281,59 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 创建节点名称元素
  */
 WfNodeInfo.prototype.createNodeNameElement = function(isEage,key,detailDatas,nowCell){
+	
 	var graph = this.editorUi.editor.graph;
 	var model = graph.model;
+	let WeaInput = window.ecCom.WeaInput;
 
-	let nowNodeName = document.createElement('input');
-	nowNodeName.className = 'detail-item-nowNodeName';
-	nowNodeName.type = 'text';
-	nowNodeName.value = isEage ? detailDatas[key] : nowCell.value;
-	nowNodeName.style.width = '100%';
-	nowNodeName.onchange = function(v){
-		let val = v.target.value;
-		if(val.trim() == ''){
-			mxUtils.alert('节点名称不能为空！');
-			v.target.value = nowCell.value;
-		}else{
-			model.beginUpdate();
-			try
-			{
-				model.setValue(nowCell,val);
-			}
-			finally
-			{
-				model.endUpdate();
-			}
-		}
-	}
-	return nowNodeName;
+	ReactDOM.render(
+		React.createElement(WeaInput,
+		{
+			value:isEage ? detailDatas[key] : nowCell.value,
+			// onChange : (v)=>{
+			// 	console.log(v,'----------')
+			// },
+			onBlur:(v)=>{
+				if(v.trim() == ''){
+					mxUtils.alert('节点名称不能为空！');
+					this.nodeNameRef.refs.inputNormal.setValue(nowCell.value.trim());
+				}else{
+					model.beginUpdate();
+					try
+					{
+						model.setValue(nowCell,v);
+					}
+					finally
+					{
+						model.endUpdate();
+					}
+				}
+			},
+			ref:(ref)=>{this.nodeNameRef = ref}
+		}),
+		document.getElementById("nodeName-container")
+	);
 }
 /**
 创建操作者元素
  */
 WfNodeInfo.prototype.createOperatorElement = function(){
-	let operatorArea = document.createElement('div');
-	let leftArea = document.createElement('div');
-	let rightArea = document.createElement('div');
+	let browserComs = window.ecCom.WeaBrowser;
 
-	operatorArea.className = 'operators-area';
-	leftArea.className = 'operators-left-area';
-	rightArea.className = 'operators-right-area';
-	
-	rightArea.innerHTML = '+';
+	ReactDOM.render(
+		React.createElement(browserComs,
+		{
+			type:'1',
+			viewAttr : 1 ,
+			hasAddBtn:true,
+			addOnClick:()=>{console.log('addOnClick')},
+			replaceDatas:[{id:'1',name:'aaa'}],
+			whiteBackground:true,
+			hasBorder:true
+		}),
+		document.getElementById("operators-container")
+	);	
 
-	operatorArea.appendChild(leftArea);
-	operatorArea.appendChild(rightArea);
-
-	return operatorArea;
 }
 /**
 *绘制折叠展开按钮
@@ -357,4 +380,63 @@ WfNodeInfo.prototype.clickNodeFolder = function(elt){
 		// model.endUpdate();
 	}
 	
+}
+/**
+创建每项设置对应弹框
+ */
+WfNodeInfo.prototype.createDetailDialog = function(key='',modalName='',nodeId=''){
+	console.log(key,'----------')
+	var WeaTools = window.ecCom.WeaTools;
+	/**
+		*操作菜单 : #/main/workflowengine/path/pathset/perationMenuSet?nodeid=284&workflowId=81&isRoute=true&_key=2r5y2t
+		*表单内容 ： #/main/workflowengine/path/pathset/formcontent?nodeid=284&workflowId=81&isRoute=true&_key=6vyr0l
+		*节点前附加操作 ： #/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=9244&nodeId=11995&ispreoperator=1
+		*节点后附加操作 ： #/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=9244&nodeId=11995&ispreoperator=0
+		*签字意见设置 : #/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=9604&nodeId=12459&type=sign&isSingle=true
+		*标题显示设置 ： #/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=9604&nodeId=12457&type=title&isSingle=true
+		*子流程设置 ： #/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=9604&nodeId=12456&type=subWf&isSingle=true
+		*流程异常处理 ： #/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=9604&nodeId=12458&type=exception&isSingle=true
+		*
+		{label:'节点名称',value:'',key:'name'},
+		{label:'操作者',value:'',key:'operators'},
+		{label:'表单内容',value:'',key:'hasNodeForFie'},
+		{label:'操作菜单',value:'',key:'hasCusRigKey'},
+		{label:'节点前附加操作',value:'',key:'hasNodeBefAddOpr'},
+		{label:'节点后附加操作',value:'',key:'hasNodeAftAddOpr'},
+		{label:'签字意见设置',value:'',key:'hasOperateSign'},
+		{label:'标题显示设置',value:'',key:'hasOperateTitle'},
+		{label:'子流程设置',value:'',key:'hasOperateSubwf'},
+		{label:'流程异常处理',value:'',key:'hasOperateException'},
+		{label:'节点字段校验',value:'',key:'hasNodePro'}
+	*/
+	let workflowId = window.urlParams.workflowId || '';
+
+	let urlObj = {
+		'hasCusRigKey' : `#/main/workflowengine/path/pathset/perationMenuSet?nodeid=${nodeId}&workflowId=${workflowId}&isRoute=true&_key=2r5y2t`,
+		'hasNodeForFie' : `#/main/workflowengine/path/pathset/formcontent?nodeid=${nodeId}&workflowId=${workflowId}&isRoute=true&_key=6vyr0l`,
+		'hasNodeBefAddOpr' : `#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=${workflowId}&nodeId=${nodeId}&ispreoperator=1`,
+		'hasNodeAftAddOpr' : `#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=${workflowId}&nodeId=${nodeId}&ispreoperator=0`,
+		'hasOperateSign' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=sign&isSingle=true`,
+		'hasOperateTitle' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=title&isSingle=true`,
+		'hasOperateSubwf' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=subWf&isSingle=true`,
+		'hasOperateException' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=exception&isSingle=true`,
+	}
+	if(urlObj[key]){
+		let url = `/spa/workflow/static4engine/engine.html${urlObj[key]}`;
+
+		const dialog = WeaTools.createDialog({
+			title: modalName || 'test',
+			moduleName: "workflow",
+			icon:'icon-coms-PageAddress',
+			url: url,
+			style: {width:800, height:400},
+			callback: (con) =>{
+				console.log(con)
+			},
+			onCancel: () =>{
+			}
+		});
+		dialog.show();
+	}
+
 }

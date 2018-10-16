@@ -5,9 +5,6 @@
     <title>Grapheditor</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
-    <link rel="stylesheet" type="text/css" href="styles/style-icon.css">
-    <link rel="stylesheet" type="text/css" href="styles/wfEditor.css">
 	<script type="text/javascript">
 		// Parses URL parameters. Supported parameters are:
 		// - lang=xy: Specifies the language of the user interface.
@@ -58,14 +55,65 @@
 	<script type="text/javascript" src="js/Dialogs.js"></script>
 	<script type="text/javascript" src="js/wfEditor.js"></script>
 	<script type="text/javascript" src="js/NodeInfo.js"></script>
+	<!-- 流程图组件所需资源 -->
+	  
+	<link rel="stylesheet" href="/cloudstore/resource/pc/com/v1/index.min.css?v=20180320">
+    <link rel="stylesheet" href="/cloudstore/resource/pc/com/v1/ecCom.min.css?v=20180320">
+    <script type="text/javascript" src="/cloudstore/resource/pc/jquery/jquery-1.8.3.min.js?v=20180320"></script>
+    <!-- <style>#container,body,html{height:100%;overflow:hidden}</style> -->
+	<!-- <link href="/spa/workflow/static4engine/engine.css?9ed4d7a8023a5ff85b59" rel="stylesheet"> -->
+	  
+    
+	<!--  -->
 </head>
 <body class="geEditor">
+<!-- 流程图组件所需资源 -->
+	<div id="container"></div>
+	<script type="text/javascript" src="/cloudstore/resource/pc/polyfill/polyfill.min.js"></script>
+    <!-- Polyfills -->
+    <!--[if lt IE 10]>
+    <script type="text/javascript" src="/cloudstore/resource/pc/shim/shim.min.js"></script>
+    <![endif]-->
+    <script type="text/javascript">jQuery.browser.msie&&parseInt(jQuery.browser.version,10)<9&&(window.location.href="/login/Login.jsp")</script>
+    <!-- <script type="text/javascript" src="/cloudstore/resource/pc/react16/react.development.js"></script>
+    <script type="text/javascript" src="/cloudstore/resource/pc/react16/react-dom.development.js"></script> -->
+    <script type="text/javascript" src="/cloudstore/resource/pc/react16/react.production.min.js"></script>
+    <script type="text/javascript" src="/cloudstore/resource/pc/react16/react-dom.production.min.js"></script>
+    <script type="text/javascript" src="/cloudstore/resource/pc/react16/prop-types.min.js"></script>
+    <script type="text/javascript" src="/cloudstore/resource/pc/react16/create-react-class.min.js"></script>
+    <script>React.PropTypes=PropTypes,React.createClass=createReactClass</script>
+	<script type="text/javascript" src="/spa/workflow/async/zDialog_wev8.js"></script>
+    <!-- 全局依赖 -->
+    <script type="text/javascript" src="/cloudstore/resource/pc/promise/promise.min.js"></script>
+    <script type="text/javascript" src="/cloudstore/resource/pc/fetch/fetch.min.js"></script>
+    <!-- 组件库 -->
+    <script type="text/javascript" src="/cloudstore/resource/pc/com/v1/index.min.js?v=20180320"></script>
+    <script type="text/javascript" src="/cloudstore/resource/pc/com/v1/ecCom.min.js?v=20180320"></script>
+    <!-- mobx -->
+    <script type="text/javascript" src="/cloudstore/resource/pc/mobx-3.1.16/mobx.umd.js"></script>
+    <script type="text/javascript" src="/spa/coms/index.mobx.js?v=20180320"></script>
+	<!-- 集成中心-SAP集成-->
+	<!-- <link rel="stylesheet" href="/spa/sapIntegration/index_sapBrowse.css">
+	<script type="text/javascript" src="/spa/sapIntegration/index_sapBrowse.js"></script>
+	<link rel="stylesheet" href="/spa/sapIntegration/index.css">
+	<script type="text/javascript" src="/spa/sapIntegration/index.js"></script>  -->
+	<script type="text/javascript" src="/spa/workflow/static4engine/engine.js?9ed4d7a8023a5ff85b59"></script>
+	<script type="text/javascript" src="/spa/workflow/static4engine/engine4single.js?9ed4d7a8023a5ff85b59"></script>
+<!--  -->
+	<link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
+	<link rel="stylesheet" type="text/css" href="styles/style-icon.css">
+	<link rel="stylesheet" type="text/css" href="styles/wfEditor.css">
 	<script type="text/javascript">
 		// Extends EditorUi to update I/O action states based on availability of backend
 		(function()
 		{
-			var editorUiInit = EditorUi.prototype.init;
 			
+			var editorUiInit = EditorUi.prototype.init;
+			var message = window.antd && window.antd.message;
+			var getLabel = window.ecCo && window.ecCom.WeaLocaleProvider && window.ecCom.WeaLocaleProvider.getLabel;
+			
+			window.wfGetLabel = getLabel; //国际化方法
+
 			EditorUi.prototype.init = function()
 			{
 				editorUiInit.apply(this, arguments);
@@ -87,10 +135,29 @@
 					}
 				*/
 				var sb = this;
+				window.onresize = function (){
+					var graph = sb.editor.graph;
+					var nodePanelHide = sb.wfNodeInfo.nodePanelHide;
+					var tipInfoDisplay = sb.wfEditor.tipInfoDisplay;
+					if(nodePanelHide){
+						graph.pageFormat.width = window.innerWidth-2;
+					}else{
+						graph.pageFormat.width = window.innerWidth - 250;
+					}
+					if(tipInfoDisplay == 'block'){
+						graph.pageFormat.height = window.innerHeight - 150;
+					}else{
+						graph.pageFormat.height = window.innerHeight - 115;
+					}
+					
+					graph.refresh();
+				}
 				// /api/workflow/layout/getWfInfo?workflowId=20305 //获取节点信息
 				// /api/workflow/layout/getXml?workflowId=20305 //获取流程图信息
 				// /api/workflow/layout/saveLayout //保存
-				mxUtils.post(WORKFLOW_GETWFINFO_PATH, 'workflowId=21644', function(req)
+				let workflowId = window.urlParams.workflowId || '';
+				message.loading('正在请求数据...',0);
+				mxUtils.post(WORKFLOW_GETWFINFO_PATH, `workflowId=${workflowId}`, function(req)
 				{
 					var request = req.request;
 					var response = request.response;
@@ -109,20 +176,21 @@
 					sb.editor.graph.existParams = existParams;
 					sb.editor.graph.setSelectionCells(allCells);
 				});
-				mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, 'workflowId=21644', function(req)
+				mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, `workflowId=${workflowId}`, function(req)
 				{
 					var request = req.request;
 					var response = request.response;
 					var json = JSON.parse(response);
 					sb.editor.graph.workflowDetailDatas = json;
+					message.destroy();
 				});
 				// var xml = localStorage.getItem('Drawing1.xml');
 				// var doc = mxUtils.parseXml(``);
 				// this.editor.graph.setSelectionCells(this.editor.graph.importGraphModel(doc.documentElement));
-				
-				/*var xhr = ajaxFunction();
+				/*
+				var xhr = ajaxFunction();
 				xhr.onreadystatechange = function(){
-					alert(xhr.readyState);
+					// alert(xhr.readyState);
 					//alert(xhr.status);
 					if(xhr.readyState==4){
 						if(xhr.status==200||xhr.status==304){
@@ -134,7 +202,8 @@
 				}
 				xhr.open("POST",WORKFLOW_GETWFINFO_PATH,true);
 				xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded;charset=utf-8");
-				xhr.send("workflowId=21644"); */
+				xhr.send("workflowId=21644"); 
+				*/
 			};
 			
 			// Adds required resources (disables loading of fallback properties, this can only

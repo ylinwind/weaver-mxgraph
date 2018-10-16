@@ -2798,7 +2798,12 @@ Graph.prototype.zoomIn = function()
 	{
 		// Uses to 5% zoom steps for better grid rendering in webkit
 		// and to avoid rounding errors for zoom steps
-		this.zoom((Math.round(this.view.scale * this.zoomFactor * 20) / 20) / this.view.scale);
+		if((Math.round(this.view.scale * this.zoomFactor * 20) / 20) > 2){
+			this.zoom(2 / this.view.scale);
+		}else
+		{
+			this.zoom((Math.round(this.view.scale * this.zoomFactor * 20) / 20) / this.view.scale);
+		}
 	}
 };
 
@@ -2812,7 +2817,8 @@ Graph.prototype.zoomOut = function()
 	// Switches to 1% zoom steps below 15%
 	if (this.view.scale <= 0.15)
 	{
-		this.zoom((this.view.scale - 0.01) / this.view.scale);
+		// this.zoom((this.view.scale - 0.01) / this.view.scale);
+		return;
 	}
 	else
 	{
@@ -5456,7 +5462,7 @@ if (typeof mxVertexHandler != 'undefined')
 								if (state != null || (mxClient.IS_VML && src == this.view.getCanvas()) ||
 									(mxClient.IS_SVG && src == this.view.getCanvas().ownerSVGElement))
 								{
-									cell = this.addText(pt.x, pt.y, state);
+									// cell = this.addText(pt.x, pt.y, state);
 								}
 							}
 						}
