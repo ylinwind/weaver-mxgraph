@@ -55,6 +55,7 @@
 	<script type="text/javascript" src="js/Dialogs.js"></script>
 	<script type="text/javascript" src="js/wfEditor.js"></script>
 	<script type="text/javascript" src="js/NodeInfo.js"></script>
+	<script type="text/javascript" src="js/wfGroups.js"></script>
 	<!-- 流程图组件所需资源 -->
 	  
 	<link rel="stylesheet" href="/cloudstore/resource/pc/com/v1/index.min.css?v=20180320">
@@ -105,8 +106,8 @@
 	<!-- <script type="text/javascript" src="/spa/main/engine.js?v=20171214"></script> -->
 	
 	<!-- <script type="text/javascript" src="/spa/workflow/global.js"></script> -->
-	<script type="text/javascript" src="/spa/workflow/static4engine/engine.js"></script>
-	<script type="text/javascript" src="/spa/workflow/static4engine/engine4single.js"></script>
+	<!-- <script type="text/javascript" src="/spa/workflow/static4engine/engine.js"></script>
+	<script type="text/javascript" src="/spa/workflow/static4engine/engine4single.js"></script> -->
 <!--  -->
 	<link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
 	<link rel="stylesheet" type="text/css" href="styles/style-icon.css">
@@ -125,6 +126,7 @@
 			window.wfGetLabel = getLabel; //国际化方法
 			window.wfFormatMultiLang = formatMultiLang; //转换为当前语言
 			window.wfModal = modal; //modal 弹框
+			window.message = message;
 
 			EditorUi.prototype.init = function()
 			{
@@ -164,59 +166,8 @@
 					
 					graph.refresh();
 				}
-				// /api/workflow/layout/getWfInfo?workflowId=20305 //获取节点信息
-				// /api/workflow/layout/getXml?workflowId=20305 //获取流程图信息
-				// /api/workflow/layout/saveLayout //保存
-				let workflowId = window.urlParams.workflowId || '';
-				message.loading('正在请求数据...',0);
-				mxUtils.post(WORKFLOW_GETWFINFO_PATH, `workflowId=${workflowId}`, function(req)
-				{
-					var request = req.request;
-					var response = request.response;
-					var json = JSON.parse(response);
-					var doc = mxUtils.parseXml(json.xml);
-
-					var allCells = sb.editor.graph.importGraphModel(doc.documentElement);
-					var existParams = {nodeIds:[],linkIds:[]};//初始节点出口值；
-					allCells.map(v=>{
-						if(v && v.nodeId){
-							existParams['nodeIds'].push(v.nodeId);
-						}else if(v && v.linkId){
-							existParams['linkIds'].push(v.linkId);
-						}
-						// v.value = wfFormatMultiLang(v.value);
-					});
-					sb.editor.graph.existParams = existParams;
-					sb.editor.graph.setSelectionCells(allCells);
-				});
-				mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, `workflowId=${workflowId}`, function(req)
-				{
-					var request = req.request;
-					var response = request.response;
-					var json = JSON.parse(response);
-					sb.editor.graph.workflowDetailDatas = json;
-					message.destroy();
-				});
-				// var xml = localStorage.getItem('Drawing1.xml');
-				// var doc = mxUtils.parseXml(``);
-				// this.editor.graph.setSelectionCells(this.editor.graph.importGraphModel(doc.documentElement));
-				/*
-				var xhr = ajaxFunction();
-				xhr.onreadystatechange = function(){
-					// alert(xhr.readyState);
-					//alert(xhr.status);
-					if(xhr.readyState==4){
-						if(xhr.status==200||xhr.status==304){
-							var data = xhr.responseText;
-							// alert(data);
-							console.log(data)
-						}
-					}
-				}
-				xhr.open("POST",WORKFLOW_GETWFINFO_PATH,true);
-				xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded;charset=utf-8");
-				xhr.send("workflowId=21644"); 
-				*/
+				
+				getXmlAndDatas(sb);
 			};
 			
 			// Adds required resources (disables loading of fallback properties, this can only
@@ -242,25 +193,43 @@
 				document.body.innerHTML = '<center style="margin-top:10%;">Error loading resource files. Please check browser console.</center>';
 			});
 		})();
-		function ajaxFunction(){
-			var xmlHttp;
-			try{ // Firefox, Opera 8.0+, Safari
-					xmlHttp=new XMLHttpRequest();
-				}
-				catch (e){
-				try{// Internet Explorer
-						xmlHttp=new ActiveXObject("Msxml2.XMLHTTP");
-					}
-					catch (e){
-					try{
-						xmlHttp=new ActiveXObject("Microsoft.XMLHTTP");
-					}
-					catch (e){}
-					}
-				}
+		function getXmlAndDatas(sb){
+			let workflowId = window.urlParams.workflowId || '';
+			message.loading('正在加载数据，请稍候...',0);
+			mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, `workflowId=${workflowId}`, function(req)
+			{
+				var request = req.request;
+				var response = request.response;
+				var json = JSON.parse(response);
+				sb.editor.graph.workflowDetailDatas = json;
 
-				return xmlHttp;
-			}
+				mxUtils.post(WORKFLOW_GETWFINFO_PATH, `workflowId=${workflowId}`, function(req)
+				{
+					message.destroy();
+					var request = req.request;
+					var response = request.response;
+					var json = JSON.parse(response);
+					var doc = mxUtils.parseXml(json.xml);
+
+					var allCells = sb.editor.graph.importGraphModel(doc.documentElement);
+					var existParams = {nodeIds:[],linkIds:[]};//初始节点出口值；
+					allCells.map(v=>{
+						if(v && v.nodeId){
+							existParams['nodeIds'].push(v.nodeId);
+						}else if(v && v.linkId){
+							existParams['linkIds'].push(v.linkId);
+						}
+					});
+					sb.editor.graph.existParams = existParams;
+					sb.editor.graph.setSelectionCells(allCells);
+					sb.editor.undoManager.clear();
+				});
+			});
+		}
+		// 禁止拖动选中文字
+		document.body.onselectstart = document.body.ondrag = function(){
+	　　　　return false;
+	　　}
 	</script>
 </body>
 </html>

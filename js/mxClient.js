@@ -69683,6 +69683,9 @@ mxGraphHandler.prototype.consumeMouseEvent = function(evtName, me)
  */
 mxGraphHandler.prototype.mouseDown = function(sender, me)
 {
+	// if(me.evt.target.className == "workflow-col-group"){
+	// 	return;
+	// }
 	console.log('down')
 	if (!me.isConsumed() && this.isEnabled() && this.graph.isEnabled() &&
 		me.getState() != null && !mxEvent.isMultiTouchEvent(me.getEvent()))
@@ -70146,13 +70149,26 @@ mxGraphHandler.prototype.mouseMove = function(sender, me)
 		
 		if (cursor == null && graph.isEnabled() && graph.isCellMovable(me.getCell()))
 		{
+			let cell = me.getCell();
 			if (graph.getModel().isEdge(me.getCell()))
 			{
-				cursor = mxConstants.CURSOR_MOVABLE_EDGE;
+				if(cell.isRowGroup){
+					cursor = 'ns-resize';
+				}else if(cell.isColGroup){
+					cursor = 'ew-resize';
+				}else{
+					cursor = mxConstants.CURSOR_MOVABLE_EDGE;
+				}
 			}
 			else
 			{
-				cursor = mxConstants.CURSOR_MOVABLE_VERTEX;
+				if(cell.isRowGroup){
+					cursor = 'ns-resize';
+				}else if(cell.isColGroup){
+					cursor = 'ew-resize';
+				}else{
+					cursor = mxConstants.CURSOR_MOVABLE_VERTEX;
+				}
 			}
 		}
 
@@ -73577,34 +73593,42 @@ mxConnectionHandler.prototype.mouseUp = function(sender, me)
 			{
 				target = this.currentState.cell;
 			}
-			
-			if(target != null ){
-				if(source.branchType == 'branchCenter' && !(target.branchType == 'branchCenter' || target.branchType == 'branchToOne')){
-					// mxUtils.alert('分叉中间点只能指向本分支中间节点或合并节点！');
-					wfModal.warning({
-						title: wfGetLabel(131329, "信息确认"),
-						content:'分叉中间点只能指向本分支中间节点或合并节点！',
-						okText: wfGetLabel(83446, "确定"),
-						onOk:()=>{console.log('ok')},
-					});
-				}else if(target.branchType == 'branchCenter' && source.branchType == 'branchToOne'){
-					// mxUtils.alert('合并节点不能指向分叉中间点！');
-					wfModal.warning({
-						title: wfGetLabel(131329, "信息确认"),
-						content:'合并节点不能指向分叉中间点！',
-						okText: wfGetLabel(83446, "确定"),
-						onOk:()=>{console.log('ok')},
-					});
-				}else if(target.branchType == 'branchToOne' && source.branchType == 'oneToBranch'){
-					// mxUtils.alert('起始节点不能指向合并节点！');
-					wfModal.warning({
-						title: wfGetLabel(131329, "信息确认"),
-						content:'起始节点不能指向合并节点！',
-						okText: wfGetLabel(83446, "确定"),
-						onOk:()=>{console.log('ok')},
-					});
-				}else{
-					this.connect(source, target, me.getEvent(), me.getCell());
+			if(source.nodeType == 3){
+				wfModal.warning({
+					title: wfGetLabel(131329, "信息确认"),
+					content:'起点不能是归档节点！',
+					okText: wfGetLabel(83446, "确定"),
+					onOk:()=>{},
+				});
+			}else{
+				if(target != null ){
+					if(source.branchType == 'branchCenter' && !(target.branchType == 'branchCenter' || target.branchType == 'branchToOne')){
+						// mxUtils.alert('分叉中间点只能指向本分支中间节点或合并节点！');
+						wfModal.warning({
+							title: wfGetLabel(131329, "信息确认"),
+							content:'分叉中间点只能指向本分支中间节点或合并节点！',
+							okText: wfGetLabel(83446, "确定"),
+							onOk:()=>{console.log('ok')},
+						});
+					}else if(target.branchType == 'branchCenter' && source.branchType == 'branchToOne'){
+						// mxUtils.alert('合并节点不能指向分叉中间点！');
+						wfModal.warning({
+							title: wfGetLabel(131329, "信息确认"),
+							content:'合并节点不能指向分叉中间点！',
+							okText: wfGetLabel(83446, "确定"),
+							onOk:()=>{console.log('ok')},
+						});
+					}else if(target.branchType == 'branchToOne' && source.branchType == 'oneToBranch'){
+						// mxUtils.alert('起始节点不能指向合并节点！');
+						wfModal.warning({
+							title: wfGetLabel(131329, "信息确认"),
+							content:'起始节点不能指向合并节点！',
+							okText: wfGetLabel(83446, "确定"),
+							onOk:()=>{console.log('ok')},
+						});
+					}else{
+						this.connect(source, target, me.getEvent(), me.getCell());
+					}
 				}
 			}
 		}

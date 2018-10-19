@@ -139,7 +139,8 @@ WfNodeInfo.prototype.renderWorkdlowItem = function(){
 	var elP = document.getElementById('nodeInfo-no-node1');
 	if(document.getElementById('nodeInfo-node-detail') != null){
 		let _elDiv = document.getElementById('nodeInfo-node-detail');
-		this.container.removeChild(_elDiv);
+		// this.container.removeChild(_elDiv); // 会报react minify错 找不到元素了
+		_elDiv.style.display = 'none';
 	}
 	if(elP == null){
 		elP = document.createElement('p');
@@ -195,7 +196,7 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 	var nodeDetailArr = [
 		{label:'节点名称',value:'',key:'name'},
 		{label:'操作者',value:'',key:'operators'},
-		{label:'表单内容',value:'',key:'hasNodeForFie'},
+		{label:'表单内容',value:'',key:'formContent'},
 		{label:'操作菜单',value:'',key:'hasCusRigKey'},
 		{label:'节点前附加操作',value:'',key:'hasNodeBefAddOpr'},
 		{label:'节点后附加操作',value:'',key:'hasNodeAftAddOpr'},
@@ -241,7 +242,7 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 	elSpanRight.className = `detail-item-right detail-item-span 
 		${v.key === 'operators' || v.key === 'name' || v.key === 'targetCell' || v.key === 'isBuildCode' || v.key === 'remindMsg'  ? 'isEcComs-item':''}`;
 	
-	if(v.key === 'name'){//节点名称
+	if(v.key === 'name'){//节点名称 ||  出口名称
 		let operatorArea = document.createElement('div');
 		operatorArea.id = 'nodeName-container';
 		elSpanRight.appendChild(operatorArea);
@@ -251,7 +252,7 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 			_sb.createNodeNameElement(isEage,v.key,detailDatas,nowCell);
 		}, 0);
 
-	}else if(v.key === 'operators'){
+	}else if(v.key === 'operators'){ //操作者
 		let operatorArea = document.createElement('div');
 		operatorArea.id = 'operators-container';
 		elSpanRight.appendChild(operatorArea);
@@ -287,6 +288,12 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 		setTimeout(() => {
 			_sb.createRemindMsgElement(isEage,v.key,detailDatas,nowCell);
 		}, 0);
+	}else if(v.key === 'formContent'){//节点-表单内容
+		var formContentArea = document.createElement('a');
+		formContentArea.innerHTML = detailDatas[v.key];
+		// formContentArea.className = 'icon-workflow-shezhi';
+		formContentArea.onclick = this.createDetailDialog.bind(this,v.key,v.label,nowCell.nodeId?nowCell.nodeId:nowCell.linkId);
+		elSpanRight.appendChild(formContentArea);
 	}else{
 		var checkSpanIcon = document.createElement('span');
 		checkSpanIcon.className = 'icon-workflow-shezhi';
@@ -314,10 +321,38 @@ WfNodeInfo.prototype.createTargetNodeElement = function(isEage,key,detailDatas,n
 	var model = graph.model;
 	let WeaSelect = window.ecCom.WeaSelect;
 
+	var startX = graph.minimumGraphSize.x;
+	var startY = graph.minimumGraphSize.y;
+	var graphWidth = graph.minimumGraphSize.width;
+	var graphHeight = graph.minimumGraphSize.height;
+	var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+	var cellsExceptEdges = allCells.filter(v=>!v.edge && v.id != nowCell.source.id);
+	
+	let selectOptions = [];
+	cellsExceptEdges.map((v,i)=>{
+		let obj = {};
+		obj['key'] = ''+v.id;
+		obj['selected'] = v.id == nowCell.target.id ? true : false;
+		obj['showname'] = wfFormatMultiLang(v.value);
+		selectOptions.push(obj);
+	})
 	ReactDOM.render(
 		React.createElement(WeaSelect,
 		{
-			
+			options:selectOptions,
+			onChange:(value, showname)=>{
+				let selectItem = cellsExceptEdges.filter(v=>v.id == value);
+				model.beginUpdate();
+				try
+				{
+					graph.cellConnected(nowCell,selectItem[0],false,{name:'',perimeter:true,point:{x:0,y:0.5}});
+				}
+				finally
+				{
+					model.endUpdate();
+				}
+				console.log(cellsExceptEdges,'cellsExceptEdges',value, showname);
+			}
 		}),
 		document.getElementById("targetCell-container")
 	);
@@ -334,7 +369,10 @@ WfNodeInfo.prototype.createBuildCodeElement = function(isEage,key,detailDatas,no
 	ReactDOM.render(
 		React.createElement(WeaCheckbox,
 		{
-			value:detailDatas[key] == 'true' ? true : false,
+			value:nowCell.isBuildCode?nowCell.isBuildCode:detailDatas[key] == 'true' ? true : false,
+			onChange:(v)=>{
+				nowCell.isBuildCode = v;
+			}
 		}),
 		document.getElementById("isBuildCode-container")
 	);
@@ -351,10 +389,14 @@ WfNodeInfo.prototype.createRemindMsgElement = function(isEage,key,detailDatas,no
 	ReactDOM.render(
 		React.createElement(WeaInput,
 		{
-			value:isEage ? detailDatas[key] : nowCell.value,
+			viewAttr:3,
+			value:nowCell.exitInfo  ? nowCell.exitInfo  : detailDatas[key] ,
 			inputType:"multilang",
 			isBase64:true,
 			layout:document.getElementById("remindMsg-container"),
+			onBlur:(v)=>{
+				nowCell.exitInfo = v;
+			}
 		}),
 		document.getElementById("remindMsg-container")
 	);
@@ -372,10 +414,10 @@ WfNodeInfo.prototype.createNodeNameElement = function(isEage,key,detailDatas,now
 		React.createElement(WeaInput,
 		{
 			viewAttr:3,
-			value:isEage ? detailDatas[key] : nowCell.value,
-			inputType:"multilang",
-			isBase64:true,
-			layout:document.body,
+			value:nowCell.value ?  nowCell.value : detailDatas[key] ,
+			// inputType:"multilang",
+			// isBase64:true,
+			layout:document.getElementById("nodeName-container"),
 			// onChange : (v)=>{
 			// 	console.log(v,'----------')
 			// },
@@ -385,7 +427,7 @@ WfNodeInfo.prototype.createNodeNameElement = function(isEage,key,detailDatas,now
 						title: wfGetLabel(131329, "信息确认"),
 						content:'节点名称不能为空！',
 						okText: wfGetLabel(83446, "确定"),
-						onOk:()=>{console.log('ok')},
+						onOk:()=>{},
 					});
 					this.nodeNameRef.refs.inputNormal.setValue(nowCell.value.trim());
 				}else{
@@ -411,30 +453,25 @@ WfNodeInfo.prototype.createNodeNameElement = function(isEage,key,detailDatas,now
 WfNodeInfo.prototype.createOperatorElement = function(isEage,key,detailDatas,nowCell){
 	let browserComs = window.ecCom.WeaBrowser;
 	detailDatas.operatorGroups.map((v,i)=>{
-		detailDatas.operatorGroups[i].id = Number(v.id);
-		detailDatas.operatorGroups[i].name = `<a onclick="window.workflowUi.wfNodeInfo.opertorItemClick(${v.id})">${wfFormatMultiLang(v.name)}</a>`;//wfFormatMultiLang
+		detailDatas.operatorGroups[i].name = 
+		`<a onclick="window.workflowUi.wfNodeInfo.createDetailDialog('operator','操作组',${nowCell.nodeId},${nowCell.nodeType},${v.id})">${wfFormatMultiLang(v.name)}</a>`;//wfFormatMultiLang
 	});
 
 	ReactDOM.render(
 		React.createElement(browserComs,
 		{
-			// type:'7',
 			viewAttr : 1 ,
 			hasAddBtn:true,
 			isSingle:false,
 			replaceDatas:detailDatas.operatorGroups || [],
 			whiteBackground:true,
 			hasBorder:true,
-			addOnClick:()=>{console.log('addOnClick')},
-			// linkUrl:'#',
+			addOnClick:()=>{console.log('iniin');this.createDetailDialog('operator','操作组',nowCell.nodeId,nowCell.nodeType,'-1')},
 			layout:document.body,
 		}),
 		document.getElementById("operators-container")
 	);	
 
-}
-WfNodeInfo.prototype.opertorItemClick = function(id){
-	console.log('omininin',id)
 }
 /**
 *绘制折叠展开按钮
@@ -455,6 +492,14 @@ WfNodeInfo.prototype.clickNodeFolder = function(elt){
 	var model = graph.model;
 
 	this.nodePanelHide = !this.nodePanelHide;
+	var wfTestPanel = document.getElementById('workflow-test-detail-panel');
+	var vertSplit = document.getElementById('test-panel-split');
+	if(wfTestPanel){
+		this.nodePanelHide ? wfTestPanel.style.width = '100%' : wfTestPanel.style.width = 'calc(100% - 250px)' ;
+	}
+	if(vertSplit){
+		this.nodePanelHide ? vertSplit.style.right = '0' : vertSplit.style.right = '250px';
+	}
 	//加与不加update都一样
 	// model.beginUpdate();
 	try
@@ -484,11 +529,20 @@ WfNodeInfo.prototype.clickNodeFolder = function(elt){
 }
 /**
 创建每项设置对应弹框
- */
-WfNodeInfo.prototype.createDetailDialog = function(key='',modalName='',nodeId=''){
-	console.log(key,'----------')
+*/
+var workflowDesignE9_dialog,workflowDesignE9_dialog_params={};
+WfNodeInfo.prototype.createDetailDialog = function(key='',modalName='',nodeId='',nodetype='',groupid=''){
 	var WeaTools = window.ecCom.WeaTools;
+	workflowDesignE9_dialog_params = {key,modalName,nodetype,groupid};
+	if(key == 'hasRole' || key == 'hasCondition'){
+		workflowDesignE9_dialog_params['linkId'] = nodeId;
+	}else{
+		workflowDesignE9_dialog_params['nodeId'] = nodeId;
+	}
+	var _workflowDetailDatas = this.editorUi.editor.graph.workflowDetailDatas;
+	let isCreate = nodetype == 0 ? 1 : '';
 	/**
+		*操作组 ：#/main/workflowengine/path/pathSet/operatorSet?isSingle=true&workflowId=&nodeid=&nodetype=&isCreate=&groupid=-1
 		*操作菜单 : #/main/workflowengine/path/pathset/perationMenuSet?nodeid=284&workflowId=81&isRoute=true&_key=2r5y2t
 		*表单内容 ： #/main/workflowengine/path/pathset/formcontent?nodeid=284&workflowId=81&isRoute=true&_key=6vyr0l
 		*节点前附加操作 ： #/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=9244&nodeId=11995&ispreoperator=1
@@ -498,9 +552,12 @@ WfNodeInfo.prototype.createDetailDialog = function(key='',modalName='',nodeId=''
 		*子流程设置 ： #/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=9604&nodeId=12456&type=subWf&isSingle=true
 		*流程异常处理 ： #/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=9604&nodeId=12458&type=exception&isSingle=true
 		*
+		*附加规则 : #/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=9244&linkId=20015
+		条件 ： /formmode/interfaces/showconditionContent.jsp?design=1&rulesrc=1&formid=-953&isbill=1&linkid=26876&wfid=15406&isreject=&curtype=1
+		*
 		{label:'节点名称',value:'',key:'name'},
 		{label:'操作者',value:'',key:'operators'},
-		{label:'表单内容',value:'',key:'hasNodeForFie'},
+		{label:'表单内容',value:'',key:'formContent'},
 		{label:'操作菜单',value:'',key:'hasCusRigKey'},
 		{label:'节点前附加操作',value:'',key:'hasNodeBefAddOpr'},
 		{label:'节点后附加操作',value:'',key:'hasNodeAftAddOpr'},
@@ -509,35 +566,93 @@ WfNodeInfo.prototype.createDetailDialog = function(key='',modalName='',nodeId=''
 		{label:'子流程设置',value:'',key:'hasOperateSubwf'},
 		{label:'流程异常处理',value:'',key:'hasOperateException'},
 		{label:'节点字段校验',value:'',key:'hasNodePro'}
+		
+		{label:'条件',value:'',key:'hasCondition'},
+		{label:'附加规则',value:'',key:'hasRole'},
 	*/
 	let workflowId = window.urlParams.workflowId || '';
-
+	// 功能地址
 	let urlObj = {
-		'hasCusRigKey' : `#/main/workflowengine/path/pathset/perationMenuSet?nodeid=${nodeId}&workflowId=${workflowId}&isRoute=true&_key=2r5y2t`,
-		'hasNodeForFie' : `#/main/workflowengine/path/pathset/formcontent?nodeid=${nodeId}&workflowId=${workflowId}&isRoute=true&_key=6vyr0l`,
-		'hasNodeBefAddOpr' : `#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=${workflowId}&nodeId=${nodeId}&ispreoperator=1`,
-		'hasNodeAftAddOpr' : `#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=${workflowId}&nodeId=${nodeId}&ispreoperator=0`,
-		'hasOperateSign' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=sign&isSingle=true`,
-		'hasOperateTitle' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=title&isSingle=true`,
-		'hasOperateSubwf' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=subWf&isSingle=true`,
-		'hasOperateException' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=exception&isSingle=true`,
+		'operator' : `#/main/workflowengine/path/pathSet/operatorSet?isSingle=true&workflowId=${workflowId}&nodeid=${nodeId}&nodetype=${nodetype}
+						&groupid=${groupid}&isCreate=${isCreate}&isClose4e9=true`,
+		'hasCusRigKey' : `#/main/workflowengine/path/pathset/perationMenuSet?nodeid=${nodeId}&workflowId=${workflowId}&isRoute=true&isClose4e9=true&_key=2r5y2t`,
+		'formContent' : `#/main/workflowengine/path/pathset/formcontent?nodeid=${nodeId}&workflowId=${workflowId}&isRoute=true&isClose4e9=true&_key=6vyr0l`,
+		'hasNodeBefAddOpr' : `#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=${workflowId}&nodeId=${nodeId}&ispreoperator=1&isClose4e9=true`,
+		'hasNodeAftAddOpr' : `#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=${workflowId}&nodeId=${nodeId}&ispreoperator=0&isClose4e9=true`,
+		'hasOperateSign' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=sign&isSingle=true&isClose4e9=true`,
+		'hasOperateTitle' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=title&isSingle=true&isClose4e9=true`,
+		'hasOperateSubwf' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=subWf&isSingle=true&isClose4e9=true`,
+		'hasOperateException' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=exception&isSingle=true&isClose4e9=true`,
+		// 出口
+		'hasRole' : `#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=${workflowId}&linkId=${nodeId}&isClose4e9=true`,
+		'hasCondition' : `/formmode/interfaces/showconditionContent.jsp?design=1&rulesrc=1&linkid=${nodeId}&wfid=${workflowId}&isreject=&curtype=1
+						&formid=${_workflowDetailDatas.formId}&isbill=${_workflowDetailDatas.isBill}&isClose4e9=true`
 	}
 	if(urlObj[key]){
-		let url = `/spa/workflow/static4engine/engine.html${urlObj[key]}`;
-
-		const dialog = WeaTools.createDialog({
+		let url = `${key == 'hasCondition' ? '' : '/spa/workflow/static4engine/engine.html'}${urlObj[key]}`;
+		workflowDesignE9_dialog = WeaTools.createDialog({
 			title: modalName || 'test',
 			moduleName: "workflow",
-			icon:'icon-coms-PageAddress',
 			url: url,
-			style: {width:800, height:400},
+			style: {width:900, height:600},
 			callback: (con) =>{
 				console.log(con)
 			},
 			onCancel: () =>{
+				console.log('cancel')
 			}
 		});
-		dialog.show();
+		workflowDesignE9_dialog.show();
 	}
 
+}
+/**
+*关闭e9弹框的回调
+ */
+function workflowDesign_callback(key,returnVal,needSyncNodes){
+	// console.log(key,returnVal,needSyncNodes,'key,returnVal,needSyncNodes',workflowDesignE9_dialog_params);
+	let isNode = true , id;
+	if(workflowDesignE9_dialog_params.hasOwnProperty('linkId')){
+		isNode = false;
+		id = workflowDesignE9_dialog_params.linkId;
+	}else{
+		id = workflowDesignE9_dialog_params.nodeId;
+	}
+	if(key == 'operator'){//操作者
+		let workflowId = window.urlParams.workflowId || '';
+		mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, `workflowId=${workflowId}`, function(req)
+			{
+				var request = req.request;
+				var response = request.response;
+				var json = JSON.parse(response);
+				workflowUi.editor.graph.workflowDetailDatas = json;
+				workflowUi.wfNodeInfo.refresh();
+			}
+		)
+	}else{
+		let workflowDetailDatas = workflowUi.editor.graph.workflowDetailDatas;
+		if(key == 'showpreaddinoperate'){//节点前附加操作
+			workflowDetailDatas.nodeDatas[id]['hasNodeBefAddOpr'] = returnVal;
+		}else if(key == 'showaddinoperate_node'){//节点后附加操作
+			workflowDetailDatas.nodeDatas[id]['hasNodeAftAddOpr'] = returnVal;
+		}else if(key == 'showNodeAttrOperate_sign'){//签字意见设置
+			workflowDetailDatas.nodeDatas[id]['hasOperateSign'] = returnVal;
+		}else if(key == 'showNodeAttrOperate_title'){//标题显示设置
+			workflowDetailDatas.nodeDatas[id]['hasOperateTitle'] = returnVal;
+		}else if(key == 'showNodeAttrOperate_subWorkflow'){//子流程设置
+			workflowDetailDatas.nodeDatas[id]['hasOperateSubwf'] = returnVal;
+		}else if(key == 'showNodeAttrOperate_exceptionhandle'){//流程异常处理
+			workflowDetailDatas.nodeDatas[id]['hasOperateException'] = returnVal;
+		}else if(key == 'formContent'){//表单内容
+			workflowDetailDatas.nodeDatas[id]['formContent'] = returnVal;
+		}else if(key == 'showButtonNameOperate'){//操作菜单
+			workflowDetailDatas.nodeDatas[id]['hasCusRigKey'] = returnVal;
+		}else if(key == 'showaddinoperate_link'){//出口附加规则
+			workflowDetailDatas.nodeDatas[id]['hasRole'] = returnVal;
+		}
+		workflowUi.editor.graph.workflowDetailDatas = workflowDetailDatas;
+
+		workflowUi.wfNodeInfo.refresh();
+	}
+	key != 'formContent' && workflowDesignE9_dialog && workflowDesignE9_dialog.close();
 }

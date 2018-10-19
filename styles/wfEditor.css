@@ -135,6 +135,10 @@
     transition: all .1s;
     /* overflow-y: auto; */
 }
+.wfNodeInfoContainer #nodeInfo-detail-shouldSaveFirst{
+    color: red;
+    padding: 10px;
+}
 .wfNodeInfoContainer .nodeInfo-header{
     height:  44px;
     line-height: 44px;
@@ -222,17 +226,29 @@
     border-left: 1px solid #E2E2E2;
     cursor: pointer;
 }
-/*  */
-.workflow-col-group{
+/* 横向分组 */
+.workflow-row-group{
     border-bottom: 2px dashed #999;
     position: absolute;
     left: 0;
-    z-index: 999999;
+    z-index: 1;
     width: 100%;
 }
-.workflow-col-group:hover{
+.workflow-col-group:hover {
+    border-color: #000;
+    cursor: ew-resize;
+}
+.workflow-row-group:hover{
     border-color: #000;
     cursor: ns-resize;
+}
+/* 纵向分组 */
+.workflow-col-group{
+    border-right: 2px dashed #999;
+    position: absolute;
+    left: 100px;
+    z-index: 1;
+    height: 100%;
 }
 /* 流程测试 */
 .workfow-test{
@@ -243,4 +259,31 @@
     border-radius: 50%;
     position: absolute;
     transition: all .5s;
+}
+/* 流程测试详细信息面板 */
+#workflow-test-detail-panel{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 160px;
+    box-shadow: 0 0 2px #333;
+    background: #fff;
+    overflow: auto;
+    padding-top: 10px;
+}
+#workflow-test-detail-panel .wfTest-detail-item{
+    padding: 0 10px;
+}
+#workflow-test-detail-panel .wfTest-item-wrong{
+    color: red;
+}
+#test-panel-split{
+    /* left: 0;
+    right: 0;
+    top: 0; */
+    left: 0;
+    right: 250px;
+    bottom: 150px;
+    /* bottom: 150px; */
 }

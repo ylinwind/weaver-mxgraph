@@ -3014,6 +3014,7 @@ EditorUi.prototype.createTabContainer = function()
 EditorUi.prototype.createDivs = function()
 {
 	this.wfEditorContainer = this.createDiv('wfEditorContainer');
+	this.wfGroupsContainer = this.createDiv('wfGroupsContainer');
 	this.wfNodeInfoContainer = this.createDiv('wfNodeInfoContainer');
 	this.menubarContainer = this.createDiv('geMenubarContainer');
 	this.toolbarContainer = this.createDiv('geToolbarContainer');
@@ -3101,6 +3102,10 @@ EditorUi.prototype.createUi = function()
 	this.wfEditor = (this.editor.chromeless) ? null : this.createWfEditor(this.wfEditorContainer);
 	if(this.wfEditor != null ){
 		this.container.appendChild(this.wfEditorContainer);
+	}
+	this.wfGroups = (this.editor.chromeless) ? null : this.createWfGroups(this.wfGroupsContainer);
+	if(this.wfGroups != null ){
+		this.container.appendChild(this.wfGroupsContainer);
 	}
 	this.wfNodeInfo = (this.editor.chromeless) ? null : this.createWfNodeInfo(this.wfNodeInfoContainer);
 	if(this.wfNodeInfo != null ){
@@ -3218,6 +3223,10 @@ EditorUi.prototype.createWfEditor = function(container)
 {
 	return new WfPanel(this, container);
 };
+EditorUi.prototype.createWfGroups = function(container)
+{
+	return new wfGroups(this, container);
+};
 EditorUi.prototype.createWfNodeInfo = function(container)
 {
 	return new WfNodeInfo(this, container);
@@ -3268,12 +3277,13 @@ EditorUi.prototype.addSplitHandler = function(elt, horizontal, dx, onChange)
 	
 	var getValue = mxUtils.bind(this, function()
 	{
-		var result = parseInt(((horizontal) ? elt.style.left : elt.style.bottom));
+		var result = parseInt(((horizontal) ? elt.style.left : elt.style.bottom==''?0:elt.style.bottom));
 	
 		// Takes into account hidden footer
 		if (!horizontal)
 		{
-			result = result + dx - this.footerHeight;
+			// result = result + dx - this.footerHeight;
+			result = result + dx;
 		}
 		
 		return result;
@@ -3585,22 +3595,27 @@ EditorUi.prototype.save = function(name)
 
 		try
 		{
+			var _this = this;
 			var message = window.antd && window.antd.message;
 
 			let workflowId = window.urlParams.workflowId || '';
 			message.destroy();
-			message && message.loading('正在保存...',0);
+			message && message.loading('正在保存，请稍候...',0);
 			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId=${workflowId}&xml=${xml}&deleteLinks=${deleteLinkIds.join(',')}&deleteNodes=${deleteNodeIds.join(',')}`, function(req,res)
 			{
 				var response = req.request.response;
 				var resObj = JSON.parse(response);
-				// console.log(req,'req',response,resObj);
 				message.destroy();
 				if(resObj.result){
 					message && message.success('保存成功！',2);
+					getXmlAndDatas(_this);
 				}else{
 					message && message.error('保存失败！',2);
 				}
+				let timeout= setTimeout(() => {
+					message.destroy();
+					clearTimeout(timeout);
+				}, 2000);
 			});
 			/*
 			// if (Editor.useLocalStorage)

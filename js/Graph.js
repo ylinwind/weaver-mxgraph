@@ -4784,6 +4784,13 @@ if (typeof mxVertexHandler != 'undefined')
 		 */
 		Graph.prototype.importGraphModel = function(node, dx, dy, crop)
 		{
+			var startX = this.minimumGraphSize.x;
+			var startY = this.minimumGraphSize.y;
+			var graphWidth = this.minimumGraphSize.width;
+			var graphHeight = this.minimumGraphSize.height;
+			var allCells = this.getAllCells(startX,startY,graphWidth,graphHeight);
+			this.cellsRemoved(allCells);
+
 			dx = (dx != null) ? dx : 0;
 			dy = (dy != null) ? dy : 0;
 			
