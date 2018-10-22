@@ -410,7 +410,8 @@ WfPanel.prototype.drawRowGroup = function(){
 	let wfGroup = workflowUi.wfGroups;
 	let rowObj = {
 		type:'row',
-		position:{}
+		position:{left:0},
+		panelHeight:150
 	}
 	wfGroup.addRowGroup(rowObj);
 	// var _container;
@@ -432,10 +433,11 @@ WfPanel.prototype.drawColGroup = function(){
 	
 	let rowObj = {
 		type:'col',
-		position:{}
+		position:{top:0},
+		panelWidth:150
 	}
-	this.tipInfoDisplay = 'block' ? rowObj.position.top = 135 : rowObj.position.top = 100;
-	wfGroup.addRowGroup(rowObj);
+	// this.tipInfoDisplay = 'block' ? rowObj.position.top = 135 : rowObj.position.top = 100;
+	wfGroup.addColGroup(rowObj);
 	// var _container;
 	// if(document.getElementById('wf-groups-container')){
 	// 	_container = document.getElementById('wf-groups-container');

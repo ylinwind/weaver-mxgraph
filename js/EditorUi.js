@@ -3105,7 +3105,8 @@ EditorUi.prototype.createUi = function()
 	}
 	this.wfGroups = (this.editor.chromeless) ? null : this.createWfGroups(this.wfGroupsContainer);
 	if(this.wfGroups != null ){
-		this.container.appendChild(this.wfGroupsContainer);
+		// this.container.appendChild(this.wfGroupsContainer);
+		this.diagramContainer.appendChild(this.wfGroupsContainer);
 	}
 	this.wfNodeInfo = (this.editor.chromeless) ? null : this.createWfNodeInfo(this.wfNodeInfoContainer);
 	if(this.wfNodeInfo != null ){
