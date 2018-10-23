@@ -14,7 +14,8 @@ groups:[{
     type:'col' || 'row',
     position:{left:'',top:''},
     panelWidth:'',
-    panelHeight:''
+    panelHeight:'',
+    value:''
     ...
 }]
  */
@@ -132,6 +133,15 @@ wfGroups.prototype.createGroupPanelItem = function(item,index){
     let groupItem = document.createElement('div');
     let infoArea = document.createElement('div');
     let actionArea = document.createElement('div');
+    let inputName = document.createElement('input');
+    inputName.className = 'group-item-input';
+    var sb = this;
+    inputName.onblur = function(e){
+        this.style.display = 'none';
+        let val = e.target.value;
+        sb.groups[index].value = val;
+        sb.refresh();
+    }
 
     let actions = ['icon-coms-Last-step','icon-coms-Next-step','anticon anticon-cross'];
     actions.map((v,i)=>{
@@ -146,9 +156,18 @@ wfGroups.prototype.createGroupPanelItem = function(item,index){
                         groupItem.style.width = (item.panelHeight || 150) + 'px';
                         // groupItem.style.height = (item.panelHeight || 150) + 'px';
     actionArea.className = 'group-item-action';
-    infoArea.className = 'group-item-info';
-    infoArea.innerHTML = `分组（${item.type=='col'?'横向':'纵向'}）`;
 
+    infoArea.className = 'group-item-info';
+    infoArea.innerHTML = item.value;
+    infoArea.title = item.value;
+    infoArea.ondblclick = function(e){
+        console.log(e,'eeeeeeeee');
+        let input = e.target.childNodes[1];
+        input.style.display = 'inline';
+        input.value = item.value
+        input.focus();
+    }
+    infoArea.appendChild(inputName);
     groupItem.appendChild(infoArea);
     groupItem.appendChild(actionArea);
     return groupItem;
@@ -275,4 +294,9 @@ wfGroups.prototype.createGroupItemNameElement = function(){
         }),
         document.getElementById("nodeName-container")
 	);
+}
+/**
+ */
+wfGroups.prototype.getGroupsValue = function(){
+    return this.groups;
 }

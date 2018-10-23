@@ -411,7 +411,8 @@ WfPanel.prototype.drawRowGroup = function(){
 	let rowObj = {
 		type:'row',
 		position:{left:0},
-		panelHeight:150
+		panelHeight:150,
+		value:'分组（横向）'
 	}
 	wfGroup.addRowGroup(rowObj);
 	// var _container;
@@ -434,7 +435,8 @@ WfPanel.prototype.drawColGroup = function(){
 	let rowObj = {
 		type:'col',
 		position:{top:0},
-		panelWidth:150
+		panelWidth:150,
+		value:'分组（纵向）'
 	}
 	// this.tipInfoDisplay = 'block' ? rowObj.position.top = 135 : rowObj.position.top = 100;
 	wfGroup.addColGroup(rowObj);

@@ -309,11 +309,23 @@
     border-right: 1px solid #999999;
     float:left;
 }
+.group-item-info .group-item-input{
+    position: absolute;
+    display: none;
+    left: 50%;
+    top: 50%;
+    width: 100px;
+    transform: translate(-50%,-50%)
+}
 .group-item-info{
+    position: relative;
     text-align: center;
     display: inline-block;
     vertical-align: middle;
     width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .group-item-action{
     display: none;
