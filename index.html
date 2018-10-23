@@ -221,7 +221,9 @@
 						}
 					});
 					sb.editor.graph.existParams = existParams;
-					sb.editor.graph.setSelectionCells(allCells);
+					let groups = JSON.parse(localStorage.groups);
+					sb.wfGroups.init(groups);
+					// sb.editor.graph.setSelectionCells(allCells); //开始不要选中任何数据
 					sb.editor.undoManager.clear();
 				});
 			});

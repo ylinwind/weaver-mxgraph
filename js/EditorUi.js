@@ -3179,6 +3179,68 @@ EditorUi.prototype.createUi = function()
 	}
 	*/
 };
+/**
+
+
+ */
+EditorUi.prototype.doSaveLocalFile = function(a, b, c, d, e) {
+	if (window.Blob && navigator.msSaveOrOpenBlob)
+		a = d ? this.base64ToBlob(a, c) : new Blob([a],{
+			type: c
+		}),
+		navigator.msSaveOrOpenBlob(a, b);
+	else if (mxClient.IS_IE)
+		c = window.open("about:blank", "_blank"),
+		null == c ? mxUtils.popup(a, !0) : (c.document.write(a),
+		c.document.close(),
+		c.document.execCommand("SaveAs", !0, b),
+		c.close());
+	else if (mxClient.IS_IOS)
+		b = new TextareaDialog(this,b + ":",a,null,null,mxResources.get("close")),
+		b.textarea.style.width = "600px",
+		b.textarea.style.height = "380px",
+		this.showDialog(b.container, 620, 460, !0, !0),
+		b.init(),
+		document.execCommand("selectall", !1, null);
+	else {
+		var f = document.createElement("a")
+			, h = !mxClient.IS_SF && 0 > navigator.userAgent.indexOf("PaleMoon/") && "undefined" !== typeof f.download;
+		if (mxClient.IS_GC)
+			var k = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./)
+				, h = 65 == (k ? parseInt(k[2], 10) : !1) ? !1 : h;
+		if (h || this.isOffline()) {
+			f.href = URL.createObjectURL(d ? this.base64ToBlob(a, c) : new Blob([a],{
+				type: c
+			}));
+			h ? f.download = b : f.setAttribute("target", "_blank");
+			document.body.appendChild(f);
+			try {
+				window.setTimeout(function() {
+					URL.revokeObjectURL(f.href)
+				}, 0),
+				f.click(),
+				f.parentNode.removeChild(f)
+			} catch (A) {}
+		} else
+			this.createEchoRequest(a, b, c, d, e).simulate(document, "_blank")
+	}
+};
+EditorUi.prototype.createEchoRequest = function(a, b, c, d, e, g) {
+	a = "xml=" + encodeURIComponent(a);
+	return new mxXmlRequest(SAVE_URL,a + (null != c ? "&mime=" + c : "") + (null != e ? "&format=" + e : "") + (null != g ? "&base64=" + g : "") + (null != b ? "&filename=" + encodeURIComponent(b) : "") + (d ? "&binary=1" : ""))
+}
+EditorUi.prototype.base64ToBlob = function(a, b) {
+	b = b || "";
+	for (var c = atob(a), d = c.length, f = Math.ceil(d / 1024), e = Array(f), h = 0; h < f; ++h) {
+		for (var g = 1024 * h, l = Math.min(g + 1024, d), q = Array(l - g), m = 0; g < l; ++m,
+		++g)
+			q[m] = c[g].charCodeAt(0);
+		e[h] = new Uint8Array(q)
+	}
+	return new Blob(e,{
+		type: b
+	})
+}
 
 /**
  * Creates a new toolbar for the given container.
@@ -3593,7 +3655,10 @@ EditorUi.prototype.save = function(name)
 		
 
 		xml = xml.replace(/&quot;/g,'_quot_'); //因xml中的双引号被转义，这里将其替换回双引号
-
+		var groups = this.wfGroups;
+		var groupsParams = groups.getGroupsValue();
+		localStorage.groups = JSON.stringify(groupsParams);
+		console.log(groupsParams,'groupsParams');
 		try
 		{
 			var _this = this;
@@ -3602,7 +3667,8 @@ EditorUi.prototype.save = function(name)
 			let workflowId = window.urlParams.workflowId || '';
 			message.destroy();
 			message && message.loading('正在保存，请稍候...',0);
-			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId=${workflowId}&xml=${xml}&deleteLinks=${deleteLinkIds.join(',')}&deleteNodes=${deleteNodeIds.join(',')}`, function(req,res)
+			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId=${workflowId}&xml=${xml}&deleteLinks=${deleteLinkIds.join(',')}
+			&deleteNodes=${deleteNodeIds.join(',')}&groups=${JSON.stringify(groupsParams)}`, function(req,res)
 			{
 				var response = req.request.response;
 				var resObj = JSON.parse(response);

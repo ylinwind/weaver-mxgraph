@@ -65,7 +65,14 @@ Actions.prototype.init = function()
 	}).isEnabled = isGraphEnabled;
 	this.addAction('save', function() { ui.saveFile(false); }, null, null, Editor.ctrlKey + '+S').isEnabled = isGraphEnabled;
 	this.addAction('saveAs...', function() { ui.saveFile(true); }, null, null, Editor.ctrlKey + '+Shift+S').isEnabled = isGraphEnabled;
-	this.addAction('export...', function() { ui.showDialog(new ExportDialog(ui).container, 300, 230, true, true); });
+	this.addAction('export...', function() { 
+		// ui.showDialog(new ExportDialog(ui).container, 300, 230, true, true); 
+		let exportDialog = new ExportDialog(ui);
+		var s = Math.max(0, parseFloat(100) || 100) / 100;
+		var b = Math.max(0, parseInt(1));
+		var bg = graph.background;
+		exportDialog.__proto__.constructor.exportFile(ui, name, 'xml', bg, s, b);
+	}).isEnabled = isGraphEnabled;
 	this.addAction('editDiagram...', function()
 	{
 		var dlg = new EditDiagramDialog(ui);

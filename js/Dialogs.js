@@ -1294,19 +1294,51 @@ ExportDialog.exportFile = function(editorUi, name, format, bg, s, b)
  */
 ExportDialog.saveLocalFile = function(editorUi, data, filename, format)
 {
-	if (data.length < MAX_REQUEST_SIZE)
-	{
-		editorUi.hideDialog();
-		var req = new mxXmlRequest(SAVE_URL, 'xml=' + encodeURIComponent(data) + '&filename=' +
-			encodeURIComponent(filename) + '&format=' + format);
-		req.simulate(document, '_blank');
+	//新添加  官网代码
+	var f = document.createElement("a")
+              , h = !mxClient.IS_SF && 0 > navigator.userAgent.indexOf("PaleMoon/") && "undefined" !== typeof f.download;
+	if (mxClient.IS_GC)
+		var k = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./)
+			, h = 65 == (k ? parseInt(k[2], 10) : !1) ? !1 : h;
+	if (h || editorUi.isOffline()) {
+		f.href = URL.createObjectURL(false ? editorUi.base64ToBlob('<?xml version="1.0" encoding="UTF-8"?>'+data, 'text/xml') : 
+		new Blob(['<?xml version="1.0" encoding="UTF-8"?>'+data],{
+			type: 'text/xml'
+		}));
+		h ? f.download = filename : f.setAttribute("target", "_blank");
+		document.body.appendChild(f);
+		try {
+			window.setTimeout(function() {
+				URL.revokeObjectURL(f.href)
+			}, 0),
+			f.click(),
+			f.parentNode.removeChild(f)
+		} catch (A) {}
+	//
+	} else{
+		// else 里面是原本的代码
+		if (data.length < MAX_REQUEST_SIZE)
+		{
+			editorUi.hideDialog();
+			var req = new mxXmlRequest(WORKFLOW_SAVEINFO_PATH, 'xml=' + encodeURIComponent(data) + '&filename=' +
+				encodeURIComponent(filename) + '&format=' + format);
+			req.simulate(document, '_blank');
+		}
+		else
+		{
+			mxUtils.alert(mxResources.get('drawingTooLarge'));
+			mxUtils.popup(xml);
+		}
 	}
-	else
-	{
-		mxUtils.alert(mxResources.get('drawingTooLarge'));
-		mxUtils.popup(xml);
-	}
+	
 };
+EditorUi.prototype.isOfflineApp = function() {
+    return "1" == urlParams.offline
+}
+;
+EditorUi.prototype.isOffline = function() {
+	return this.isOfflineApp() || !navigator.onLine || "1" == urlParams.stealth
+}
 
 /**
  * Constructs a new metadata dialog.

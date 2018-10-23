@@ -55955,7 +55955,7 @@ mxGraph.prototype.getSelectionCellsForChanges = function(changes)
  * 
  * changes - Array that contains the individual changes.
  */
-mxGraph.prototype.graphModelChanged = function(changes)
+mxGraph.prototype.graphModelChanged = function(changes,isFromGroup=false)
 {
 	for (var i = 0; i < changes.length; i++)
 	{
@@ -55965,7 +55965,7 @@ mxGraph.prototype.graphModelChanged = function(changes)
 	this.removeSelectionCells(this.getRemovedCellsForChanges(changes));
 	
 	this.view.validate();
-	this.sizeDidChange();
+	this.sizeDidChange(isFromGroup);
 };
 
 /**
@@ -57051,8 +57051,9 @@ mxGraph.prototype.fit = function(border, keepOrigin, margin, enabled, ignoreWidt
  * a <size> event after updating the clipping region of the SVG element in
  * SVG-bases browsers.
  */
-mxGraph.prototype.sizeDidChange = function()
+mxGraph.prototype.sizeDidChange = function(isFromGroup = false)
 {
+
 	var bounds = this.getGraphBounds();
 	
 	if (this.container != null)
@@ -57118,7 +57119,7 @@ mxGraph.prototype.sizeDidChange = function()
 		
 		this.updatePageBreaks(this.pageBreaksVisible, width, height);
 	}
-
+	!isFromGroup && workflowUi.wfGroups&&workflowUi.wfGroups.refresh(true);
 	this.fireEvent(new mxEventObject(mxEvent.SIZE, 'bounds', bounds));
 };
 

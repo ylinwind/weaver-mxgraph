@@ -6,7 +6,8 @@ function wfGroups(editorUi, container){
     this.editorUi = editorUi;
     this.container = container;
 
-    this.groups = [];
+    this.rowGroups = [];
+    this.colGroups = [];
     this.init();
 }
 /**
@@ -19,37 +20,39 @@ groups:[{
     ...
 }]
  */
-wfGroups.prototype.init = function(){
-
+wfGroups.prototype.init = function(groupsParams={}){
+    this.rowGroups = groupsParams.row || [];
+    this.colGroups = groupsParams.col || [];
+    this.refresh();
     console.log(this.editorUi, this.container,'editorUi, container');
 }
 /**
 *
 */
-wfGroups.prototype.refresh = function(){
+wfGroups.prototype.refresh = function(modelChange = false){
     var graph = this.editorUi.editor.graph;
     var minimumGraphSize = graph.minimumGraphSize;
 
-    this.container.style.width = minimumGraphSize.width + 'px';
-    this.container.style.height = minimumGraphSize.height + 'px';
+    this.container.style.width = (minimumGraphSize?minimumGraphSize.width:0) + 'px';
+    this.container.style.height = (minimumGraphSize?minimumGraphSize.height:0) + 'px';
 
     this.container.innerHTML = '';
     this.paintGroups();
-    console.log(this.editorUi,this.groups,'editorUi, groups');
+    !modelChange && graph.graphModelChanged([]);
 }
 /**
 *添加横向分组
  */
 wfGroups.prototype.addRowGroup = function(rowObj = {}){
     let newTopPosition = 0;
-    this.groups.map(v=>{
+    this.rowGroups.map(v=>{
         if(v.position.top && v.position.top > newTopPosition){
             newTopPosition = v.position.top;
         }
     });
     newTopPosition += 150;
     rowObj['position']['top'] = newTopPosition;
-    this.groups.push(rowObj);
+    this.rowGroups.push(rowObj);
     this.refresh();
 }
 /**
@@ -57,22 +60,27 @@ wfGroups.prototype.addRowGroup = function(rowObj = {}){
  */
 wfGroups.prototype.addColGroup = function(colObj = {}){
     let newLeftPosition = 0;
-    this.groups.map(v=>{
+    this.colGroups.map(v=>{
         if(v.position.left && v.position.left > newLeftPosition){
             newLeftPosition = v.position.left;
         }
     });
     newLeftPosition += 150;
     colObj['position']['left'] = newLeftPosition;
-    this.groups.push(colObj);
+    this.colGroups.push(colObj);
     this.refresh();
 }
 /**
 *绘制分组
  */
 wfGroups.prototype.paintGroups = function(){
-    let groups = this.groups;
-    groups.map((v,i)=>{
+    this.colGroups.map((v,i)=>{
+        let elt = this.createGroupElement(v,i);
+        let groupPanel = this.createGroupPanelElement(v,i);
+        this.container.appendChild(groupPanel);
+        this.container.appendChild(elt);
+    });
+    this.rowGroups.map((v,i)=>{
         let elt = this.createGroupElement(v,i);
         let groupPanel = this.createGroupPanelElement(v,i);
         this.container.appendChild(groupPanel);
@@ -139,7 +147,7 @@ wfGroups.prototype.createGroupPanelItem = function(item,index){
     inputName.onblur = function(e){
         this.style.display = 'none';
         let val = e.target.value;
-        sb.groups[index].value = val;
+        item.type=='col'?sb.colGroups[index].value = val:sb.rowGroups[index].value = val;
         sb.refresh();
     }
 
@@ -161,7 +169,6 @@ wfGroups.prototype.createGroupPanelItem = function(item,index){
     infoArea.innerHTML = item.value;
     infoArea.title = item.value;
     infoArea.ondblclick = function(e){
-        console.log(e,'eeeeeeeee');
         let input = e.target.childNodes[1];
         input.style.display = 'inline';
         input.value = item.value
@@ -196,27 +203,27 @@ wfGroups.prototype.groupDragAction = function(element,direction = 'col',index){
             if(direction == 'col'){
                 let left = parseInt(mouseMoveX) - parseInt(mouseDownX) + parseInt(initX);
 
-                let _groups = sb.groups;
-                let leftNum = left - sb.groups[index].position.left;
+                let _groups = sb.colGroups;
+                let leftNum = left - sb.colGroups[index].position.left;
                 _groups.map((v,i)=>{
                     if(i>=index && v.type == 'col'){
                         _groups[i].position.left = v.position.left + leftNum;
                         i==index ? _groups[i].panelWidth = _groups[i].panelWidth + leftNum : '';
                     }
                 });
-                sb.groups = _groups;
+                sb.colGroups = _groups;
             }else{
                 let top = parseInt(mouseMoveY) - parseInt(mouseDownY) + parseInt(initY);
 
-                let _groups = sb.groups;
-                let topNum = top - sb.groups[index].position.top;
+                let _groups = sb.rowGroups;
+                let topNum = top - sb.rowGroups[index].position.top;
                 _groups.map((v,i)=>{
                     if(i>=index && v.type == 'row'){
                         _groups[i].position.top = v.position.top + topNum;
                         i == index ? _groups[i].panelHeight = _groups[i].panelHeight + topNum : '';
                     }
                 });
-                sb.groups = _groups;
+                sb.rowGroups = _groups;
             }
             sb.refresh();
 		}
@@ -237,40 +244,43 @@ wfGroups.prototype.groupPanelActionEvent = function(elt,item,groupIndex,groupIte
     var sb = this;
     if(item.indexOf('Last') != -1){// 向前 <-
         elt.onclick = function(){
-            if(groupIndex == 0){
+            if(groupIndex == 0){ 
                 return;
             }else{
-                sb.groups.splice(groupIndex,1);
-                groupItem.type=='col'?groupItem.position.left -= sb.groups[groupIndex-1].panelWidth:
-                                       groupItem.position.top -= sb.groups[groupIndex-1].panelHeight;
+                let _groups = groupItem.type=='col'?sb.colGroups:sb.rowGroups;
+                _groups.splice(groupIndex,1);
+                groupItem.type=='col'?groupItem.position.left -= _groups[groupIndex-1].panelWidth:
+                                       groupItem.position.top -= _groups[groupIndex-1].panelHeight;
                 
-                sb.groups.splice(groupIndex-1,0,groupItem);
-                groupItem.type=='col'?sb.groups[groupIndex].position.left += groupItem.panelWidth:
-                                    sb.groups[groupIndex].position.top += groupItem.panelHeight;
+                _groups.splice(groupIndex-1,0,groupItem);
+                groupItem.type=='col'?_groups[groupIndex].position.left += groupItem.panelWidth:
+                                    _groups[groupIndex].position.top += groupItem.panelHeight;
                 sb.refresh();
             }
         }
     }else if(item.indexOf('Next') != -1){//向后 ->
         elt.onclick = function(){
-            if(groupIndex == sb.groups.length - 1){
+            let _groups = groupItem.type=='col'?sb.colGroups:sb.rowGroups;
+            if(groupIndex == _groups.length - 1){
                 return;
             }else{
-                sb.groups.splice(groupIndex,1);
-                groupItem.type=='col'?groupItem.position.left += sb.groups[groupIndex].panelWidth:
-                                    groupItem.position.top += sb.groups[groupIndex].panelHeight;
-                sb.groups.splice(groupIndex+1,0,groupItem);
-                groupItem.type=='col'?sb.groups[groupIndex].position.left -= groupItem.panelWidth:
-                                    sb.groups[groupIndex].position.top -= groupItem.panelHeight;
+                _groups.splice(groupIndex,1);
+                groupItem.type=='col'?groupItem.position.left += _groups[groupIndex].panelWidth:
+                                    groupItem.position.top += _groups[groupIndex].panelHeight;
+                _groups.splice(groupIndex+1,0,groupItem);
+                groupItem.type=='col'?_groups[groupIndex].position.left -= groupItem.panelWidth:
+                                    _groups[groupIndex].position.top -= groupItem.panelHeight;
                 sb.refresh();
             }
         }
     }else{//删除 ×
         elt.onclick = function(){
-            sb.groups.splice(groupIndex,1);
-            sb.groups.map((v,i)=>{
+            let _groups = groupItem.type=='col'?sb.colGroups:sb.rowGroups;
+            _groups.splice(groupIndex,1);
+            _groups.map((v,i)=>{
                 if(i>=groupIndex){
-                    groupItem.type=='col'?sb.groups[i].position.left -= groupItem.panelWidth:
-                                    sb.groups[i].position.top -= groupItem.panelHeight;
+                    groupItem.type=='col'?_groups[i].position.left -= groupItem.panelWidth:
+                                    _groups[i].position.top -= groupItem.panelHeight;
                     
                 }
             })
@@ -298,5 +308,5 @@ wfGroups.prototype.createGroupItemNameElement = function(){
 /**
  */
 wfGroups.prototype.getGroupsValue = function(){
-    return this.groups;
+    return {row:this.rowGroups,col:this.colGroups};
 }

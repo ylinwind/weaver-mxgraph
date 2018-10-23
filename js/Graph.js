@@ -1656,10 +1656,19 @@ Graph.prototype.getPageLayout = function()
 		var w = Math.floor(bounds.width / this.view.scale);
 		var h = Math.floor(bounds.height / this.view.scale);
 		
+		// 追加对比分组的位置
+		let colGroups = workflowUi.wfGroups&&workflowUi.wfGroups.colGroups;//对比 w
+		let rowGroups = workflowUi.wfGroups&&workflowUi.wfGroups.rowGroups; //对比 h
+		let colLast = colGroups[colGroups.length-1];
+		let rowLast = rowGroups[rowGroups.length-1];
+		w = (x + w) > (colLast?colLast.position.left:0) ? (x + w) : (colLast?colLast.position.left:0);
+		h = (y + h) > (rowLast?rowLast.position.top :0) ? (y + h) : (rowLast?rowLast.position.top :0);
+		
+		// console.log(workflowUi,'------',workflowUi.wfGroups)
 		var x0 = Math.floor(x / size.width);
 		var y0 = Math.floor(y / size.height);
-		var w0 = Math.ceil((x + w) / size.width) - x0;
-		var h0 = Math.ceil((y + h) / size.height) - y0;
+		var w0 = Math.ceil((w) / size.width) - x0;
+		var h0 = Math.ceil((h) / size.height) - y0;
 		
 		return new mxRectangle(x0, y0, w0, h0);
 	}

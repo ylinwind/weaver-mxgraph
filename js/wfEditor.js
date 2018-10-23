@@ -250,11 +250,11 @@ WfPanel.prototype.drawActions = function(){
 	var graph = this.editorUi.editor.graph;
     var _this = this;
     let icons = [ //所有的操作按钮
-        {icon:'icon-workflow-baocun',action:iconActions.get('save'),title:'save'},
-        {icon:'icon-workflow-daochu',action:iconActions.get('export'),title:'export'},
-        {icon:'icon-workflow-chexiao',action:iconActions.get('undo'),title:'undo'},
-        {icon:'icon-workflow-fanhui',action:iconActions.get('redo'),title:'redo'},
-        {icon:'icon-workflow-shanchu',action:iconActions.get('delete'),title:'delete'},
+        {icon:'icon-workflow-baocun',action:iconActions.get('save'),title:'保存'},
+        {icon:'icon-workflow-daochu',action:iconActions.get('export'),title:'导出'},
+        {icon:'icon-workflow-chexiao',action:iconActions.get('undo'),title:'撤销'},
+        {icon:'icon-workflow-fanhui',action:iconActions.get('redo'),title:'返回'},
+        {icon:'icon-workflow-shanchu',action:iconActions.get('delete'),title:'删除'},
 
         {icon:'icon-workflow-tianjiafenzu',action:'',title:'添加分组'},
         {icon:'icon-workflow-ziti',action:'',title:'字体'},
@@ -340,21 +340,11 @@ WfPanel.prototype.createIconElement = function(item,sb,editor){
 	let history = editor.undoManager.history;
 	if(item.icon === 'icon-workflow-tianjiafenzu'){//添加分组
 		spanEl = sb.drawAreaGroup();
-	// }else if(item.icon === 'icon-workflow-hengxiangfenzu'){
-	// 	spanEl = sb.drawRowGroup();
-	// }else if(v.icon === 'icon-workflow-zongxiangfenzu'){
-	// 	spanEl = this.drawColGroup();
 	}else{
 		spanEl = document.createElement('span');
 	}
 	spanEl.className = `${item.icon} icon-workflow`;
 	spanEl.title = item.title || 'title';
-	// if(item.icon == 'icon-workflow-chexiao'){
-	// 	spanEl.style.color = history.length>0 ? '#000' : '#ddd';
-	// }
-	// if(item.icon == 'icon-workflow-fanhui'){
-	// 	spanEl.style.color = history.length>0 ? '#000' : '#ddd';
-	// }
 	spanEl.onclick = function(e){
 		item.action&&sb.setIconsActions(item.action,e,item.icon);
 	}
@@ -2735,7 +2725,7 @@ WfPanel.prototype.showTooltip = function(elt, cells, w, h, title, showLabel)
 					this.tooltipImage.style.width = '14px';
 					this.tooltipImage.style.height = '27px';
 					
-					document.body.appendChild(this.tooltipImage);
+					// document.body.appendChild(this.tooltipImage); //去掉悬浮在节点图形上时提示区域的一个尖角符号 *********************************
 				}
 				
 				this.graph2.model.clear();
