@@ -15,7 +15,6 @@ groups:[{
     type:'col' || 'row',
     position:{left:'',top:''},
     panelWidth:'',
-    panelHeight:'',
     value:''
     ...
 }]
@@ -161,8 +160,8 @@ wfGroups.prototype.createGroupPanelItem = function(item,index){
 
     groupItem.className = `${item.type}-group-item`;
     item.type=='col' ? groupItem.style.width = (item.panelWidth || 150) + 'px':
-                        groupItem.style.width = (item.panelHeight || 150) + 'px';
-                        // groupItem.style.height = (item.panelHeight || 150) + 'px';
+                        groupItem.style.width = (item.panelWidth || 150) + 'px';
+                        // groupItem.style.height = (item.panelWidth || 150) + 'px';
     actionArea.className = 'group-item-action';
 
     infoArea.className = 'group-item-info';
@@ -220,7 +219,7 @@ wfGroups.prototype.groupDragAction = function(element,direction = 'col',index){
                 _groups.map((v,i)=>{
                     if(i>=index && v.type == 'row'){
                         _groups[i].position.top = v.position.top + topNum;
-                        i == index ? _groups[i].panelHeight = _groups[i].panelHeight + topNum : '';
+                        i == index ? _groups[i].panelWidth = _groups[i].panelWidth + topNum : '';
                     }
                 });
                 sb.rowGroups = _groups;
@@ -250,11 +249,11 @@ wfGroups.prototype.groupPanelActionEvent = function(elt,item,groupIndex,groupIte
                 let _groups = groupItem.type=='col'?sb.colGroups:sb.rowGroups;
                 _groups.splice(groupIndex,1);
                 groupItem.type=='col'?groupItem.position.left -= _groups[groupIndex-1].panelWidth:
-                                       groupItem.position.top -= _groups[groupIndex-1].panelHeight;
+                                       groupItem.position.top -= _groups[groupIndex-1].panelWidth;
                 
                 _groups.splice(groupIndex-1,0,groupItem);
                 groupItem.type=='col'?_groups[groupIndex].position.left += groupItem.panelWidth:
-                                    _groups[groupIndex].position.top += groupItem.panelHeight;
+                                    _groups[groupIndex].position.top += groupItem.panelWidth;
                 sb.refresh();
             }
         }
@@ -266,10 +265,10 @@ wfGroups.prototype.groupPanelActionEvent = function(elt,item,groupIndex,groupIte
             }else{
                 _groups.splice(groupIndex,1);
                 groupItem.type=='col'?groupItem.position.left += _groups[groupIndex].panelWidth:
-                                    groupItem.position.top += _groups[groupIndex].panelHeight;
+                                    groupItem.position.top += _groups[groupIndex].panelWidth;
                 _groups.splice(groupIndex+1,0,groupItem);
                 groupItem.type=='col'?_groups[groupIndex].position.left -= groupItem.panelWidth:
-                                    _groups[groupIndex].position.top -= groupItem.panelHeight;
+                                    _groups[groupIndex].position.top -= groupItem.panelWidth;
                 sb.refresh();
             }
         }
@@ -280,7 +279,7 @@ wfGroups.prototype.groupPanelActionEvent = function(elt,item,groupIndex,groupIte
             _groups.map((v,i)=>{
                 if(i>=groupIndex){
                     groupItem.type=='col'?_groups[i].position.left -= groupItem.panelWidth:
-                                    _groups[i].position.top -= groupItem.panelHeight;
+                                    _groups[i].position.top -= groupItem.panelWidth;
                     
                 }
             })

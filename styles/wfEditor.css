@@ -132,7 +132,7 @@
     bottom: 0px;
     border: 1px solid #E2E2E2;
     border-top: none;
-    transition: all .1s;
+    transition: all .01s;
     /* overflow-y: auto; */
 }
 .wfNodeInfoContainer #nodeInfo-detail-shouldSaveFirst{

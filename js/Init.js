@@ -20,6 +20,7 @@ window.OPEN_FORM = window.OPEN_FORM || 'open.html';
 window.WORKFLOW_GETWFINFO_PATH = '/api/workflow/layout/getXml';
 window.WORKFLOW_GETDETAILINFO_PATH = '/api/workflow/layout/getWfInfo';
 window.WORKFLOW_SAVEINFO_PATH = '/api/workflow/layout/saveLayout';
+window.WORKFLOW_GET_XML = '/api/workflow/baseInfoSetting/getXml';
 
 // Sets the base path, the UI language via URL param and configures the
 // supported languages to avoid 404s. The loading of all core language

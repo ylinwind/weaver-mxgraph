@@ -251,7 +251,7 @@ WfPanel.prototype.drawActions = function(){
     var _this = this;
     let icons = [ //所有的操作按钮
         {icon:'icon-workflow-baocun',action:iconActions.get('save'),title:'保存'},
-        {icon:'icon-workflow-daochu',action:iconActions.get('export'),title:'导出'},
+        {icon:'icon-workflow-daochu',action:`iconActions.get('export')`,title:'导出'},//使用字符串的方法是导出 流程图xml，执行方法是导出路径xml
         {icon:'icon-workflow-chexiao',action:iconActions.get('undo'),title:'撤销'},
         {icon:'icon-workflow-fanhui',action:iconActions.get('redo'),title:'返回'},
         {icon:'icon-workflow-shanchu',action:iconActions.get('delete'),title:'删除'},
@@ -384,7 +384,14 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 		this.doWorkflowTest();
 	}else if(icon=='icon-workflow-tingzhi'){
 		this.stopWorkflowTest();
+	}else if(icon=='icon-workflow-daochu'){//导出路径xml
+		this.getWorkflowXml();
 	}else{
+		if(icon=='icon-workflow-chexiao' || icon=='icon-workflow-fanhui'){
+			if(evt.target.style.cursor == 'not-allowed'){
+				return;
+			}
+		}
         func.funct(evt);
         if(icon=='icon-workflow-suoxiao' || icon=='icon-workflow-fangda' || icon=='icon-workflow-huifuyuanbil'){//修改操作区域显示缩放值
             var tips = document.getElementsByClassName('action-area-tip')[4];
@@ -396,6 +403,21 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
         }
     }
 }
+/**
+*导出路径的xml
+ */
+WfPanel.prototype.getWorkflowXml = function(){
+	message.loading('正在请求数据，请稍候...',0);
+	mxUtils.post(WORKFLOW_GET_XML, `workflowId=${window.urlParams.workflowId || ''}`, function(req){
+		console.log(req);
+		message.destroy();
+		let request = req.request;
+		let response = request.response;
+		let json = JSON.parse(response);
+		let filePath = json.filePath || '';
+		window.open(filePath);
+	});
+}
 WfPanel.prototype.drawRowGroup = function(){
 	let wfGroup = workflowUi.wfGroups;
 	let rowObj = {
@@ -405,19 +427,6 @@ WfPanel.prototype.drawRowGroup = function(){
 		value:'分组（横向）'
 	}
 	wfGroup.addRowGroup(rowObj);
-	// var _container;
-	// if(document.getElementById('wf-groups-container')){
-	// 	_container = document.getElementById('wf-groups-container');
-	// }else{
-	// 	_container = document.createElement('div');
-	// 	_container.id = 'wf-groups-container';
-	// 	document.body.appendChild(_container);
-	// } 
-	// var rowGroup = document.createElement('p');
-	// rowGroup.className = 'workflow-row-group';
-
-	// this.groupDragAction(rowGroup,'row');
-	// _container.appendChild(rowGroup);
 }
 WfPanel.prototype.drawColGroup = function(){
 	let wfGroup = workflowUi.wfGroups;
@@ -428,23 +437,7 @@ WfPanel.prototype.drawColGroup = function(){
 		panelWidth:150,
 		value:'分组（纵向）'
 	}
-	// this.tipInfoDisplay = 'block' ? rowObj.position.top = 135 : rowObj.position.top = 100;
 	wfGroup.addColGroup(rowObj);
-	// var _container;
-	// if(document.getElementById('wf-groups-container')){
-	// 	_container = document.getElementById('wf-groups-container');
-	// }else{
-	// 	_container = document.createElement('div');
-	// 	_container.id = 'wf-groups-container';
-	// 	document.body.appendChild(_container);
-	// } 
-
-	// var colGroup = document.createElement('p');
-	// this.tipInfoDisplay = 'block' ? colGroup.style.top = '135px' : colGroup.style.top = '100x';
-	// colGroup.className = 'workflow-col-group';
-
-	// this.groupDragAction(colGroup,'col');
-	// _container.appendChild(colGroup);
 }
 WfPanel.prototype.groupDragAction = function(element,direction = 'col'){
 	var mouseDownX,mouseDownY,initX,initY,flag = false;

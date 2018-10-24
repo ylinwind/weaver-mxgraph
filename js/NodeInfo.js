@@ -154,11 +154,11 @@ WfNodeInfo.prototype.renderWorkdlowItem = function(){
 		elP.appendChild(elSpanRight);
 		
 		elSpanLeft.innerHTML = '流程名称';
-		elSpanRight.innerHTML = _workflowDetailDatas&&_workflowDetailDatas.workflowDatas.workflowName || 'workflowName';
+		elSpanRight.innerHTML = _workflowDetailDatas&&_workflowDetailDatas.workflowDatas&&_workflowDetailDatas.workflowDatas.workflowName || 'workflowName';
 
 		this.container.appendChild(elP);
 	}else{
-		elP.childNodes[1].innerHTML = _workflowDetailDatas&&_workflowDetailDatas.workflowDatas.workflowName || 'workflowName';
+		elP.childNodes[1].innerHTML = _workflowDetailDatas&&_workflowDetailDatas.workflowDatas&&_workflowDetailDatas.workflowDatas.workflowName || 'workflowName';
 	}
 }
 WfNodeInfo.prototype.drawNodeDetail = function(){
