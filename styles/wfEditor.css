@@ -171,7 +171,7 @@
     display: inline-block;
     width: 100%;
 }
-#targetCell-container .wea-select  {
+#targetCell-container .wea-select ,#changeNodeType-container .wea-select{
     width: 100%;
 }
 .nodeInfo-detail-item .icon-workflow-shezhi{
@@ -335,6 +335,9 @@
 .group-item-action .action-item{
     display: inline-block;
     vertical-align: middle;
+}
+.col-group-item:hover,.row-group-item:hover{
+    background: lightblue;
 }
 .col-group-item:hover .group-item-action , .row-group-item:hover .group-item-action{
     display: inline-block;

@@ -31,9 +31,17 @@ wfGroups.prototype.init = function(groupsParams={}){
 wfGroups.prototype.refresh = function(modelChange = false){
     var graph = this.editorUi.editor.graph;
     var minimumGraphSize = graph.minimumGraphSize;
-
-    this.container.style.width = (minimumGraphSize?minimumGraphSize.width:0) + 'px';
-    this.container.style.height = (minimumGraphSize?minimumGraphSize.height:0) + 'px';
+    if(graph.isRuleEnabled()){//开启了标尺
+        this.container.style.top = 20 + 'px';
+        this.container.style.left = 20 + 'px';
+        this.container.style.width = (minimumGraphSize?minimumGraphSize.width-20:0) + 'px';
+        this.container.style.height = (minimumGraphSize?minimumGraphSize.height-20:0) + 'px';
+    }else{
+        this.container.style.top = 0 + 'px';
+        this.container.style.left = 0 + 'px';
+        this.container.style.width = (minimumGraphSize?minimumGraphSize.width:0) + 'px';
+        this.container.style.height = (minimumGraphSize?minimumGraphSize.height:0) + 'px';
+    }
 
     this.container.innerHTML = '';
     this.paintGroups();

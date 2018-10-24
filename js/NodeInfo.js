@@ -204,7 +204,8 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 		{label:'标题显示设置',value:'',key:'hasOperateTitle'},
 		{label:'子流程设置',value:'',key:'hasOperateSubwf'},
 		{label:'流程异常处理',value:'',key:'hasOperateException'},
-		{label:'节点字段校验',value:'',key:'hasNodePro'}
+		{label:'节点字段校验',value:'',key:'hasNodePro'},
+		{label:'类型',value:'',key:'changeNodeType'},
 	];
 	var linkDetailArr = [
 		{label:'出口名称',value:'',key:'name'},
@@ -224,7 +225,7 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 
 	labelShowDatas.map(v=>{
 		let item = this.createNodeItem(isEage,v,detailDatas,nowCell);
-		elNodeLinkDetail.appendChild(item);
+		item&&elNodeLinkDetail.appendChild(item);
 	});
 	elDiv.appendChild(elNodeLinkDetail);
 	this.container.appendChild(elDiv);
@@ -241,7 +242,26 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 	elSpanLeft.className = 'detail-item-left detail-item-span';
 	elSpanRight.className = `detail-item-right detail-item-span 
 		${v.key === 'operators' || v.key === 'name' || v.key === 'targetCell' || v.key === 'isBuildCode' || v.key === 'remindMsg'  ? 'isEcComs-item':''}`;
+	/**
+	//类型：处理和审批类型互换 1审批 2  处理
+	/类型单独判断
 	
+	*/
+	if(v.key === 'changeNodeType'){
+		if(nowCell.nodeType == 1 || nowCell.nodeType == 2 || nowCell.nodeAttriBute==1 || nowCell.nodeAttriBute==2 ||nowCell.nodeAttriBute==3){
+			let operatorArea = document.createElement('div');
+			operatorArea.id = 'changeNodeType-container';
+			elSpanRight.appendChild(operatorArea);
+
+			let _sb = this;
+			setTimeout(() => {
+				_sb.createChangeNodeTypeElement(isEage,v.key,detailDatas,nowCell);
+			}, 0);
+		}else{
+			return false;
+		}
+	}
+	// 
 	if(v.key === 'name'){//节点名称 ||  出口名称
 		let operatorArea = document.createElement('div');
 		operatorArea.id = 'nodeName-container';
@@ -295,10 +315,12 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 		formContentArea.onclick = this.createDetailDialog.bind(this,v.key,v.label,nowCell.nodeId?nowCell.nodeId:nowCell.linkId);
 		elSpanRight.appendChild(formContentArea);
 	}else{
-		var checkSpanIcon = document.createElement('span');
-		checkSpanIcon.className = 'icon-workflow-shezhi';
-		checkSpanIcon.onclick = this.createDetailDialog.bind(this,v.key,v.label,nowCell.nodeId?nowCell.nodeId:nowCell.linkId);
-		elSpanRight.appendChild(checkSpanIcon);
+		if(v.key !== 'changeNodeType'){
+			var checkSpanIcon = document.createElement('span');
+			checkSpanIcon.className = 'icon-workflow-shezhi';
+			checkSpanIcon.onclick = this.createDetailDialog.bind(this,v.key,v.label,nowCell.nodeId?nowCell.nodeId:nowCell.linkId);
+			elSpanRight.appendChild(checkSpanIcon);
+		}
 	}
 	if(detailDatas[v.key] == 'true'){//已经设置打√
 		var checkSpanIcon = document.createElement('span');
@@ -311,6 +333,84 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 	elP.appendChild(elSpanRight);
 
 	return elP;
+}
+/**
+类型切换：处理-审批（分叉其实点多一个 创建 选项；合并节点多一个 归档 选项）
+1审批 2  处理
+ */
+WfNodeInfo.prototype.createChangeNodeTypeElement = function(isEage,key,detailDatas,nowCell){
+	let graph = this.editorUi.editor.graph;
+	let model = graph.model;
+	let WeaSelect = window.ecCom.WeaSelect;
+
+	var startX = graph.minimumGraphSize.x;
+	var startY = graph.minimumGraphSize.y;
+	var graphWidth = graph.minimumGraphSize.width;
+	var graphHeight = graph.minimumGraphSize.height;
+	var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+
+	let options = [
+		{key:'2',selected:nowCell.nodeType==2 || true,showname:'处理'},
+		{key:'1',selected:nowCell.nodeType==1,showname:'审批'},
+		];
+	if(nowCell.nodeAttriBute == 1){//分叉起始点
+		options.unshift({key:'0',selected:false,showname:'创建'});
+	}else if(nowCell.nodeAttriBute == 3){//合并节点
+		options.unshift({key:'3',selected:false,showname:'归档'});
+	}
+	ReactDOM.render(
+		React.createElement(WeaSelect,
+		{
+			options:options,
+			onChange:(value, showname)=>{
+				let haveStartNode = false;
+				allCells.map(v=>{
+					if(!v.edge && v.nodeType == 0){
+						haveStartNode = true;
+					}
+				});
+				if(haveStartNode){
+					wfModal.warning({
+						title: wfGetLabel(131329, "信息确认"),
+						content:'只能有一个创建节点！',
+						okText: wfGetLabel(83446, "确定"),
+						onOk:()=>{},
+					});
+				}else{
+					model.beginUpdate();
+					try
+					{
+						if(value == 1){
+							let newStyle = '';
+							nowCell.nodeType == 2 ? newStyle = nowCell.style.replace(/rounded=0;/,'rhombus;') : '';
+							model.setStyle(nowCell, newStyle);
+						}else if(value == 2){
+							let newStyle = '';
+							nowCell.nodeType == 1 ? newStyle = nowCell.style.replace(/rhombus;/,'rounded=0;') : '';
+							model.setStyle(nowCell, newStyle);
+						}else if(value == 0){//创建
+							let newStyle = '';
+							nowCell.style.indexOf('rounded=0;') != 1 ? newStyle = nowCell.style.replace(/rounded=0;/,'shape=mxgraph.flowchart.terminator;') : 
+							nowCell.style.indexOf('rhombus;') != 1 ? newStyle = nowCell.style.replace(/rhombus;/,'shape=mxgraph.flowchart.terminator;') : '';
+							model.setStyle(nowCell, newStyle);
+						}else if(value == 3){//归档
+							let newStyle = '';
+							nowCell.style.indexOf('rounded=0;') != 1 ? newStyle = nowCell.style.replace(/rounded=0;/,'shape=mxgraph.flowchart.terminator;') : 
+							nowCell.style.indexOf('rhombus;') != 1 ? newStyle = nowCell.style.replace(/rhombus;/,'shape=mxgraph.flowchart.terminator;') : '';
+							model.setStyle(nowCell, newStyle);
+						}
+						nowCell.nodeType = value;
+					}
+					finally
+					{
+						model.endUpdate();
+					}
+				}
+				
+			}
+		}),
+		document.getElementById("changeNodeType-container")
+	);
 }
 /**
 创建出口-目标节点

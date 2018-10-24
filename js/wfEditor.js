@@ -367,6 +367,7 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 		let gridEnables = graph.isRuleEnabled();
 		graph.setRuleEnabled(!gridEnables);
 		this.editorUi.fireEvent(new mxEventObject('ruleEnabledChanged'));
+		this.editorUi.wfGroups.refresh();
 	}else if(icon=='icon-workflow-kaozuoduiqi' || icon=='icon-workflow-shangxiadengjian' || icon=='icon-workflow-kaoyouduiqi' || icon=='icon-workflow-kaoshangduiqi'
 		|| icon=='icon-workflow-zuoyoudengjian' || icon=='icon-workflow-kaoxiaduiqi'){
 
@@ -423,7 +424,7 @@ WfPanel.prototype.drawRowGroup = function(){
 	let rowObj = {
 		type:'row',
 		position:{left:0},
-		panelHeight:150,
+		panelWidth:150,
 		value:'分组（横向）'
 	}
 	wfGroup.addRowGroup(rowObj);
@@ -523,8 +524,7 @@ WfPanel.prototype.drawAreaGroup = function(){
 		showTitle='分组',
 		width=300,height=200,
 		allowCellsInserted,icon,
-		style=`rounded=1;arcSize=10;fillColor=none;dashed=1;strokeColor=#666666;strokeWidth=2;labelPosition=center;verticalLabelPosition=top;
-		align=center;verticalAlign=bottom;connectable=0;fontSize=18;fontStyle=1;fontFamily='宋体';`;
+		style=`rounded=1;arcSize=10;fillColor=none;dashed=1;strokeColor=#666666;strokeWidth=2;labelPosition=center;verticalLabelPosition=top;align=center;verticalAlign=bottom;connectable=0;fontSize=18;fontStyle=1;fontFamily='宋体';`;
 		
 	cells = [new mxCell( '分组', new mxGeometry(10, 10, width, height), style)];
 	cells[0].vertex = true;

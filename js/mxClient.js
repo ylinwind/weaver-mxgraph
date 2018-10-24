@@ -70359,7 +70359,11 @@ mxGraphHandler.prototype.shouldRemoveCellsFromParent = function(parent, cells, e
  */
 mxGraphHandler.prototype.moveCells = function(cells, dx, dy, clone, target, evt)
 {
-	console.log('moveCells')
+	console.log('moveCells');
+
+	/**
+	判断可以向上或向左移动的距离，是否开标尺，或分组
+	 */
 	if (clone)
 	{
 		cells = this.graph.getCloneableCells(cells);
