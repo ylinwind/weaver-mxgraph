@@ -214,7 +214,25 @@ Actions.prototype.init = function()
 				onOk:()=>{
 					var parents = graph.model.getParents(cells);
 					graph.removeCells(cells, includeEdges);
-					
+
+					var startX = graph.minimumGraphSize.x;
+					var startY = graph.minimumGraphSize.y;
+					var graphWidth = graph.minimumGraphSize.width;
+					var graphHeight = graph.minimumGraphSize.height;
+					var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+					let delLinkIds = [];
+					cells.map(v=>{
+						if(v.edge){
+							delLinkIds.push(v.id);
+						}
+					})
+					allCells.map((v,i)=>{
+						if(v.targrtBranchValue){//合并节点---含有指定通过分支值
+							let links = v.targrtBranchValue.split(',');
+							links = links.filter(c=>delLinkIds.indexOf(c)<0);
+							allCells[i].targrtBranchValue = links.join(',');
+						}
+					});
 					// Selects parents for easier editing of groups
 					if (parents != null)
 					{

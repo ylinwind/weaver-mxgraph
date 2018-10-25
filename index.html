@@ -198,10 +198,10 @@
 			message.loading('正在加载数据，请稍候...',0);
 			mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, `workflowId=${workflowId}`, function(req)
 			{
-				var request = req.request;
-				var response = request.response;
-				var json = JSON.parse(response);
-				sb.editor.graph.workflowDetailDatas = json;
+				var _request = req.request;
+				var _response = _request.response;
+				var _json = JSON.parse(_response);
+				sb.editor.graph.workflowDetailDatas = _json;
 
 				mxUtils.post(WORKFLOW_GETWFINFO_PATH, `workflowId=${workflowId}`, function(req)
 				{
@@ -221,17 +221,14 @@
 						}
 					});
 					sb.editor.graph.existParams = existParams;
-					let groups = JSON.parse(localStorage.groups);
-					sb.wfGroups.init(groups);
+					
+					sb.wfGroups.init(_json.groupDetail);
 					// sb.editor.graph.setSelectionCells(allCells); //开始不要选中任何数据
 					sb.editor.undoManager.clear();
 				});
 			});
 		}
-		// 禁止拖动选中文字
-		document.body.onselectstart = document.body.ondrag = function(){
-	　　　　return false;
-	　　}
+		
 	</script>
 </body>
 </html>

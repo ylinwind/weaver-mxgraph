@@ -3101,6 +3101,9 @@ EditorUi.prototype.createUi = function()
 	// create the wfEditorContainer 自定义
 	this.wfEditor = (this.editor.chromeless) ? null : this.createWfEditor(this.wfEditorContainer);
 	if(this.wfEditor != null ){
+		this.wfEditorContainer.onselectstart = this.wfEditorContainer.ondrag = function(){
+	　　　　return false;
+	　　}
 		this.container.appendChild(this.wfEditorContainer);
 	}
 	this.wfGroups = (this.editor.chromeless) ? null : this.createWfGroups(this.wfGroupsContainer);

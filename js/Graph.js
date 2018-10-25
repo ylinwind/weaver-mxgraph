@@ -3480,6 +3480,8 @@ HoverIcons.prototype.getStateAt = function(state, x, y)
  */
 HoverIcons.prototype.click = function(state, dir, me)
 {
+	return;
+	
 	var evt = me.getEvent();
 	var x = me.getGraphX();
 	var y = me.getGraphY();

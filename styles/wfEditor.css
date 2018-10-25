@@ -9,11 +9,17 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+/*  */
+.workflowContainer{
+    position: absolute;
+}
+/*  */
 .wfEditorContainer{
     width: calc( 100% - 240px);
     background: #F9F9F9;
     height: 150px;
     overflow: auto;
+    position: relative;
 }
 .wfEditorContainer .icon-workflow{
     display: inline-block;
@@ -31,6 +37,10 @@
 }
 .wfEditorContainer .action-area-tip{
     text-align: center;
+}
+.wfEditorContainer .testAction{
+    position: relative;
+    z-index: 11;
 }
 .wfEditorContainer .wfEditor-split{
     display: inline-block;
@@ -135,6 +145,10 @@
     transition: all .01s;
     /* overflow-y: auto; */
 }
+#nodeInfo-detail-nodeLinkDetail{
+    overflow: auto;
+    height: calc(100vh - 50px);
+}
 .wfNodeInfoContainer #nodeInfo-detail-shouldSaveFirst{
     color: red;
     padding: 10px;
@@ -152,7 +166,7 @@
     text-align: center;
 }
 .wfNodeInfoContainer #nodeInfo-node-detail .nodeInfo-detail-item{
-    padding: 10px 10px;
+    padding: 8px 10px;
     margin: 0;
     font-size: 12px;
     border-bottom: 1px solid #E2E2E2;
@@ -374,7 +388,7 @@
     background: #fff;
     overflow: auto;
     padding-top: 10px;
-    z-index: 2;
+    z-index: 11;
 }
 #workflow-test-detail-panel .wfTest-detail-item{
     padding: 0 10px;
@@ -389,6 +403,24 @@
     left: 0;
     right: 250px;
     bottom: 150px;
-    z-index: 2;
+    z-index: 11;
     /* bottom: 150px; */
+}
+/* 遮罩面板 */
+#workflow-test-mask{
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 10;
+    /* background: rgba(0,0,0,.1); */
+}
+#test-action-mask{
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(253, 249, 249, 0.5);
 }

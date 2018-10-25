@@ -11443,6 +11443,10 @@ var mxClipboard =
 		if (!mxClipboard.isEmpty())
 		{
 			cells = graph.getImportableCells(mxClipboard.getCells());
+			cells.map((v,i)=>{
+				v.nodeId ? cells[i].nodeId = '' : '';
+				v.linkId ? cells[i].linkId = '' : '';
+			});
 			var delta = mxClipboard.insertCount * mxClipboard.STEPSIZE;
 			var parent = graph.getDefaultParent();
 			cells = graph.importCells(cells, delta, delta, parent);
@@ -19650,6 +19654,7 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 		css += 'border:1px solid ' + s.fontBorderColor + ';';
 	}
 	
+	let nameStr = str.split('_split_')[0];
 	var val = str.split('_split_')[0];
 	// 节点图标
 	var nodeIcons;
@@ -19657,10 +19662,10 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 		nodeIcons = JSON.parse(this.canvasStyle.icons);
 	}
 	// 
-	
 	if (!mxUtils.isNode(val))
 	{
 		val = this.convertHtml(val);
+		nameStr = this.convertHtml(val);
 		if (overflow != 'fill' && overflow != 'width')
 		{
 			if (shape=='rhombus')
@@ -19682,6 +19687,7 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 	{
 		var div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
 		div.setAttribute('style', style);
+		div.setAttribute('title', nameStr);
 		
 		
 		if (mxUtils.isNode(val))
