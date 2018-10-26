@@ -3657,7 +3657,8 @@ HoverIcons.prototype.repaint = function()
 				this.arrowDown.style.visibility = 'visible';
 			}
 			
-			if (this.graph.tooltipHandler.isEnabled())
+			// if (this.graph.tooltipHandler.isEnabled())
+			if (false)
 			{
 				this.arrowLeft.setAttribute('title', mxResources.get('plusTooltip'));
 				this.arrowRight.setAttribute('title', mxResources.get('plusTooltip'));

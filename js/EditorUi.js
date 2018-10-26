@@ -3670,8 +3670,7 @@ EditorUi.prototype.save = function(name)
 			let workflowId = window.urlParams.workflowId || '';
 			message.destroy();
 			message && message.loading('正在保存，请稍候...',0);
-			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId=${workflowId}&xml=${xml}&deleteLinks=${deleteLinkIds.join(',')}
-			&deleteNodes=${deleteNodeIds.join(',')}&groups=${JSON.stringify(groupsParams)}`, function(req,res)
+			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId=${workflowId}&xml=${xml}&deleteLinks=${deleteLinkIds.join(',')}&deleteNodes=${deleteNodeIds.join(',')}&groups=${JSON.stringify(groupsParams)}`, function(req,res)
 			{
 				var response = req.request.response;
 				var resObj = JSON.parse(response);
