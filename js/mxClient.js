@@ -19670,7 +19670,7 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 		{
 			if (shape=='rhombus')
 			{
-				css += 'width:75%;';
+				css += 'width:60%;';
 			}
 			// Inner div always needed to measure wrapped text
 			val = '<div class="wf-word-line" xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;position:relative;' + css + '">' + val + '</div>';
@@ -73613,24 +73613,24 @@ mxConnectionHandler.prototype.mouseUp = function(sender, me)
 				});
 			}else{
 				if(target != null ){
-					if(source.branchType == 'branchCenter' && !(target.branchType == 'branchCenter' || target.branchType == 'branchToOne')){
-						// mxUtils.alert('分叉中间点只能指向本分支中间节点或合并节点！');
+					// if(source.branchType == 'branchCenter' && !(target.branchType == 'branchCenter' || target.branchType == 'branchToOne')){
+					if(source.nodeAttriBute == '2' && !(target.nodeAttriBute == '2' || (target.nodeAttriBute == '3' || target.nodeAttriBute == '4' || target.nodeAttriBute == '5'))){
 						wfModal.warning({
 							title: wfGetLabel(131329, "信息确认"),
 							content:'分叉中间点只能指向本分支中间节点或合并节点！',
 							okText: wfGetLabel(83446, "确定"),
 							onOk:()=>{console.log('ok')},
 						});
-					}else if(target.branchType == 'branchCenter' && source.branchType == 'branchToOne'){
-						// mxUtils.alert('合并节点不能指向分叉中间点！');
+					// }else if(target.branchType == 'branchCenter' && source.branchType == 'branchToOne'){
+					}else if(target.nodeAttriBute == '2' && (source.nodeAttriBute == '3' || source.nodeAttriBute == '4' || source.nodeAttriBute == '5' )){
 						wfModal.warning({
 							title: wfGetLabel(131329, "信息确认"),
 							content:'合并节点不能指向分叉中间点！',
 							okText: wfGetLabel(83446, "确定"),
 							onOk:()=>{console.log('ok')},
 						});
-					}else if(target.branchType == 'branchToOne' && source.branchType == 'oneToBranch'){
-						// mxUtils.alert('起始节点不能指向合并节点！');
+					// }else if(target.branchType == 'branchToOne' && source.branchType == 'oneToBranch'){
+					}else if((target.nodeAttriBute == '3' || target.nodeAttriBute == '4' || target.nodeAttriBute == '5') && source.nodeAttriBute == '1'){
 						wfModal.warning({
 							title: wfGetLabel(131329, "信息确认"),
 							content:'起始节点不能指向合并节点！',

@@ -640,10 +640,42 @@ WfPanel.prototype.__test = function(show=true){
 	*/
 }
 /**
+检测 分叉节点是否合乎规则
+ */
+WfPanel.prototype.doCheckBranchNode = function(cells){
+	let passed = true,haveBranchStart = false,havaBranchEnd = false;
+	cells.map(v=>{
+		if(v.nodeAttriBute == 1){//分叉起始点
+			haveBranchStart = true;
+		}
+		else if(v.nodeAttriBute == 5 || v.nodeAttriBute == 3 || v.nodeAttriBute == 4){//合并节点
+			havaBranchEnd = true;
+		}
+	});
+	if(!haveBranchStart && havaBranchEnd){//只有合并节点
+		wfModal.warning({
+			title: wfGetLabel(131329, "信息确认"),
+			content:'只有分叉合并节点，没有分叉起始节点！',
+			okText: wfGetLabel(83446, "确定"),
+			onOk:()=>{console.log('ok')},
+		});
+		return false;
+	}else if(haveBranchStart && !havaBranchEnd){
+		wfModal.warning({
+			title: wfGetLabel(131329, "信息确认"),
+			content:'只有分叉起始节点，没有分叉合并节点！',
+			okText: wfGetLabel(83446, "确定"),
+			onOk:()=>{console.log('ok')},
+		});
+		return false;
+	}else if((!haveBranchStart && !havaBranchEnd) || (haveBranchStart && havaBranchEnd)){//两个都存在，或者两个都不存在
+		return true;
+	}
+}
+/**
 流程测试
  */
 WfPanel.prototype.doWorkflowTest = function(){
-	this.createTestMask();
 	var graph = this.editorUi.editor.graph;
 	var view = graph.view;
 	var startX = graph.minimumGraphSize.x;
@@ -652,6 +684,13 @@ WfPanel.prototype.doWorkflowTest = function(){
 	var graphHeight = graph.minimumGraphSize.height;
 
 	var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+
+	let res = this.doCheckBranchNode(allCells);
+	if(!res){
+		return;
+	}
+
+	this.createTestMask();
 	var allEdges = [];
 	var testWaysObj = {} //存放测试路径数据，有可能有多条路线
 	this.wfTestIsIng = true;
@@ -848,6 +887,9 @@ WfPanel.prototype.stopWorkflowTest = function(fromTest=0){
 		wfTestSpanElt[0].parentNode.removeChild(wfTestSpanElt[0]);
 	}
 	this.hideWorkflowTestPanel(fromTest);//隐藏测试详细信息面板
+	// 清楚undolistener
+	this.editorUi.editor.setModified(false);
+	this.editorUi.editor.undoManager.clear();
 }
 /**
 	打开workflow test详细信息面板
@@ -974,7 +1016,22 @@ WfPanel.prototype.hideTooltip = function()
 };
 /**
 siderbar  funcs //图形参数配置
+***********
+nodename nodeAttriBute
+一般 0
+分叉起始点 1 
+分叉中间点 2 
+通过分支数合并 3
+指定通过分支合并 4
+比例合并 5
+*******
+nodeType  val
+创建 0
+处理 2
+审批 1
+归档 3
  */
+ 
 WfPanel.prototype.addGeneralPalette = function(expand)
 {
 	var sb = this;

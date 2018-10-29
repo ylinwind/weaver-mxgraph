@@ -256,7 +256,8 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 	
 	*/
 	if(v.key === 'changeNodeType'){
-		if(nowCell.nodeType == 1 || nowCell.nodeType == 2 || nowCell.nodeAttriBute==1 || nowCell.nodeAttriBute==2 ||nowCell.nodeAttriBute==3){
+		if(nowCell.nodeType == 1 || nowCell.nodeType == 2 || nowCell.nodeAttriBute==1 || nowCell.nodeAttriBute==2 ||
+		(nowCell.nodeType == 3 &&(nowCell.nodeAttriBute==3 || nowCell.nodeAttriBute==4 || nowCell.nodeAttriBute==5))){
 			let operatorArea = document.createElement('div');
 			operatorArea.id = 'changeNodeType-container';
 			elSpanRight.appendChild(operatorArea);
@@ -451,7 +452,7 @@ WfNodeInfo.prototype.createChangeNodeTypeElement = function(isEage,key,detailDat
 		];
 	if(nowCell.nodeAttriBute == 1){//分叉起始点
 		options.unshift({key:'0',selected:nowCell.nodeType==0,showname:'创建'});
-	}else if(nowCell.nodeAttriBute == 3){//合并节点
+	}else if(nowCell.nodeAttriBute == 3 || nowCell.nodeAttriBute == 4 || nowCell.nodeAttriBute == 5){//合并节点 3 通过分支数，4指定分支，5比例合并
 		options.unshift({key:'3',selected:nowCell.nodeType==3,showname:'归档'});
 	}
 	ReactDOM.render(
@@ -480,29 +481,59 @@ WfNodeInfo.prototype.createChangeNodeTypeElement = function(isEage,key,detailDat
 							let newStyle = '';
 							nowCell.style.indexOf('rounded=0;') != -1 ? newStyle = nowCell.style.replace(/rounded=0;/,'rhombus;') : 
 							nowCell.style.indexOf('shape=mxgraph.flowchart.terminator;') != -1 ? newStyle = nowCell.style.replace(/shape=mxgraph.flowchart.terminator;/,'rhombus;') : '';
-							model.setStyle(nowCell, newStyle);
+							var arr = newStyle.split(';');
+							arr.map((v,i)=>{
+								if((v.indexOf('icon-workflow-chuangjian')>=0 && v.indexOf('icon-workflow-fencha')>=0) || 
+									(v.indexOf('icon-workflow-guidang')>=0 && v.indexOf('icon-workflow-hebing')>=0)){
+									let obj = JSON.parse(arr[i].split('=')[1]);
+									delete obj.right;
+									arr[i] = `icons=${JSON.stringify(obj)}`;
+								}
+							})
+							model.setStyle(nowCell, arr.join(';'));
 						}else if(value == 2 && nowCell.nodeType!=2){
 							let newStyle = '';
 							nowCell.style.indexOf('rhombus;') != -1 ? newStyle = nowCell.style.replace(/rhombus;/,'rounded=0;') : 
 							nowCell.style.indexOf('shape=mxgraph.flowchart.terminator;') != -1 ? newStyle = nowCell.style.replace(/shape=mxgraph.flowchart.terminator;/,'rounded=0;') : '';
-							
-							model.setStyle(nowCell, newStyle);
+							var arr = newStyle.split(';');
+							arr.map((v,i)=>{
+								if((v.indexOf('icon-workflow-chuangjian')>=0 && v.indexOf('icon-workflow-fencha')>=0) || 
+									(v.indexOf('icon-workflow-guidang')>=0 && v.indexOf('icon-workflow-hebing')>=0)){
+									let obj = JSON.parse(arr[i].split('=')[1]);
+									delete obj.right;
+									arr[i] = `icons=${JSON.stringify(obj)}`;
+								}
+							})
+							model.setStyle(nowCell, arr.join(';'));
 						}else if(value == 0 && nowCell.nodeType!=0){//创建
 							let newStyle = '';
 							nowCell.style.indexOf('rounded=0;') != -1 ? newStyle = nowCell.style.replace(/rounded=0;/,'shape=mxgraph.flowchart.terminator;') : 
 							nowCell.style.indexOf('rhombus;') != -1 ? newStyle = nowCell.style.replace(/rhombus;/,'shape=mxgraph.flowchart.terminator;') : '';
-							model.setStyle(nowCell, newStyle);
+							var arr = newStyle.split(';');
+							arr.map((v,i)=>{
+								if(v.indexOf('icons')>=0){
+									arr[i] = 'icons={"left":"icon-workflow-fencha","right":"icon-workflow-chuangjian"}';
+								}
+							})
+							model.setStyle(nowCell, arr.join(';'));
 						}else if(value == 3 && nowCell.nodeType!=3){//归档
 							let newStyle = '';
 							nowCell.style.indexOf('rounded=0;') != -1 ? newStyle = nowCell.style.replace(/rounded=0;/,'shape=mxgraph.flowchart.terminator;') : 
 							nowCell.style.indexOf('rhombus;') != -1 ? newStyle = nowCell.style.replace(/rhombus;/,'shape=mxgraph.flowchart.terminator;') : '';
-							model.setStyle(nowCell, newStyle);
+							var arr = newStyle.split(';');
+							arr.map((v,i)=>{
+								if(v.indexOf('icons')>=0){
+									arr[i] = 'icons={"left":"icon-workflow-hebing","right":"icon-workflow-guidang"}';
+								}
+							})
+							model.setStyle(nowCell, arr.join(';'));
 						}
 						nowCell.nodeType = value;
 					}
 					finally
 					{
 						model.endUpdate();
+						graph.refresh();
 					}
 				}
 				
@@ -609,10 +640,14 @@ WfNodeInfo.prototype.createNodeNameElement = function(isEage,key,detailDatas,now
 	var model = graph.model;
 	let WeaInput = window.ecCom.WeaInput;
 
+	if(isEage && (!nowCell.value)){
+		nowCell.value = `出口${nowCell.id}`; //给出口添加默认名称
+	}
 	ReactDOM.render(
 		React.createElement(WeaInput,
 		{
 			viewAttr:3,
+			// value:!isEage?(nowCell.value ?  nowCell.value : detailDatas[key]) : (nowCell.value ?  nowCell.value : detailDatas[key] ? detailDatas[key] : `出口${nowCell.id}`) ,
 			value:nowCell.value ?  nowCell.value : detailDatas[key] ,
 			// inputType:"multilang",
 			// isBase64:true,

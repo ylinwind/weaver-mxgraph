@@ -3578,16 +3578,19 @@ EditorUi.prototype.isCompatibleString = function(data)
 EditorUi.prototype.saveFile = function(forceDialog)
 {
 	var modified = this.editor.modified;
+	var actionHistory = this.editor.undoManager.history || []
 	var wfEditor = this.wfEditor;
-	if(modified){
+	if(actionHistory.length>0){
 		wfModal.confirm({
 			title: wfGetLabel(131329, "信息确认"),
 			content:'改动未进行测试，是否需要测试？',
 			okText: wfGetLabel(83446, "确定"),
 			cancelText: wfGetLabel(31129, "取消"),
-			onOk:()=>{wfEditor.doWorkflowTest()},
+			onOk:()=>{wfEditor.doWorkflowTest();this.editor.setModified(false);},
 			onCancel:()=>{this.save(1)}
 		});
+	}else{
+		this.save(1)
 	}
 	/*
 	if (!forceDialog && this.editor.filename != null)
@@ -3638,6 +3641,33 @@ EditorUi.prototype.save = function(name)
 		var graphWidth = graph.minimumGraphSize.width;
 		var graphHeight = graph.minimumGraphSize.height;
 		var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+
+		let havaStartNode = false, havaEndNode = false;
+		allCells.map(v=>{
+			if(v.nodeType == 0){//创建
+				havaStartNode = true;
+			}
+			else if(v.nodeType == 3){//归档
+				havaEndNode = true;	
+			}
+		});
+		if(!havaStartNode){
+			wfModal.warning({
+				title: wfGetLabel(131329, "信息确认"),
+				content:'创建节点不存在，请添加！',
+				okText: wfGetLabel(83446, "确定"),
+				onOk:()=>{console.log('ok')},
+			});
+			return false;
+		}else if(!havaEndNode){
+			wfModal.warning({
+				title: wfGetLabel(131329, "信息确认"),
+				content:'归档节点不存在，请添加！',
+				okText: wfGetLabel(83446, "确定"),
+				onOk:()=>{console.log('ok')},
+			});
+			return false;
+		}
 
 		var edges = allCells.filter(v=>v.edge);
 		var nodes = allCells.filter(v=>!v.edge);
