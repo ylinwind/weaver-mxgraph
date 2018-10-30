@@ -19733,6 +19733,28 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 			}
 			iconDiv.appendChild(span);
 		}
+		if(nodeIcons&&nodeIcons.hasOwnProperty('nodeAfter')){
+			let span = document.createElement('span');
+			span.className = `${nodeIcons.nodeAfter} nodeAfter`;
+			if (shape=='rhombus')
+			{
+				span.style.marginRight = '35px';
+			}
+			iconDiv.appendChild(span);
+		}
+		if(nodeIcons&&nodeIcons.hasOwnProperty('beforeNode')){
+			let span = document.createElement('span');
+			span.className = `${nodeIcons.beforeNode} beforeNode`;
+			if (shape=='rhombus')
+			{
+				span.style.marginRight = '5px';
+			}
+			if (shape=='label')
+			{
+				span.style.left = '-18px';
+			}
+			iconDiv.appendChild(span);
+		}
 		div.appendChild(iconDiv);
 		// 
 		
@@ -66137,10 +66159,10 @@ mxGraph.prototype.createHandler = function(state)
 		}
 		else
 		{
-			state.x = state.origin.x - 5;
-			state.y = state.origin.y - 5;
-			state.width = state.cellBounds.width + 10;
-			state.height = state.cellBounds.height + 10;;
+			// state.x = state.origin.x - 5;
+			// state.y = state.origin.y - 5;
+			// state.width = state.cellBounds.width + 10;
+			// state.height = state.cellBounds.height + 10;
 			result = this.createVertexHandler(state);
 		}
 	}
@@ -75456,6 +75478,13 @@ function mxVertexHandler(state)
 {
 	if (state != null)
 	{
+		
+		// if(state.style.shape == 'label'){
+		// 	state.x = state.origin.x - 5;
+		// 	state.y = state.origin.y - 5;
+		// 	state.width = state.cellBounds.width + 10;
+		// 	state.height = state.cellBounds.height + 10;
+		// }
 		this.state = state;
 		this.init();
 		
@@ -75774,6 +75803,12 @@ mxVertexHandler.prototype.updateMinBounds = function()
  */
 mxVertexHandler.prototype.getSelectionBounds = function(state)
 {
+	if(state.style.shape == 'label'){
+			state.x = state.origin.x - 5;
+			state.y = state.origin.y - 5;
+			state.width = state.cellBounds.width + 10;
+			state.height = state.cellBounds.height + 10;
+		}
 	return new mxRectangle(Math.round(state.x), Math.round(state.y), Math.round(state.width), Math.round(state.height));
 };
 

@@ -9,6 +9,17 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+.workfow-test [class^="icon-"],.workfow-test[class*=" icon-"]{
+    font-family: icon-coms!important;
+    speak: none;
+    font-style: normal;
+    font-weight: 400;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 /*  */
 .workflowContainer{
     position: absolute;
@@ -131,6 +142,17 @@
 .nodeIcon .nodeIconRight{
     float: right;
 }
+.nodeIcon .beforeNode{
+    float: left;    
+    position: relative;
+    top: 20px;
+    /* left: -18px; */
+}
+.nodeIcon .nodeAfter{
+    float: right;
+    position: relative;
+    top: 20px;
+}
 /* wfNodeInfoContainer */
 .wfNodeInfoContainer{
     position: absolute;
@@ -153,7 +175,7 @@
     color: red;
     padding: 10px;
 }
-.wfNodeInfoContainer .nodeInfo-header{
+.wfNodeInfoContainer #nodeInfo-header{
     height:  44px;
     line-height: 44px;
     text-align: center;
@@ -372,10 +394,17 @@
     display: inline-block;
     width: 10px;
     height: 10px;
+    /* width: 25px;
+    height: 25px; */
     background: rgb(197, 72, 72);
     border-radius: 50%;
     position: absolute;
     transition: all .5s;
+}
+.icon-coms-Reverse{
+    color: rgb(3, 113, 231);
+    font-weight: bolder;
+    font-size: 25px;
 }
 /* 流程测试详细信息面板 */
 #workflow-test-detail-panel{

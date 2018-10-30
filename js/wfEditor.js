@@ -763,6 +763,7 @@ WfPanel.prototype.startWorkflowTest = function(pointArr=[],nowEdge){
 		var _container = document.getElementsByClassName('geBackgroundPage')[0];
 		var eltSpan = document.createElement('span');
 		eltSpan.className = 'workfow-test';
+		// eltSpan.className = 'workfow-test icon-coms-Reverse';
 		eltSpan.style.left = pointArr[0].x - 5 + 'px';
 		eltSpan.style.top = pointArr[0].y - 5 + 'px';
 		_container.appendChild(eltSpan);
@@ -770,16 +771,27 @@ WfPanel.prototype.startWorkflowTest = function(pointArr=[],nowEdge){
 		let transX=0 , transY=0 , timeout;
 		for(let i = 0 , len = pointArr.length ; i < len ; ++i){
 			if(pointArr[i-1]){
-				let _transX=transX , _transY=transY , index = i;
+				let _transX=transX , _transY=transY , index = i , iconDrec = 'top';//iconDrec 图标的指向默认朝上,top|bottom|left|right
 				if(pointArr[i].x == pointArr[i-1].x){ //纵向移动
 					_transY += pointArr[i].y - pointArr[i-1].y;
+					if(_transY>0){
+						iconDrec = 'bottom';
+					}else{
+						iconDrec = 'top';
+					}
 					transY = _transY;
 				}
 				if(pointArr[i].y == pointArr[i-1].y){//横向移动
 					_transX += pointArr[i].x - pointArr[i-1].x;
+					if(_transX>0){
+						iconDrec = 'right';
+					}else{
+						iconDrec = 'left';
+					}
 					transX = _transX;
 				}
 				timeout = setTimeout(()=>{
+					// eltSpan.style.transform = `translate(${_transX}px,${_transY}px) rotate(${iconDrec=='right'?90:iconDrec=='left'?-90:iconDrec=='bottom'?180:0}deg)`;
 					eltSpan.style.transform = `translate(${_transX}px,${_transY}px)`;
 					if(index == pointArr.length -1){//当前运动路径最后一个点
 						clearTimeout(timeout);

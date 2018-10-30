@@ -1,9 +1,9 @@
 @font-face {
   font-family: 'icon-workflow';
   src:
-    url('fonts/icon-workflow.ttf?o7gh4x') format('truetype'),
-    url('fonts/icon-workflow.woff?o7gh4x') format('woff'),
-    url('fonts/icon-workflow.svg?o7gh4x#icon-workflow') format('svg');
+    url('fonts/icon-workflow.ttf?f1g2el') format('truetype'),
+    url('fonts/icon-workflow.woff?f1g2el') format('woff'),
+    url('fonts/icon-workflow.svg?f1g2el#icon-workflow') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -23,6 +23,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-workflow-caozuoqian:before {
+  content: "\e921";
+}
+.icon-workflow-caozuohou:before {
+  content: "\e922";
+}
 .icon-workflow-duigou:before {
   content: "\e91f";
 }

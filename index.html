@@ -202,7 +202,8 @@
 				var _response = _request.response;
 				var _json = JSON.parse(_response);
 				sb.editor.graph.workflowDetailDatas = _json;
-
+				
+				sb.editor.graph.model.clear();
 				mxUtils.post(WORKFLOW_GETWFINFO_PATH, `workflowId=${workflowId}`, function(req)
 				{
 					message.destroy();
