@@ -426,6 +426,9 @@
 #workflow-test-detail-panel .wfTest-item-wrong{
     color: red;
 }
+#workflow-test-detail-panel .wfTest-item-warning{
+    color: #3B99FC;
+}
 #test-panel-split{
     /* left: 0;
     right: 0;

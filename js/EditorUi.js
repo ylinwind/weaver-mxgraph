@@ -1031,6 +1031,9 @@ EditorUi.prototype.init = function()
 		
 	mxEvent.addListener(graph.container, 'keydown', mxUtils.bind(this, function(evt)
 	{
+		if(evt.target.className == 'group-item-input'){//是横向或者纵向分组input键盘事件
+			evt.stopPropagation();
+		}
 		this.onKeyDown(evt);
 	}));
 	mxEvent.addListener(graph.container, 'keypress', mxUtils.bind(this, function(evt)

@@ -865,7 +865,7 @@ WfPanel.prototype.workflowTestV2 = function(cellNode){
 		}
 	}
 	cellNode.nodeType == 3 ? haveExit = true : '';
-	this.openWorkflowTestPanel(cellNode,haveExit);//打开详细信息面板
+	this.openWorkflowTestPanel(cellNode,haveExit,edges);//打开详细信息面板
 }
 /**
 停止流程测试
@@ -906,7 +906,7 @@ WfPanel.prototype.stopWorkflowTest = function(fromTest=0){
 /**
 	打开workflow test详细信息面板
 */
-WfPanel.prototype.openWorkflowTestPanel = function(cellNode,isPassed)
+WfPanel.prototype.openWorkflowTestPanel = function(cellNode,isPassed,edges)
 {
 	var wfTestPanel,vertSplit;
 	if(document.getElementById('workflow-test-detail-panel')){
@@ -943,7 +943,7 @@ WfPanel.prototype.openWorkflowTestPanel = function(cellNode,isPassed)
 	}
 
 	wfTestPanel.style.width = workflowUi.wfNodeInfo.nodePanelHide ? '100%' :'calc(100% - 250px)';
-	this.writeWorkflowTestInfo(wfTestPanel,cellNode,isPassed);
+	this.writeWorkflowTestInfo(wfTestPanel,cellNode,isPassed,edges);
 }
 /**
 	隐藏workflow test详细信息面板
@@ -972,7 +972,7 @@ WfPanel.prototype.hideWorkflowTestPanel = function(fromTest)
 /**
 	写入测试信息新进入面板
 */
-WfPanel.prototype.writeWorkflowTestInfo = function(container,cellNode,isPassed)
+WfPanel.prototype.writeWorkflowTestInfo = function(container,cellNode,isPassed,edges)
 {
 	if(cellNode.nodeType == 0){//创建节点 ：  需多绘制测试分界线
 		let elP_split = document.createElement('p');
@@ -1006,7 +1006,22 @@ WfPanel.prototype.writeWorkflowTestInfo = function(container,cellNode,isPassed)
 		elP_detail.className = 'wfTest-detail-item wfTest-item-wrong';
 		elP_detail.innerHTML = `[错误] 节点：[${cellNode.value}] 没有出口`;
 	}
+	
 	container.appendChild(elP_detail);
+	if(cellNode.nodeType == '1'){//审批节点应该包含退回出口
+		let haveBackPath = false;
+		edges.map(v=>{
+			if(v.xxx){
+				haveBackPath = true;
+			}
+		});
+		if(!haveBackPath){
+			let elP_warning = document.createElement('p');
+			elP_warning.className = 'wfTest-detail-item wfTest-item-warning';
+			elP_warning.innerHTML = `[警告] 节点：[${cellNode.value}] 审批节点应该包含退回出口`;
+			container.appendChild(elP_warning);
+		}
+	}
 }
 /**
  * Hides the current tooltip.

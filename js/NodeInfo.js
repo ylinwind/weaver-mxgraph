@@ -417,6 +417,7 @@ WfNodeInfo.prototype.createBranchToOneTypeSubElement = function(isEage,key,detai
 	var model = graph.model;
 	let WeaSelect = window.ecCom.WeaSelect;
 	let WeaInput = window.ecCom.WeaInput;
+
 	console.log(nowCell,'nowCell');
 	// nowCell.edges &&  //(nowCell.nodeAttriBute == 3||nowCell.nodeAttriBute == 4||nowCell.nodeAttriBute == 5)
 	let selectOptions = [];
@@ -428,6 +429,27 @@ WfNodeInfo.prototype.createBranchToOneTypeSubElement = function(isEage,key,detai
 				selectOptions.push(obj);
 			}
 		});
+	}
+	if(nowCell.nodeAttriBute == 4 && nowCell.targetBranchValue && nowCell.targetBranchValue.indexOf('link_')>-1){//初次从后端返回的value : link_1,link_2,link_3
+		let valArr = nowCell.targetBranchValue.split(',');
+		let linkIds = [];
+		valArr.map(v=>{
+			linkIds.push(Number(v.split('_')[1]));
+		});
+		let xmlIds = [];
+
+		let startX = graph.minimumGraphSize.x;
+		let startY = graph.minimumGraphSize.y;
+		let graphWidth = graph.minimumGraphSize.width;
+		let graphHeight = graph.minimumGraphSize.height;
+		let allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+
+		allCells.map(v=>{
+			if(v.edge && linkIds.indexOf(Number(v.linkId))>-1){//是edge,并且linkId存在targetBranchValue内
+				xmlIds.push(v.id);
+			}
+		});
+		nowCell.targetBranchValue = xmlIds.join(',');
 	}
 	let nowComs = nowCell.nodeAttriBute == 4 ? WeaSelect : WeaInput;
 	let nowParams = nowCell.nodeAttriBute == 4 ? {
