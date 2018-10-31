@@ -381,9 +381,9 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 		icon=='icon-workflow-zuoyoudengjian' && graph.alignCells(mxConstants.ALIGN_MIDDLE);
 		icon=='icon-workflow-kaoxiaduiqi' && graph.alignCells(mxConstants.ALIGN_BOTTOM);
 	}else if(icon=='icon-workflow-hengxiangfenzu'){
-		this.drawColGroup();
-	}else if(icon=='icon-workflow-zongxiangfenzu'){
 		this.drawRowGroup();
+	}else if(icon=='icon-workflow-zongxiangfenzu'){
+		this.drawColGroup();
 	}else if(icon=='icon-workflow-ceshi'){
 		this.doWorkflowTest();
 	}else if(icon=='icon-workflow-tingzhi'){
@@ -481,7 +481,7 @@ WfPanel.prototype.drawAreaGroup = function(){
 		showTitle='分组',
 		width=300,height=200,
 		allowCellsInserted,icon,
-		style=`rounded=1;arcSize=10;fillColor=none;dashed=1;strokeColor=#666666;strokeWidth=2;labelPosition=center;verticalLabelPosition=top;align=center;verticalAlign=bottom;connectable=0;fontSize=18;fontStyle=1;fontFamily='宋体';`;
+		style=`rounded=1;arcSize=10;fillColor=none;dashed=1;strokeColor=#666666;strokeWidth=2;labelPosition=center;verticalLabelPosition=top;align=center;verticalAlign=bottom;connectable=0;fontSize=18;fontStyle=1;fontFamily='宋体';wrap=1;`;
 		
 	cells = [new mxCell( '分组', new mxGeometry(10, 10, width, height), style)];
 	cells[0].vertex = true;

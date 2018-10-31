@@ -19748,8 +19748,11 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 			if (shape=='rhombus')
 			{
 				span.style.marginRight = '5px';
+				if(!nodeIcons.hasOwnProperty('left')){
+					span.style.left = '30px';
+				}
 			}
-			if (shape=='label')
+			if (shape=='label'&&nodeIcons.hasOwnProperty('left'))
 			{
 				span.style.left = '-18px';
 			}
@@ -20348,6 +20351,7 @@ mxSvgCanvas2D.prototype.createClip = function(x, y, w, h)
  */
 mxSvgCanvas2D.prototype.plainText = function(x, y, w, h, str, align, valign, wrap, overflow, clip, rotation, dir)
 {
+	w>200?w=200:'';//最大200
 	rotation = (rotation != null) ? rotation : 0;
 	var s = this.state;
 	var size = s.fontSize;
@@ -20484,6 +20488,7 @@ mxSvgCanvas2D.prototype.plainText = function(x, y, w, h, str, align, valign, wra
 			// LATER: Match horizontal HTML alignment
 			text.setAttribute('x', this.format(x * s.scale) + this.textOffset);
 			text.setAttribute('y', this.format(cy * s.scale) + this.textOffset);
+			text.setAttribute('title', lines[i]);
 			
 			mxUtils.write(text, lines[i]);
 			node.appendChild(text);
@@ -26374,7 +26379,8 @@ mxText.prototype.paint = function(c, update)
 			dir = null;
 		}
 	
-		c.text(x, y, w, h, val, this.align, this.valign, this.wrap, fmt, this.overflow,
+		// c.text(x, y, w, h, val, this.align, this.valign, this.wrap, fmt, this.overflow,
+		c.text(x, y, w, h, val, this.align, this.valign, this.wrap, 'html', this.overflow,
 			this.clipped, this.getTextRotation(), dir);
 	}
 	
@@ -42192,7 +42198,7 @@ mxCell.prototype.valueChanged = function(newValue)
 		// mxUtils.alert('节点名称不能为空！');
 		wfModal.warning({
 			title: wfGetLabel(131329, "信息确认"),
-			content:'节点名称不能为空！',
+			content:`${this.isGroupArea?'分组名称不能为空！':'节点名称不能为空！'}`,
 			okText: wfGetLabel(83446, "确定"),
 			onOk:()=>{console.log('ok')},
 		});
@@ -76381,7 +76387,8 @@ mxVertexHandler.prototype.resizeVertex = function(me)
 		this.graph.isGridEnabledEvent(me.getEvent()), 1,
 		new mxPoint(0, 0), this.isConstrainedEvent(me),
 		this.isCenteredEvent(this.state, me));
-	
+	this.unscaledBounds.width<150 ? this.unscaledBounds.width = 150 :'';
+	this.unscaledBounds.height<100 ? this.unscaledBounds.height = 100 :'';
 	// Keeps vertex within maximum graph or parent bounds
 	if (!geo.relative)
 	{
