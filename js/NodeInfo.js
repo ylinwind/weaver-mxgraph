@@ -242,6 +242,9 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 		{label:'附加规则',value:'',key:'hasRole'},
 		{label:'出口提示信息',value:'',key:'remindMsg'}
 	];
+	if(isEage && nowCell.source && nowCell.source.nodeType == '1'){//添加审批节点退回操作(出口 && 起始点是审批节点)
+		linkDetailArr.splice(2,0,{label:'是否退回',value:'',key:'linkNeedBack'});
+	}
 	var labelShowDatas = isEage ? linkDetailArr : nodeDetailArr;
 	var elDiv = document.createElement('div');
 	elDiv.id = 'nodeInfo-node-detail';
@@ -345,6 +348,15 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 		setTimeout(() => {
 			_sb.createBuildCodeElement(isEage,v.key,detailDatas,nowCell);
 		}, 0);
+	}else if(v.key === 'linkNeedBack'){//出口-审批-是否退回
+		let operatorArea = document.createElement('div');
+		operatorArea.id = 'linkNeedBack-container';
+		elSpanRight.appendChild(operatorArea);
+
+		let _sb = this;
+		setTimeout(() => {
+			_sb.createLinkNeedBackElement(isEage,v.key,detailDatas,nowCell);
+		}, 0);
 	}else if(v.key === 'remindMsg'){//出口-出口提示信息
 		let operatorArea = document.createElement('div');
 		operatorArea.id = 'remindMsg-container';
@@ -417,8 +429,6 @@ WfNodeInfo.prototype.createBranchToOneTypeSubElement = function(isEage,key,detai
 	var model = graph.model;
 	let WeaSelect = window.ecCom.WeaSelect;
 	let WeaInput = window.ecCom.WeaInput;
-
-	console.log(nowCell,'nowCell');
 	// nowCell.edges &&  //(nowCell.nodeAttriBute == 3||nowCell.nodeAttriBute == 4||nowCell.nodeAttriBute == 5)
 	let selectOptions = [];
 	if(nowCell.nodeAttriBute == 4 && nowCell.edges && nowCell.edges.length>0){
@@ -457,7 +467,6 @@ WfNodeInfo.prototype.createBranchToOneTypeSubElement = function(isEage,key,detai
 		value:nowCell.targetBranchValue || '',
 		options:selectOptions,
 		onChange:(value, showname)=>{
-			console.log(value,'value');
 			nowCell.targetBranchValue = value;
 		}
 	} : {//通过分支数和比例合并组件参数
@@ -465,7 +474,6 @@ WfNodeInfo.prototype.createBranchToOneTypeSubElement = function(isEage,key,detai
 		onChange:(value)=>{
 			value > 100 ? value = 100 : '';
 			nowCell.nodeAttriBute == 3 ? nowCell.passBranchNum = value : nowCell.proportMerge = value ;
-			console.log(value,'value')
 		}
 	};
 	ReactDOM.render(
@@ -633,6 +641,26 @@ WfNodeInfo.prototype.createTargetNodeElement = function(isEage,key,detailDatas,n
 			}
 		}),
 		document.getElementById("targetCell-container")
+	);
+}
+/**
+创建出口-是否退回
+ */
+WfNodeInfo.prototype.createLinkNeedBackElement = function(isEage,key,detailDatas,nowCell){
+	
+	var graph = this.editorUi.editor.graph;
+	var model = graph.model;
+	let WeaCheckbox = window.ecCom.WeaCheckbox;
+
+	ReactDOM.render(
+		React.createElement(WeaCheckbox,
+		{
+			value:nowCell.isreject?nowCell.isreject:false,
+			onChange:(v)=>{
+				nowCell.isreject = v;
+			}
+		}),
+		document.getElementById("linkNeedBack-container")
 	);
 }
 /**

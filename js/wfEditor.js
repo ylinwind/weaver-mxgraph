@@ -935,7 +935,6 @@ WfPanel.prototype.openWorkflowTestPanel = function(cellNode,isPassed,edges)
 		workflowUi.addSplitHandler(vertSplit, false, 0, mxUtils.bind(workflowUi, function(value)
 		{
 			value<=8 ? value = 8 : '';
-			console.log(value,'value')
 			wfTestPanel.style.height = value + 'px';
 			wfTestPanel.style.bottom = '8px';
 			vertSplit.style.bottom = value + 'px';
@@ -1011,7 +1010,7 @@ WfPanel.prototype.writeWorkflowTestInfo = function(container,cellNode,isPassed,e
 	if(cellNode.nodeType == '1'){//审批节点应该包含退回出口
 		let haveBackPath = false;
 		edges.map(v=>{
-			if(v.xxx){
+			if(v.isreject == 1){
 				haveBackPath = true;
 			}
 		});
