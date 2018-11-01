@@ -324,11 +324,9 @@ WfPanel.prototype.createIconRangeInput = function(graph){
 		input.style.backgroundSize = `${value}% 100%`;
 		let viewVal = value/50;
 
-		if(viewVal <= 0.2){
-			graph.zoomTo(0.2);
-		}else{
-			graph.zoomTo(viewVal);
-		}
+		viewVal <= 0.15 ? viewVal = 0.15 : '';
+		graph.zoomTo(viewVal);
+		
 		//  0.2 - 2   0 - 100
 		var tips = document.getElementsByClassName('action-area-tip')[4];
 		tips.innerHTML = `视图（${Math.round(viewVal*100)}%）`;
@@ -398,12 +396,13 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 		}
         func.funct(evt);
         if(icon=='icon-workflow-suoxiao' || icon=='icon-workflow-fangda' || icon=='icon-workflow-huifuyuanbil'){//修改操作区域显示缩放值
+		//0.15 - 2   0 - 100
             var tips = document.getElementsByClassName('action-area-tip')[4];
-            tips.innerHTML = `视图（${Math.round(graph.view.scale*100)}%）`;
+            tips.innerHTML = `视图（${Math.round(graph.view.scale <= 0.15 ? 15 : graph.view.scale * 100)}%）`;
 
 			var inputRange = document.getElementsByClassName('wf-view-range')[0];
-            inputRange.value = graph.view.scale * 50;
-			inputRange.style.backgroundSize = `${graph.view.scale * 50}% 100%`;
+            inputRange.value = graph.view.scale <= 0.15 ? 0 : graph.view.scale * 50;
+			inputRange.style.backgroundSize = `${graph.view.scale <= 0.15 ? 0 : graph.view.scale * 50}% 100%`;
         }
     }
 }

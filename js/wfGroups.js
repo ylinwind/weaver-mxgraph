@@ -154,7 +154,18 @@ wfGroups.prototype.createGroupPanelItem = function(item,index){
     inputName.onblur = function(e){
         this.style.display = 'none';
         let val = e.target.value;
-        item.type=='col'?sb.colGroups[index].value = val:sb.rowGroups[index].value = val;
+        if(val.trim() == ''){
+            wfModal.warning({
+                title: wfGetLabel(131329, "信息确认"),
+                content:'分组名称不能为空',
+                okText: wfGetLabel(83446, "确定"),
+                onOk:()=>{
+                    e.target.value = item.type=='col'?sb.colGroups[index].value : sb.rowGroups[index].value;
+                },
+            });
+        }else{
+            item.type=='col'?sb.colGroups[index].value = val:sb.rowGroups[index].value = val;
+        }
         sb.refresh();
     }
 
@@ -212,10 +223,12 @@ wfGroups.prototype.groupDragAction = function(element,direction = 'col',index){
 
                 let _groups = sb.colGroups;
                 let leftNum = left - sb.colGroups[index].position.left;
+                let numVal = _groups[index].panelWidth + leftNum;
+                numVal <= 150 ? leftNum = 0 : '';
                 _groups.map((v,i)=>{
-                    if(i>=index && v.type == 'col'){
+                    if(i>=index && v.type == 'col'){//在之后的分组位置需变化
                         _groups[i].position.left = v.position.left + leftNum;
-                        i==index ? _groups[i].panelWidth = _groups[i].panelWidth + leftNum : '';
+                        i==index ? _groups[i].panelWidth = _groups[index].panelWidth + leftNum : '';
                     }
                 });
                 sb.colGroups = _groups;
@@ -224,6 +237,8 @@ wfGroups.prototype.groupDragAction = function(element,direction = 'col',index){
 
                 let _groups = sb.rowGroups;
                 let topNum = top - sb.rowGroups[index].position.top;
+                let numVal = _groups[index].panelWidth + topNum;
+                numVal <= 100 ? topNum = 0 : '';
                 _groups.map((v,i)=>{
                     if(i>=index && v.type == 'row'){
                         _groups[i].position.top = v.position.top + topNum;
