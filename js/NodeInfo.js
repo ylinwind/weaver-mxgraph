@@ -928,6 +928,9 @@ WfNodeInfo.prototype.createDetailDialog = function(key='',modalName='',nodeId=''
 			dialog._callBack = (a,b,c,d,e)=>{
 				console.log('_callback',a,b,c,d,e)
 			}
+			dialog.callback = (datas)=>{
+				console.log(datas,'datas');//linkConditionInfo
+			}
 			dialog.show();
 		}else{
 			workflowDesignE9_dialog = WeaTools.createDialog({

@@ -30,17 +30,18 @@ wfGroups.prototype.init = function(groupsParams={}){
 */
 wfGroups.prototype.refresh = function(modelChange = false){
     var graph = this.editorUi.editor.graph;
+    let scale = graph.view.scale;
     var minimumGraphSize = graph.minimumGraphSize;
     if(graph.isRuleEnabled()){//开启了标尺
         this.container.style.top = 20 + 'px';
         this.container.style.left = 20 + 'px';
-        this.container.style.width = (minimumGraphSize?minimumGraphSize.width-20:0) + 'px';
-        this.container.style.height = (minimumGraphSize?minimumGraphSize.height-20:0) + 'px';
+        this.container.style.width = (minimumGraphSize?minimumGraphSize.width-20:0)*scale + 'px';
+        this.container.style.height = (minimumGraphSize?minimumGraphSize.height-20:0)*scale + 'px';
     }else{
         this.container.style.top = 0 + 'px';
         this.container.style.left = 0 + 'px';
-        this.container.style.width = (minimumGraphSize?minimumGraphSize.width:0) + 'px';
-        this.container.style.height = (minimumGraphSize?minimumGraphSize.height:0) + 'px';
+        this.container.style.width = (minimumGraphSize?minimumGraphSize.width:0)*scale + 'px';
+        this.container.style.height = (minimumGraphSize?minimumGraphSize.height:0)*scale + 'px';
     }
 
     this.container.innerHTML = '';
@@ -98,14 +99,15 @@ wfGroups.prototype.paintGroups = function(){
 *创建分组元素
  */
 wfGroups.prototype.createGroupElement = function(item,index){
-    
+    var graph = this.editorUi.editor.graph;
+    let scale = graph.view.scale;
     if(item == null){
         return;
     }
     var element = document.createElement('p');
     item.type == 'col' ? element.className = 'workflow-col-group' : element.className = 'workflow-row-group';
     for(let key in item['position']){
-        element.style[key] = item['position'][key] + 'px';
+        element.style[key] = item['position'][key]*scale + 'px';
     }
     this.groupDragAction(element,item.type,index);
     return element;
@@ -116,6 +118,7 @@ wfGroups.prototype.createGroupElement = function(item,index){
 */
 wfGroups.prototype.createGroupPanelElement = function(item,index){
     var graph = this.editorUi.editor.graph;
+    let scale = graph.view.scale;
     if(item == null){
         return;
     }
@@ -127,6 +130,7 @@ wfGroups.prototype.createGroupPanelElement = function(item,index){
             groupArea = document.createElement('div');
             groupArea.id = 'col-group-panel-area';
         }
+        // groupArea.style.height = (25*scale) + 'px';
         groupArea.style.width = graph.minimumGraphSize.height + 'px';
     }else{
         if(document.getElementById('row-group-panel-area')){
@@ -135,8 +139,10 @@ wfGroups.prototype.createGroupPanelElement = function(item,index){
             groupArea = document.createElement('div');
             groupArea.id = 'row-group-panel-area';
         }
+        // groupArea.style.height = (25*scale) + 'px';
     }
-    groupItem = this.createGroupPanelItem(item,index);
+    groupArea.style.zoom = scale;
+    groupItem = this.createGroupPanelItem(item,index,scale);
     groupArea.appendChild(groupItem);
     return groupArea;
 }
@@ -144,7 +150,7 @@ wfGroups.prototype.createGroupPanelElement = function(item,index){
 * icon : ↑-icon-coms-Reverse  ↓-icon-coms-positive-sequence  ←-icon-coms-Last-step  →-icon-coms-Next-step
 * ×-anticon anticon-cross
 */
-wfGroups.prototype.createGroupPanelItem = function(item,index){
+wfGroups.prototype.createGroupPanelItem = function(item,index,scale){
     let groupItem = document.createElement('div');
     let infoArea = document.createElement('div');
     let actionArea = document.createElement('div');
@@ -178,13 +184,21 @@ wfGroups.prototype.createGroupPanelItem = function(item,index){
     })
 
     groupItem.className = `${item.type}-group-item`;
-    item.type=='col' ? groupItem.style.width = (item.panelWidth || 150) + 'px':
-                        groupItem.style.width = (item.panelWidth || 150) + 'px';
-                        // groupItem.style.height = (item.panelWidth || 150) + 'px';
+    // item.type=='col' ? groupItem.style.width = (item.panelWidth || 150) + 'px':
+    //                     groupItem.style.width = (item.panelWidth || 150) + 'px';
+    groupItem.style.width = (item.panelWidth || 150) + 'px';
     actionArea.className = 'group-item-action';
-
     infoArea.className = 'group-item-info';
     infoArea.innerHTML = item.value;
+    if(scale<1){
+        actionArea.style.transform = `scale(${scale})`;
+        actionArea.style.transformOrigin = `center top`;
+        actionArea.style.position = 'absolute';
+        actionArea.style.right = '0';
+
+        infoArea.style.transform = `scale(${scale})`;
+        infoArea.style.transformOrigin = `center top`;
+    }
     infoArea.title = item.value;
     infoArea.ondblclick = function(e){
         let input = e.target.childNodes[1];
@@ -195,6 +209,8 @@ wfGroups.prototype.createGroupPanelItem = function(item,index){
     infoArea.appendChild(inputName);
     groupItem.appendChild(infoArea);
     groupItem.appendChild(actionArea);
+    // groupItem.style.zoom = scale;
+    // groupItem.style.transform = `scale(${scale})`;
     return groupItem;
 }
 /**
@@ -216,19 +232,22 @@ wfGroups.prototype.groupDragAction = function(element,direction = 'col',index){
 		initY = element.offsetTop;
 
 		document.onmousemove = function(ev) {
-			
+            let graph = sb.editorUi.editor.graph;
+            let scale = graph.view.scale;
+			let groupMinWidth = 150*scale, groupMinHeight = 100*scale;
+            
 			var mouseMoveX = ev.pageX,mouseMoveY = ev.pageY;
             if(direction == 'col'){
                 let left = parseInt(mouseMoveX) - parseInt(mouseDownX) + parseInt(initX);
 
                 let _groups = sb.colGroups;
-                let leftNum = left - sb.colGroups[index].position.left;
-                let numVal = _groups[index].panelWidth + leftNum;
-                numVal <= 150 ? leftNum = 0 : '';
+                let leftNum = left - sb.colGroups[index].position.left*scale;
+                let numVal = _groups[index].panelWidth*scale + leftNum;
+                numVal <= groupMinWidth ? leftNum = 0 : '';
                 _groups.map((v,i)=>{
                     if(i>=index && v.type == 'col'){//在之后的分组位置需变化
-                        _groups[i].position.left = v.position.left + leftNum;
-                        i==index ? _groups[i].panelWidth = _groups[index].panelWidth + leftNum : '';
+                        _groups[i].position.left = v.position.left + (leftNum/scale);
+                        i==index ? _groups[i].panelWidth = _groups[index].panelWidth + (leftNum/scale) : '';
                     }
                 });
                 sb.colGroups = _groups;
@@ -236,13 +255,13 @@ wfGroups.prototype.groupDragAction = function(element,direction = 'col',index){
                 let top = parseInt(mouseMoveY) - parseInt(mouseDownY) + parseInt(initY);
 
                 let _groups = sb.rowGroups;
-                let topNum = top - sb.rowGroups[index].position.top;
-                let numVal = _groups[index].panelWidth + topNum;
-                numVal <= 100 ? topNum = 0 : '';
+                let topNum = top - sb.rowGroups[index].position.top*scale;
+                let numVal = _groups[index].panelWidth*scale + topNum;
+                numVal <= groupMinHeight ? topNum = 0 : '';
                 _groups.map((v,i)=>{
                     if(i>=index && v.type == 'row'){
-                        _groups[i].position.top = v.position.top + topNum;
-                        i == index ? _groups[i].panelWidth = _groups[i].panelWidth + topNum : '';
+                        _groups[i].position.top = v.position.top + (topNum/scale);
+                        i == index ? _groups[i].panelWidth = _groups[i].panelWidth + (topNum/scale) : '';
                     }
                 });
                 sb.rowGroups = _groups;

@@ -75809,12 +75809,12 @@ mxVertexHandler.prototype.updateMinBounds = function()
  */
 mxVertexHandler.prototype.getSelectionBounds = function(state)
 {
-	if(state.style.shape == 'label'){
-			state.x = state.origin.x - 5;
-			state.y = state.origin.y - 5;
-			state.width = state.cellBounds.width + 10;
-			state.height = state.cellBounds.height + 10;
-		}
+	// if(state.style.shape == 'label'){
+	// 		state.x = state.origin.x - 5;
+	// 		state.y = state.origin.y - 5;
+	// 		state.width = state.cellBounds.width + 10;
+	// 		state.height = state.cellBounds.height + 10;
+	// 	}
 	return new mxRectangle(Math.round(state.x), Math.round(state.y), Math.round(state.width), Math.round(state.height));
 };
 
@@ -81100,7 +81100,7 @@ mxTooltipHandler.prototype.init = function()
 	if (document.body != null)
 	{
 		this.div = document.createElement('div');
-		this.div.className = 'mxTooltip';
+		this.div.className = 'mxTooltip workflowLink-TipInfo';
 		this.div.style.visibility = 'hidden';
 
 		document.body.appendChild(this.div);
@@ -81214,7 +81214,7 @@ mxTooltipHandler.prototype.reset = function(me, restart, state)
 					// this (delayed) point in time is not possible in IE as it no
 					// longer contains the required information (member not found)
 					var tip = this.graph.getTooltip(state, node, x, y);
-					this.show(tip, x, y);
+					this.show(tip, x, y,state);
 					this.state = state;
 					this.node = node;
 					this.stateSource = stateSource;
@@ -81255,8 +81255,11 @@ mxTooltipHandler.prototype.hideTooltip = function()
  * Shows the tooltip for the specified cell and optional index at the
  * specified location (with a vertical offset of 10 pixels).
  */
-mxTooltipHandler.prototype.show = function(tip, x, y)
+mxTooltipHandler.prototype.show = function(tip, x, y,state)
 {
+	if(state.cell.edge){
+		tip = state.cell.linkConditionInfo || '出口条件';
+	}
 	if (!this.destroyed && tip != null && tip.length > 0)
 	{
 		// Initializes the DOM nodes if required

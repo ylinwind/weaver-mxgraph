@@ -329,6 +329,7 @@
 }
 .col-group-item{
     /* position: absolute; */
+    position: relative;
     /* text-align: center; */
     display: inline-block;
     height: 25px;
@@ -337,9 +338,7 @@
     float:left;
 }
 .row-group-item{
-    /* height: 150px;
-    width: 25px;
-    border-bottom: 1px solid #999; */
+    position: relative;
     display: inline-block;
     height: 25px;
     width: 150px;
@@ -379,8 +378,11 @@
 .col-group-item:hover .group-item-action , .row-group-item:hover .group-item-action{
     display: inline-block;
 }
-.col-group-item:hover .group-item-info ,.row-group-item:hover .group-item-info{
+.col-group-item:hover .group-item-info {
     width: 70%;
+}
+.row-group-item:hover .group-item-info{
+    width: 50%;
 }
 .group-item-action .action-item:hover{
     background: #3B99FC;
@@ -456,4 +458,8 @@
     top: 0;
     bottom: 0;
     background: rgba(253, 249, 249, 0.5);
+}
+/* 出口鼠标附上提示  common.css 有样式设置*/
+.workflowLink-TipInfo{
+    border-color: #3B99FC;
 }

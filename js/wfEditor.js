@@ -344,6 +344,9 @@ WfPanel.prototype.createIconElement = function(item,sb,editor){
 	}else{
 		spanEl = document.createElement('span');
 	}
+	if(item.icon == 'icon-workflow-ceshi'){
+		spanEl.id='workflow-ceshiOrPause';
+	}
 	spanEl.className = `${item.icon} icon-workflow`;
 	spanEl.title = item.title || 'title';
 	spanEl.onclick = function(e){
@@ -383,7 +386,7 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 	}else if(icon=='icon-workflow-zongxiangfenzu'){
 		this.drawColGroup();
 	}else if(icon=='icon-workflow-ceshi'){
-		this.doWorkflowTest();
+		this.doWorkflowTest(evt);
 	}else if(icon=='icon-workflow-tingzhi'){
 		this.stopWorkflowTest();
 	}else if(icon=='icon-workflow-daochu'){//导出路径xml
@@ -672,9 +675,20 @@ WfPanel.prototype.doCheckBranchNode = function(cells){
 	}
 }
 /**
+暂停流程测试
+ */
+
+WfPanel.prototype.pauseWorkflowTest = function(evt){
+	console.log('pauseWorkflowTest---')
+}
+/**
 流程测试
  */
-WfPanel.prototype.doWorkflowTest = function(){
+WfPanel.prototype.doWorkflowTest = function(evt){
+	// document.getElementById('workflow-ceshiOrPause').className = 'icon-workflow icon-workflow-zanting';
+	evt.target.className = 'icon-workflow icon-workflow-zanting';
+	evt.target.onclick = this.pauseWorkflowTest.bind(this);
+
 	var graph = this.editorUi.editor.graph;
 	var view = graph.view;
 	var startX = graph.minimumGraphSize.x;
@@ -693,7 +707,6 @@ WfPanel.prototype.doWorkflowTest = function(){
 	var allEdges = [];
 	var testWaysObj = {} //存放测试路径数据，有可能有多条路线
 	this.wfTestIsIng = true;
-
 	var theStartCell = null , haveAEndCell = false; //haveAEndCell : 是否有归档节点
 	for(let i = 0 , len = allCells.length; i < len ; ++i){
 		if(allCells[i].nodeType == 0){
@@ -901,6 +914,10 @@ WfPanel.prototype.stopWorkflowTest = function(fromTest=0){
 	// 清楚undolistener
 	this.editorUi.editor.setModified(false);
 	this.editorUi.editor.undoManager.clear();
+
+	let ceshiElement = document.getElementById('workflow-ceshiOrPause');
+	ceshiElement.className = 'icon-workflow icon-workflow-ceshi';
+	ceshiElement.onclick = this.doWorkflowTest.bind(this);
 }
 /**
 	打开workflow test详细信息面板
