@@ -76387,8 +76387,11 @@ mxVertexHandler.prototype.resizeVertex = function(me)
 		this.graph.isGridEnabledEvent(me.getEvent()), 1,
 		new mxPoint(0, 0), this.isConstrainedEvent(me),
 		this.isCenteredEvent(this.state, me));
-	this.unscaledBounds.width<150 ? this.unscaledBounds.width = 150 :'';
-	this.unscaledBounds.height<100 ? this.unscaledBounds.height = 100 :'';
+	
+	let minWidth = this.state.cell.isHelpfulText? 80 : 150;
+	let minHeight = this.state.cell.isHelpfulText? 40 : 100;
+	this.unscaledBounds.width<minWidth ? this.unscaledBounds.width = minWidth :'';
+	this.unscaledBounds.height<minHeight ? this.unscaledBounds.height = minHeight :'';
 	// Keeps vertex within maximum graph or parent bounds
 	if (!geo.relative)
 	{

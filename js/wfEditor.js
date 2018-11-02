@@ -260,7 +260,7 @@ WfPanel.prototype.drawActions = function(){
         {icon:'icon-workflow-shanchu',action:iconActions.get('delete'),title:'删除'},
 
         {icon:'icon-workflow-tianjiafenzu',action:'',title:'添加分组'},
-        {icon:'icon-workflow-ziti',action:'',title:'字体'},
+        {icon:'icon-workflow-wenbenshuoming',action:'',title:'文本说明'},
         {icon:'icon-workflow-hengxiangfenzu',action:'1',title:'横向分组'},
         {icon:'icon-workflow-zongxiangfenzu',action:'1',title:'纵向分组'},
 
@@ -341,6 +341,8 @@ WfPanel.prototype.createIconElement = function(item,sb,editor){
 	let history = editor.undoManager.history;
 	if(item.icon === 'icon-workflow-tianjiafenzu'){//添加分组
 		spanEl = sb.drawAreaGroup();
+	}else if(item.icon === 'icon-workflow-wenbenshuoming'){//辅助文本说明 A 按钮
+		spanEl = sb.drawHelpfulText();
 	}else{
 		spanEl = document.createElement('span');
 	}
@@ -408,6 +410,25 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 			inputRange.style.backgroundSize = `${graph.view.scale <= 0.15 ? 0 : graph.view.scale * 50}% 100%`;
         }
     }
+}
+/**
+辅助文本说明 A 按钮
+ */
+WfPanel.prototype.drawHelpfulText = function(){
+	var cells,
+		title='文本说明',
+		showLabel='文本说明',
+		showTitle='文本说明',
+		width=150,height=100,
+		allowCellsInserted,icon,
+		style=`text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;connectable=0;`;
+		
+	cells = [new mxCell( '文本说明', new mxGeometry(10, 10, width, height), style)];
+	cells[0].vertex = true;
+	cells[0].isHelpfulText = true;
+
+	var element = this.createItem(cells, title, showLabel, showTitle, width, height, allowCellsInserted,icon,true);
+	return element;
 }
 /**
 *导出路径的xml

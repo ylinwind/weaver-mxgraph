@@ -223,7 +223,7 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 		{label:'标题显示设置',value:'',key:'hasOperateTitle'},
 		{label:'子流程设置',value:'',key:'hasOperateSubwf'},
 		{label:'流程异常处理',value:'',key:'hasOperateException'},
-		{label:'节点字段校验',value:'',key:'hasNodePro'},
+		// {label:'节点字段校验',value:'',key:'hasNodePro'}, //暂时去掉，功能未找到
 		{label:'类型',value:'',key:'changeNodeType'},
 	];
 	if(nowCell.nodeAttriBute && (nowCell.nodeAttriBute == 3||nowCell.nodeAttriBute == 4||nowCell.nodeAttriBute == 5)){//分支合并节点
@@ -271,7 +271,9 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 	elP.className = 'nodeInfo-detail-item';
 	elSpanLeft.className = 'detail-item-left detail-item-span';
 	elSpanRight.className = `detail-item-right detail-item-span 
-		${v.key === 'operators' || v.key === 'name' || v.key === 'targetCell' || v.key === 'isBuildCode' || v.key === 'remindMsg'  ? 'isEcComs-item':''}`;
+		${v.key === 'operators' || v.key === 'name' || v.key === 'targetCell' || v.key === 'isBuildCode' ||
+		 v.key === 'remindMsg' || v.key === 'changeNodeType' || v.key === 'branchToOneType' || v.key === 'branchToOneSubType' 
+		   ? 'isEcComs-item':''}`;
 	/**
 	//类型：处理和审批类型互换 1审批 2  处理
 	/类型单独判断

@@ -208,9 +208,13 @@
     display: inline-block;
     width: 100%;
 }
-#targetCell-container .wea-select ,#changeNodeType-container .wea-select{
+#nodeInfo-detail-nodeLinkDetail .wea-select{
     width: 100%;
 }
+/* #targetCell-container .wea-select ,
+#changeNodeType-container .wea-select{
+    width: 100%;
+} */
 .nodeInfo-detail-item .icon-workflow-shezhi{
     cursor: pointer;
     font-size: 18px;
