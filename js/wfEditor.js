@@ -677,9 +677,62 @@ WfPanel.prototype.doCheckBranchNode = function(cells){
 /**
 暂停流程测试
  */
-
 WfPanel.prototype.pauseWorkflowTest = function(evt){
-	console.log('pauseWorkflowTest---')
+	
+	this.wfTestTimeOutList.map(v=>{
+		clearTimeout(v);
+	});
+
+	let ceshiElement = document.getElementById('workflow-ceshiOrPause');
+	ceshiElement.className = 'icon-workflow icon-workflow-ceshi';
+	ceshiElement.onclick = this.startAgainWorkflowTest.bind(this);
+}
+/**
+再次开始流程测试
+ */
+WfPanel.prototype.startAgainWorkflowTest = function(evt){
+
+	evt.target.className = 'icon-workflow icon-workflow-zanting';
+	evt.target.onclick = this.pauseWorkflowTest.bind(this);
+
+	var graph = this.editorUi.editor.graph;
+	var view = graph.view;
+	var startX = graph.minimumGraphSize.x;
+	var startY = graph.minimumGraphSize.y;
+	var graphWidth = graph.minimumGraphSize.width;
+	var graphHeight = graph.minimumGraphSize.height;
+
+	var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+	let testElts = document.getElementsByClassName('workfow-test');
+
+	if(testElts){
+		for(let i = 0 ; i < testElts.length ; ++i){
+			if(testElts[i].workflowCusAttr){
+				let flagStr = testElts[i].workflowCusAttr;//startCellId_13,startPointIndex_2,edgeCellId_333
+				let startCell , pointIndex ,edgeCellId , nowEdge;
+				let flagArr = flagStr.split(',');
+				
+				let cellId = flagArr[0].split('_')[1];
+				pointIndex = flagArr[1].split('_')[1];
+				edgeCellId = flagArr[2].split('_')[1];
+				for(let j = 0 ; j < allCells.length ; ++j){
+					if(!allCells[j].edge && allCells[j].id == cellId){
+						startCell = allCells[j];
+						// break;
+					}
+					if(allCells[j].edge && allCells[j].id == edgeCellId){
+						nowEdge = allCells[j];
+					}
+				}
+				startCell.edges&&startCell.edges.map(v=>{
+					v.isTested = false;
+				});
+				// this.workflowTestV2(startCell,Number(pointIndex))
+				let edgePoints = view.getState(nowEdge).absolutePoints;
+				this.startWorkflowTest(edgePoints,nowEdge,Number(pointIndex))
+			}
+		}
+	}
 }
 /**
 流程测试
@@ -767,44 +820,63 @@ WfPanel.prototype.wfTestIsIng = false;
  */
 WfPanel.prototype.wfTestTimeOutList = [];
 /**开始测试 */
-WfPanel.prototype.startWorkflowTest = function(pointArr=[],nowEdge){
+WfPanel.prototype.startWorkflowTest = function(beginPointArr=[],nowEdge,startPointIndex=0){
 	var graph = this.editorUi.editor.graph;
-	var sb = this;
-
+	var sb = this,secondIndex = startPointIndex;
+	let pointArr = beginPointArr.slice(startPointIndex);
 	if(pointArr.length > 0 && pointArr[0]){
 		var _container = document.getElementsByClassName('geBackgroundPage')[0];
-		var eltSpan = document.createElement('span');
-		eltSpan.className = 'workfow-test';
-		// eltSpan.className = 'workfow-test icon-coms-Reverse';
-		eltSpan.style.left = pointArr[0].x - 5 + 'px';
-		eltSpan.style.top = pointArr[0].y - 5 + 'px';
-		_container.appendChild(eltSpan);
-
+		let eltSpanElts = document.getElementsByClassName('workfow-test');
+		var eltSpan,isExistSpan = false;
+		for(let i = 0 ; i < eltSpanElts.length ; ++i){
+			if(eltSpanElts[i].workflowCusAttr && 
+			eltSpanElts[i].workflowCusAttr == `startCellId_${nowEdge.source.id},startPointIndex_${startPointIndex},edgeCellId_${nowEdge.id}`){
+				eltSpan = eltSpanElts[i];
+				beginPointArr.map((v,i)=>{
+					if((eltSpan.offsetLeft == v.x - 5)&&(eltSpan.offsetTop == v.y - 5)){
+						secondIndex = i;
+					}
+				})
+				isExistSpan = true;
+				break;
+			}
+		}
+		if(!isExistSpan){
+			eltSpan = document.createElement('span');
+			eltSpan.className = `workfow-test`;
+			// eltSpan.className = 'workfow-test icon-coms-Reverse';
+			
+			eltSpan.style.left = beginPointArr[startPointIndex].x - 5 + 'px';
+			eltSpan.style.top = beginPointArr[startPointIndex].y - 5 + 'px';
+			_container.appendChild(eltSpan);
+		}
+		secondIndex ? pointArr = beginPointArr.slice(secondIndex) : '';
 		let transX=0 , transY=0 , timeout;
 		for(let i = 0 , len = pointArr.length ; i < len ; ++i){
-			if(pointArr[i-1]){
-				let _transX=transX , _transY=transY , index = i , iconDrec = 'top';//iconDrec 图标的指向默认朝上,top|bottom|left|right
-				if(pointArr[i].x == pointArr[i-1].x){ //纵向移动
-					_transY += pointArr[i].y - pointArr[i-1].y;
+			if(pointArr[i-1] || len==1){
+				let _transX=0 , _transY=0 , index = i , iconDrec = 'top';//iconDrec 图标的指向默认朝上,top|bottom|left|right
+				if(pointArr[i-1] &&pointArr[i].x == pointArr[i-1].x){ //纵向移动
+					_transY = pointArr[i].y - pointArr[i-1].y;
 					if(_transY>0){
 						iconDrec = 'bottom';
 					}else{
 						iconDrec = 'top';
 					}
-					transY = _transY;
 				}
-				if(pointArr[i].y == pointArr[i-1].y){//横向移动
-					_transX += pointArr[i].x - pointArr[i-1].x;
+				if(pointArr[i-1] && pointArr[i].y == pointArr[i-1].y){//横向移动
+					_transX = pointArr[i].x - pointArr[i-1].x;
 					if(_transX>0){
 						iconDrec = 'right';
 					}else{
 						iconDrec = 'left';
 					}
-					transX = _transX;
 				}
 				timeout = setTimeout(()=>{
-					// eltSpan.style.transform = `translate(${_transX}px,${_transY}px) rotate(${iconDrec=='right'?90:iconDrec=='left'?-90:iconDrec=='bottom'?180:0}deg)`;
-					eltSpan.style.transform = `translate(${_transX}px,${_transY}px)`;
+					eltSpan.workflowCusAttr = `startCellId_${nowEdge.source.id},startPointIndex_${i},edgeCellId_${nowEdge.id}`;
+					eltSpan.style.left = pointArr[i].x - 5 + 'px';
+					eltSpan.style.top = pointArr[i].y - 5 + 'px';
+					// eltSpan.style.left = eltSpan.offsetLeft + _transX + 'px';
+					// eltSpan.style.top = eltSpan.offsetTop + _transY + 'px';
 					if(index == pointArr.length -1){//当前运动路径最后一个点
 						clearTimeout(timeout);
 						let _time = setTimeout(()=>{
@@ -823,7 +895,7 @@ WfPanel.prototype.startWorkflowTest = function(pointArr=[],nowEdge){
 /**
 流程测试 v2
  */
-WfPanel.prototype.workflowTestV2 = function(cellNode){
+WfPanel.prototype.workflowTestV2 = function(cellNode,startPointIndex=0){//传入从哪个节点开始  默认是从创建节点
 
 	if(!this.wfTestIsIng){
 		return;
@@ -855,20 +927,13 @@ WfPanel.prototype.workflowTestV2 = function(cellNode){
 				finally
 				{
 					model.endUpdate();
-					edgePoints = view.getState(v).absolutePoints
-					!v.isTested && this.startWorkflowTest(edgePoints,v);
+					edgePoints = view.getState(v).absolutePoints;
+					!v.isTested && this.startWorkflowTest(edgePoints,v,startPointIndex);
 					v.isTested = true;
-					// v.setAttribute('isTested',true);
 				}
 			}
 		});
 		if(!haveExit){
-			// wfModal.warning({
-			// 	title: wfGetLabel(131329, "信息确认"),
-			// 	content:`${cellNode.value}节点：出口设置不正确！`,
-			// 	okText: wfGetLabel(83446, "确定"),
-			// 	onOk:()=>{console.log('ok')},
-			// });
 			let wfTestSpanElt = document.getElementsByClassName('workfow-test');
 			if(wfTestSpanElt.length == 0){
 				this.stopWorkflowTest(1);
