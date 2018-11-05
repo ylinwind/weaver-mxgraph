@@ -75720,7 +75720,7 @@ mxVertexHandler.prototype.init = function()
 		}
 	}
 	
-	// Adds the rotation handler
+	// Adds the rotation handler 旋转控制
 	// if (this.isRotationHandleVisible())
 	// {
 	// 	this.rotationShape = this.createSizer(this.rotationCursor, mxEvent.ROTATION_HANDLE,
@@ -77126,7 +77126,8 @@ mxVertexHandler.prototype.redrawHandles = function()
 	var tol = this.tolerance;
 	this.horizontalOffset = 0;
 	this.verticalOffset = 0;
-	var s = this.bounds;
+	
+
 
 	if (this.sizers != null && this.sizers.length > 0 && this.sizers[0] != null)
 	{
@@ -77389,7 +77390,14 @@ mxVertexHandler.prototype.drawPreview = function()
 		this.preview.redraw();
 	}
 	
-	this.selectionBorder.bounds = this.bounds;
+	let s = this.bounds;
+	s.x = s.x - 5;
+	s.y = s.y - 5;
+	s.width = s.width + 10;
+	s.height = s.height + 10;
+
+	this.selectionBorder.bounds = s;
+
 	this.selectionBorder.redraw();
 	
 	if (this.parentHighlight != null)
