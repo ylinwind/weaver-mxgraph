@@ -1904,17 +1904,21 @@ PageSetupDialog.getFormats = function()
 		if(graph.isRuleEnabled()){
 			this.createBoundRules();
 		}else if(!graph.isRuleEnabled() && document.getElementById('wf-row-rule-canvas')){
+			var wfPanelContainer = workflowUi.wfPanelContainer;
 			var rowCanvas,colCanvas;
 			rowCanvas = document.getElementById('wf-row-rule-canvas');
 			colCanvas = document.getElementById('wf-col-rule-canvas');
-			graph.container.removeChild(rowCanvas);
-			graph.container.removeChild(colCanvas);
+			wfPanelContainer.removeChild(rowCanvas);
+			wfPanelContainer.removeChild(colCanvas);
+			// graph.container.removeChild(rowCanvas);
+			// graph.container.removeChild(colCanvas);
 		}
 	};
 	
 	// 创建标尺
 	mxGraphView.prototype.createBoundRules = function()
 	{
+		var wfPanelContainer = workflowUi.wfPanelContainer;
 		var graph = this.graph;
 		var tmp = this.graph.gridSize * this.scale;
 		var rowCanvas,colCanvas;
@@ -1923,17 +1927,21 @@ PageSetupDialog.getFormats = function()
 			colCanvas = document.getElementById('wf-col-rule-canvas');
 		}else{
 			rowCanvas = document.createElement('canvas');
-			rowCanvas.width = graph.container.clientWidth;
+			rowCanvas.width = wfPanelContainer.clientWidth;
+			// rowCanvas.width = graph.container.clientWidth;
 			rowCanvas.height = 20;
 			rowCanvas.id = 'wf-row-rule-canvas';
 			// col
 			colCanvas = document.createElement('canvas');
-			colCanvas.height = graph.container.clientHeight;
+			colCanvas.height = wfPanelContainer.clientHeight;
+			// colCanvas.height = graph.container.clientHeight;
 			colCanvas.width = 20;
 			colCanvas.id = 'wf-col-rule-canvas';
 			
-			graph.container.appendChild(rowCanvas);
-			graph.container.appendChild(colCanvas);
+			// graph.container.appendChild(rowCanvas);
+			// graph.container.appendChild(colCanvas);
+			wfPanelContainer.appendChild(colCanvas);
+			wfPanelContainer.appendChild(rowCanvas);
 		}
 		
 		let rowCtx = rowCanvas.getContext('2d');
@@ -1944,7 +1952,8 @@ PageSetupDialog.getFormats = function()
 		rowCtx.lineTo(20-0.5,20-0.5);
 		rowCtx.stroke();
 		let rulePointIndex = 1 , colRulerIndex = 1;
-		for(let i = 25 ; i < graph.container.clientWidth ; i+=5){
+		// for(let i = 25 ; i < graph.container.clientWidth ; i+=5){
+		for(let i = 25 ; i < wfPanelContainer.clientWidth ; i+=5){
 			rowCtx.moveTo(i-0.5,20-0.5);
 			if(rulePointIndex%5==0){
 				rowCtx.lineTo(i-0.5,0-0.5);
@@ -1959,7 +1968,8 @@ PageSetupDialog.getFormats = function()
 		colCtx.moveTo(0-0.5,0-0.5);
 		colCtx.lineTo(20-0.5,0-0.5);
 		colCtx.stroke();
-		for(let i = 5 ; i < graph.container.clientHeight ; i+=5){
+		// for(let i = 5 ; i < graph.container.clientHeight ; i+=5){
+		for(let i = 5 ; i < wfPanelContainer.clientHeight ; i+=5){
 			colCtx.moveTo(20-0.5,i-0.5);
 			if(colRulerIndex%5==0){
 				colCtx.lineTo(0-0.5,i-0.5);

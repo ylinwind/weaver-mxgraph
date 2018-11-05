@@ -410,9 +410,17 @@ WfNodeInfo.prototype.createBranchToOneTypeElement = function(isEage,key,detailDa
 		{key: "5",selected: nowCell.nodeAttriBute == 5,showname: "比例合并"},
 	]
 	var sb = this;
+	let edges = nowCell.edges || [] , typeComsViewAttr = 2;
+	edges.map(v=>{
+		if(v.linkId == null || v.linkId == undefined || v.linkId == ''){
+			typeComsViewAttr = 1;
+		}
+	});
+	
 	ReactDOM.render(
 		React.createElement(WeaSelect,
 		{
+			viewAttr:typeComsViewAttr,
 			options:selectOptions,
 			onChange:(value, showname)=>{
 				nowCell.nodeAttriBute = value;
@@ -463,15 +471,25 @@ WfNodeInfo.prototype.createBranchToOneTypeSubElement = function(isEage,key,detai
 		});
 		nowCell.targetBranchValue = xmlIds.join(',');
 	}
+
+	let edges = nowCell.edges || [] , typeComsViewAttr = 2;
+	edges.map(v=>{
+		if(v.linkId == null || v.linkId == undefined || v.linkId == ''){
+			typeComsViewAttr = 1;
+		}
+	});
+
 	let nowComs = nowCell.nodeAttriBute == 4 ? WeaSelect : WeaInput;
 	let nowParams = nowCell.nodeAttriBute == 4 ? {
 		multiple : true,
+		viewAttr:typeComsViewAttr,
 		value:nowCell.targetBranchValue || '',
 		options:selectOptions,
 		onChange:(value, showname)=>{
 			nowCell.targetBranchValue = value;
 		}
 	} : {//通过分支数和比例合并组件参数
+		viewAttr:typeComsViewAttr,
 		value:nowCell.nodeAttriBute == 3 ? (nowCell.passBranchNum || '0') : (nowCell.proportMerge || '0'),
 		onChange:(value)=>{
 			value > 100 ? value = 100 : '';
@@ -507,9 +525,16 @@ WfNodeInfo.prototype.createChangeNodeTypeElement = function(isEage,key,detailDat
 	}else if(nowCell.nodeAttriBute == 3 || nowCell.nodeAttriBute == 4 || nowCell.nodeAttriBute == 5){//合并节点 3 通过分支数，4指定分支，5比例合并
 		options.unshift({key:'3',selected:nowCell.nodeType==3,showname:'归档'});
 	}
+	let edges = nowCell.edges || [] , typeComsViewAttr = 2;
+	edges.map(v=>{
+		if(v.linkId == null || v.linkId == undefined || v.linkId == ''){
+			typeComsViewAttr = 1;
+		}
+	});
 	ReactDOM.render(
 		React.createElement(WeaSelect,
 		{
+			viewAttr:typeComsViewAttr,
 			options:options,
 			onChange:(value, showname)=>{
 				let haveStartNode = false;
@@ -623,23 +648,33 @@ WfNodeInfo.prototype.createTargetNodeElement = function(isEage,key,detailDatas,n
 		obj['selected'] = v.id == nowCell.target.id ? true : false;
 		obj['showname'] = wfFormatMultiLang(v.value);
 		selectOptions.push(obj);
-	})
+	});
+	var sb = this;
 	ReactDOM.render(
 		React.createElement(WeaSelect,
 		{
 			options:selectOptions,
 			onChange:(value, showname)=>{
-				let selectItem = cellsExceptEdges.filter(v=>v.id == value);
-				model.beginUpdate();
-				try
-				{
-					graph.cellConnected(nowCell,selectItem[0],false,{name:'',perimeter:true,point:{x:0,y:0.5}});
-				}
-				finally
-				{
-					model.endUpdate();
-				}
-				console.log(cellsExceptEdges,'cellsExceptEdges',value, showname);
+				wfModal.confirm({
+					title: wfGetLabel(131329, "信息确认"),
+					content:'修改目标节点会改变出口条件等设置信息，确认修改吗？',
+					okText: wfGetLabel(83446, "确定"),
+					cancelText: wfGetLabel(31129, "取消"),
+					onOk:()=>{
+						let selectItem = cellsExceptEdges.filter(v=>v.id == value);
+						model.beginUpdate();
+						try
+						{
+							graph.cellConnected(nowCell,selectItem[0],false,{name:'',perimeter:true,point:{x:0,y:0.5}});
+						}
+						finally
+						{
+							model.endUpdate();
+						}
+					},
+					onCancel:()=>{sb.refresh();}
+				});
+				
 			}
 		}),
 		document.getElementById("targetCell-container")
@@ -792,7 +827,9 @@ WfNodeInfo.prototype.createOperatorElement = function(isEage,key,detailDatas,now
 WfNodeInfo.prototype.drawFoder = function(){
 	var elDiv = document.createElement('div');
     elDiv.className = 'nodeInfo-panel-folder';
-	elDiv.innerHTML = '>';
+
+	// elDiv.innerHTML = '>';
+	elDiv.style.background = 'url(/cloudstore/resource/pc/com/images/right-show.png)';
 	this.container.appendChild(elDiv);
 
 	elDiv.onclick = this.clickNodeFolder.bind(this,elDiv);
@@ -800,6 +837,7 @@ WfNodeInfo.prototype.drawFoder = function(){
 WfNodeInfo.prototype.clickNodeFolder = function(elt){
 	var wfEditor = this.editorUi.wfEditor;
 	var diagramContainer = this.editorUi.diagramContainer;
+	var wfPanelContainer = this.editorUi.wfPanelContainer;
 	var graph = this.editorUi.editor.graph;
 	var model = graph.model;
 
@@ -816,20 +854,29 @@ WfNodeInfo.prototype.clickNodeFolder = function(elt){
 	// model.beginUpdate();
 	try
 	{
+		let rowCanvas = document.getElementById('wf-row-rule-canvas');
+		let	colCanvas = document.getElementById('wf-col-rule-canvas');
 		if(this.nodePanelHide){//隐藏 向右移动隐藏
 			wfEditor.container.style.width = '100%';
-			diagramContainer.style.width = '100%';
-			graph.pageFormat.width = window.innerWidth-2;
+			// diagramContainer.style.width = '100%';
+			wfPanelContainer.style.width = '100%';
+			rowCanvas ? rowCanvas.width = wfPanelContainer.clientWidth : '';
+
+			graph.pageFormat.width = window.innerWidth-(graph.isRuleEnabled()?30:18);
 			this.container.style.transform = 'translateX(240px)';
 			elt.style.left = '-18px';
-			elt.innerHTML = '<';
+			elt.style.background = 'url(/cloudstore/resource/pc/com/images/right-hide.png)';
+			// elt.innerHTML = '<';
 		}else{//显示 向左移动显示
 			this.container.style.transform = 'translateX(0)';
 			elt.style.left = '0';
-			elt.innerHTML = '>';
+			elt.style.background = 'url(/cloudstore/resource/pc/com/images/right-show.png)';
+			// elt.innerHTML = '>';
 			wfEditor.container.style.width = 'calc(100% - 240px)';
-			diagramContainer.style.width = 'calc(100% - 240px)';
-			graph.pageFormat.width = window.innerWidth - 250;
+			wfPanelContainer.style.width = 'calc(100% - 240px)';
+			rowCanvas ? rowCanvas.width = wfPanelContainer.clientWidth : '';
+			// diagramContainer.style.width = 'calc(100% - 240px)';
+			graph.pageFormat.width = window.innerWidth - (graph.isRuleEnabled()?278:266);
 		}
 		graph.refresh();
 	}

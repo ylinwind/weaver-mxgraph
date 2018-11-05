@@ -7205,9 +7205,9 @@ var mxUtils =
 	 * of this page format are 826x1169 pixels.
 	 */
 	// PAGE_FORMAT_A4_PORTRAIT: new mxRectangle(0, 0, 827, 1169),
-	PAGE_FORMAT_A4_PORTRAIT: new mxRectangle(0, 0, window.innerWidth - 250, window.innerHeight - 140),
+	PAGE_FORMAT_A4_PORTRAIT: new mxRectangle(0, 0, window.innerWidth - 266, window.innerHeight - 168),
 	// 设置默认流程图大小
-	PAGE_FORMAT_WORKFLOW_PORTRAIT: new mxRectangle(0, 0, window.innerWidth - 250, window.innerHeight - 140),
+	PAGE_FORMAT_WORKFLOW_PORTRAIT: new mxRectangle(0, 0, window.innerWidth - 266, window.innerHeight - 168),
 
 	/**
 	 * Variable: PAGE_FORMAT_A4_PORTRAIT
@@ -48671,7 +48671,7 @@ mxCellRenderer.prototype.redrawLabel = function(state, forced)
 		state.text = null;
 	}
 	
-	if (state.text == null && value != null && (mxUtils.isNode(value) || value.length > 0))
+	if (!state.cell.edge && state.text == null && value != null && (mxUtils.isNode(value) || value.length > 0))//不是出口才创建 !state.cell.edge && 
 	{
 		this.createLabel(state, value);
 	}
@@ -71882,13 +71882,21 @@ mxSelectionCellsHandler.prototype.mouseUp = function(sender, me)
 	if (this.graph.isEnabled() && this.isEnabled())
 	{
 		var args = [sender, me];
-
 		this.handlers.visit(function(key, handler)
 		{
 			if((handler.isSource == false && handler.isTarget == false) || handler.currentTerminalState != null || handler.sizers != null){
+				if(handler.state.cell.edge && (handler.isSource || handler.isTarget) ){
+					wfModal.warning({
+						title: wfGetLabel(131329, "信息确认"),
+						content:'修改目标节点会改变出口条件等设置信息！',
+						okText: wfGetLabel(83446, "确定"),
+						onOk:()=>{},
+					});
+				}
 				handler.mouseUp.apply(handler, args);
 			}
 		});
+		
 	}
 };
 
@@ -77771,6 +77779,7 @@ mxEdgeHandler.prototype.init = function()
 
 	// Adds a rectangular handle for the label position
 	this.label = new mxPoint(this.state.absoluteOffset.x, this.state.absoluteOffset.y);
+
 	this.labelShape = this.createLabelHandleShape();
 	this.initBend(this.labelShape);
 	this.labelShape.setCursor(mxConstants.CURSOR_LABEL_HANDLE);
@@ -79623,7 +79632,7 @@ mxEdgeHandler.prototype.redrawHandles = function()
 	
 	if (this.labelShape != null)
 	{
-		this.labelShape.redraw();
+		// this.labelShape.redraw();
 	}
 	
 	if (this.customHandles != null)
@@ -79759,7 +79768,7 @@ mxEdgeHandler.prototype.drawPreview = function()
 		var bounds = new mxRectangle(Math.round(this.label.x - b.width / 2),
 				Math.round(this.label.y - b.height / 2), b.width, b.height);
 		this.labelShape.bounds = bounds;
-		this.labelShape.redraw();
+		// this.labelShape.redraw();
 	}
 	else if (this.shape != null)
 	{
@@ -81261,7 +81270,7 @@ mxTooltipHandler.prototype.hideTooltip = function()
 mxTooltipHandler.prototype.show = function(tip, x, y,state)
 {
 	if(state.cell.edge){
-		tip = state.cell.linkConditionInfo || '出口条件';
+		tip = state.cell.linkConditionInfo ? `${state.cell.value}[${state.cell.linkConditionInfo}]` : state.cell.value;//出口条件
 	}
 	if (!this.destroyed && tip != null && tip.length > 0)
 	{

@@ -273,7 +273,7 @@ WfPanel.prototype.drawActions = function(){
 
         {icon:'icon-workflow-biaochi',action:'1',title:'标尺'},
         {icon:'icon-workflow-wangge',action:'1',title:'网格'},
-        {icon:'icon-workflow-xianshifenzu',action:{funct:_this.setTipInfoShow.bind(_this)},title:'显示分组'},
+        {icon:'icon-workflow-xianshifenzu',action:{funct:_this.setTipInfoShow.bind(_this)},title:'隐藏分组'},
         {icon:'icon-workflow-huifuyuanbil',action:iconActions.get('resetView'),title:'恢复原比例'},
         {icon:'icon-workflow-suoxiao',action:iconActions.get('zoomOut'),title:'缩小'},
         {icon:'icon-workflow-fangda',action:iconActions.get('zoomIn'),title:'放大'},
@@ -372,6 +372,7 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
     }else if(icon=='icon-workflow-biaochi'){
 		let gridEnables = graph.isRuleEnabled();
 		graph.setRuleEnabled(!gridEnables);
+		this.clickRuleResizeGraph(!gridEnables);
 		this.editorUi.fireEvent(new mxEventObject('ruleEnabledChanged'));
 		this.editorUi.wfGroups.refresh();
 	}else if(icon=='icon-workflow-kaozuoduiqi' || icon=='icon-workflow-shangxiadengjian' || icon=='icon-workflow-kaoyouduiqi' || icon=='icon-workflow-kaoshangduiqi'
@@ -410,6 +411,38 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 			inputRange.style.backgroundSize = `${graph.view.scale <= 0.15 ? 0 : graph.view.scale * 50}% 100%`;
         }
     }
+}
+
+/**
+点击标尺 重绘区域size
+ */
+WfPanel.prototype.clickRuleResizeGraph = function(ruleShow=true){
+	var wfEditor = this.editorUi.wfEditor;
+	var diagramContainer = this.editorUi.diagramContainer;
+	var graph = this.editorUi.editor.graph;
+	var model = graph.model;
+
+	try
+	{
+		if(ruleShow){//显示
+			diagramContainer.style.left = '20px';
+			diagramContainer.style.top = '20px';
+			// graph.pageFormat.height = graph.pageFormat.height - 35;
+			graph.pageFormat.height = graph.pageFormat.height - 12;
+			graph.pageFormat.width = graph.pageFormat.width - 12;
+		}else{
+			diagramContainer.style.left = '8px';
+			diagramContainer.style.top = '8px';
+			// graph.pageFormat.height = graph.pageFormat.height - 35;
+			graph.pageFormat.height = graph.pageFormat.height + 12;
+			graph.pageFormat.width = graph.pageFormat.width + 12;
+		}
+		graph.refresh();
+	}
+	finally
+	{
+		// model.endUpdate();
+	}
 }
 /**
 辅助文本说明 A 按钮
@@ -603,11 +636,14 @@ WfPanel.prototype.setTipInfoBtn = function(){
 }
 WfPanel.prototype.setTipInfoShow = function(){
 	let elDiv_tips = document.getElementsByClassName('action-area-tip');
+	let groupTipElt = document.getElementsByClassName('icon-workflow-xianshifenzu')[0];
 	for(let i  = 0 ; i <elDiv_tips.length ; ++i){
 		if(this.tipInfoDisplay=='none'){
 			elDiv_tips[i].style.display = 'block';
+			groupTipElt.title = '隐藏分组';
 		}else{
 			elDiv_tips[i].style.display = 'none';
+			groupTipElt.title = '显示分组';
 		}
 	}
 	this.tipInfoDisplay = this.tipInfoDisplay=='none'?this.tipInfoDisplay='block':this.tipInfoDisplay='none';
@@ -619,6 +655,7 @@ WfPanel.prototype.setTipInfoShow = function(){
 WfPanel.prototype.reDrawGraphSize = function(show=true){
 	var wfEditor = this.editorUi.wfEditor;
 	var diagramContainer = this.editorUi.diagramContainer;
+	var wfPanelContainer = this.editorUi.wfPanelContainer;
 	var graph = this.editorUi.editor.graph;
 	var model = graph.model;
 
@@ -627,12 +664,13 @@ WfPanel.prototype.reDrawGraphSize = function(show=true){
 	{
 		if(show){//隐藏 向右移动隐藏
 			wfEditor.container.style.height = '150px';
-			diagramContainer.style.top = '135px';
-			graph.pageFormat.height = graph.pageFormat.height - 35;
+			wfPanelContainer.style.top = '150px';
+			// graph.pageFormat.height = graph.pageFormat.height - 35;
+			graph.pageFormat.height = window.innerHeight - 168;
 		}else{//显示 向左移动显示
 			wfEditor.container.style.height = '100px';
-			diagramContainer.style.top = '100px';
-			graph.pageFormat.height = graph.pageFormat.height + 35;
+			wfPanelContainer.style.top = '100px';
+			graph.pageFormat.height = window.innerHeight - 118;
 		}
 		graph.refresh();
 	}
@@ -759,9 +797,11 @@ WfPanel.prototype.startAgainWorkflowTest = function(evt){
 流程测试
  */
 WfPanel.prototype.doWorkflowTest = function(evt){
+	let nowTringgerEle = evt?evt.target :  document.getElementById('workflow-ceshiOrPause');
+
 	// document.getElementById('workflow-ceshiOrPause').className = 'icon-workflow icon-workflow-zanting';
-	evt.target.className = 'icon-workflow icon-workflow-zanting';
-	evt.target.onclick = this.pauseWorkflowTest.bind(this);
+	nowTringgerEle.className = 'icon-workflow icon-workflow-zanting';
+	nowTringgerEle.onclick = this.pauseWorkflowTest.bind(this);
 
 	var graph = this.editorUi.editor.graph;
 	var view = graph.view;

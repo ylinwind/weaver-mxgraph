@@ -32,17 +32,17 @@ wfGroups.prototype.refresh = function(modelChange = false){
     var graph = this.editorUi.editor.graph;
     let scale = graph.view.scale;
     var minimumGraphSize = graph.minimumGraphSize;
-    if(graph.isRuleEnabled()){//开启了标尺
-        this.container.style.top = 20 + 'px';
-        this.container.style.left = 20 + 'px';
-        this.container.style.width = (minimumGraphSize?minimumGraphSize.width-20:0)*scale + 'px';
-        this.container.style.height = (minimumGraphSize?minimumGraphSize.height-20:0)*scale + 'px';
-    }else{
+    // if(graph.isRuleEnabled()){//开启了标尺
+    //     this.container.style.top = 20 + 'px';
+    //     this.container.style.left = 20 + 'px';
+    //     this.container.style.width = (minimumGraphSize?minimumGraphSize.width-20:0)*scale + 'px';
+    //     this.container.style.height = (minimumGraphSize?minimumGraphSize.height-20:0)*scale + 'px';
+    // }else{
         this.container.style.top = 0 + 'px';
         this.container.style.left = 0 + 'px';
         this.container.style.width = (minimumGraphSize?minimumGraphSize.width:0)*scale + 'px';
         this.container.style.height = (minimumGraphSize?minimumGraphSize.height:0)*scale + 'px';
-    }
+    // }
 
     this.container.innerHTML = '';
     this.paintGroups();

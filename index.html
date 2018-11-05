@@ -127,6 +127,7 @@
 			window.wfFormatMultiLang = formatMultiLang; //转换为当前语言
 			window.wfModal = modal; //modal 弹框
 			window.message = message;
+			window.workflowUiIsLoaded = false;
 
 			EditorUi.prototype.init = function()
 			{
@@ -201,32 +202,49 @@
 				var _request = req.request;
 				var _response = _request.response;
 				var _json = JSON.parse(_response);
-				sb.editor.graph.workflowDetailDatas = _json;
-				
-				sb.editor.graph.model.clear();
-				mxUtils.post(WORKFLOW_GETWFINFO_PATH, `workflowId=${workflowId}`, function(req)
-				{
+				if(_json.hasOwnProperty('userRight') && _json.userRight == false){//未登陆等状态
 					message.destroy();
-					var request = req.request;
-					var response = request.response;
-					var json = JSON.parse(response);
-					var doc = mxUtils.parseXml(json.xml);
-
-					var allCells = sb.editor.graph.importGraphModel(doc.documentElement);
-					var existParams = {nodeIds:[],linkIds:[]};//初始节点出口值；
-					allCells.map(v=>{
-						if(v && v.nodeId){
-							existParams['nodeIds'].push(v.nodeId);
-						}else if(v && v.linkId){
-							existParams['linkIds'].push(v.linkId);
-						}
+					wfModal.confirm({
+						title: wfGetLabel(131329, "信息确认"),
+						content:'当前用户未登陆，请先登陆！',
+						okText: wfGetLabel(83446, "确定"),
+						cancelText: wfGetLabel(31129, "取消"),
+						onOk:()=>{
+							window.location.href = '/wui/index.html';
+						},
+						onCancel:()=>{}
 					});
-					sb.editor.graph.existParams = existParams;
-					
-					sb.wfGroups.init(_json.groupDetail);
-					// sb.editor.graph.setSelectionCells(allCells); //开始不要选中任何数据
-					sb.editor.undoManager.clear();
-				});
+				}
+				else{
+					workflowUiIsLoaded = true;
+					sb.editor.graph.workflowDetailDatas = _json;
+				
+					sb.editor.graph.model.clear();
+					mxUtils.post(WORKFLOW_GETWFINFO_PATH, `workflowId=${workflowId}`, function(req)
+					{
+						message.destroy();
+						var request = req.request;
+						var response = request.response;
+						var json = JSON.parse(response);
+						var doc = mxUtils.parseXml(json.xml);
+
+						var allCells = sb.editor.graph.importGraphModel(doc.documentElement);
+						var existParams = {nodeIds:[],linkIds:[]};//初始节点出口值；
+						allCells.map(v=>{
+							if(v && v.nodeId){
+								existParams['nodeIds'].push(v.nodeId);
+							}else if(v && v.linkId){
+								existParams['linkIds'].push(v.linkId);
+							}
+						});
+						sb.editor.graph.existParams = existParams;
+						
+						sb.wfGroups.init(_json.groupDetail);
+						// sb.editor.graph.setSelectionCells(allCells); //开始不要选中任何数据
+						sb.editor.undoManager.clear();
+					});
+				}
+				
 			});
 		}
 		

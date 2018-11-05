@@ -2938,9 +2938,11 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 	this.formatContainer.style.width = fw + 'px';
 	this.formatContainer.style.display = (this.format != null) ? '' : 'none';
 	
-	this.diagramContainer.style.left = (this.hsplit.parentNode != null) ? (effHsplitPosition + this.splitSize) + 'px' : '0px';
+	this.wfPanelContainer.style.left = (this.hsplit.parentNode != null) ? (effHsplitPosition + this.splitSize) + 'px' : '0px';
+	this.diagramContainer.style.left = '8px';
 	// this.diagramContainer.style.top = this.sidebarContainer.style.top;
-	this.diagramContainer.style.top = tmp+100+'px';
+	this.wfPanelContainer.style.top = tmp+115+'px';
+	this.diagramContainer.style.top = '8px';
 	this.footerContainer.style.height = this.footerHeight + 'px';
 	this.hsplit.style.top = this.sidebarContainer.style.top;
 	this.hsplit.style.bottom = (this.footerHeight + off) + 'px';
@@ -2948,7 +2950,8 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 	
 	if (this.tabContainer != null)
 	{
-		this.tabContainer.style.left = this.diagramContainer.style.left;
+		this.tabContainer.style.left = this.wfPanelContainer.style.left;
+		// this.tabContainer.style.left = this.diagramContainer.style.left;
 	}
 	
 	if (quirks)
@@ -2958,18 +2961,21 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 		var sidebarHeight = Math.max(0, h - this.footerHeight - this.menubarHeight - this.toolbarHeight);
 		this.sidebarContainer.style.height = (sidebarHeight - sidebarFooterHeight) + 'px';
 		this.formatContainer.style.height = sidebarHeight + 'px';
-		this.diagramContainer.style.width = (this.hsplit.parentNode != null) ? Math.max(0, w - effHsplitPosition - this.splitSize - fw) + 'px' : w + 'px';
+		this.wfPanelContainer.style.width = (this.hsplit.parentNode != null) ? Math.max(0, w - effHsplitPosition - this.splitSize - fw) + 'px' : w + 'px';
+		// this.diagramContainer.style.width = (this.hsplit.parentNode != null) ? Math.max(0, w - effHsplitPosition - this.splitSize - fw) + 'px' : w + 'px';
 		this.footerContainer.style.width = this.menubarContainer.style.width;
 		var diagramHeight = Math.max(0, h - this.footerHeight - this.menubarHeight - this.toolbarHeight);
 		
 		if (this.tabContainer != null)
 		{
-			this.tabContainer.style.width = this.diagramContainer.style.width;
+			// this.tabContainer.style.width = this.diagramContainer.style.width;
+			this.tabContainer.style.width = this.wfPanelContainer.style.width;
 			this.tabContainer.style.bottom = (this.footerHeight + off) + 'px';
 			diagramHeight -= this.tabContainer.clientHeight;
 		}
 		
-		this.diagramContainer.style.height = diagramHeight + 'px';
+		this.wfPanelContainer.style.height = diagramHeight + 'px';
+		this.diagramContainer.style.height = diagramHeight-20 + 'px';
 		this.hsplit.style.height = diagramHeight + 'px';
 	}
 	else
@@ -2980,19 +2986,23 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 		}
 		
 		// this.diagramContainer.style.right = fw + 'px';
-		this.diagramContainer.style.right = '240px';
+		// this.diagramContainer.style.right = '240px';
+		this.diagramContainer.style.right = '8px';
+		this.wfPanelContainer.style.right = '240px';
 		var th = 0;
 		
 		if (this.tabContainer != null)
 		{
 			this.tabContainer.style.bottom = (this.footerHeight + off) + 'px';
-			this.tabContainer.style.right = this.diagramContainer.style.right;
+			this.tabContainer.style.right = this.wfPanelContainer.style.right;
+			// this.tabContainer.style.right = this.diagramContainer.style.right;
 			th = this.tabContainer.clientHeight;
 		}
 		
 		this.sidebarContainer.style.bottom = (this.footerHeight + sidebarFooterHeight + off) + 'px';
 		this.formatContainer.style.bottom = '0px';
-		this.diagramContainer.style.bottom = '0px';
+		this.wfPanelContainer.style.bottom = '0px';
+		this.diagramContainer.style.bottom = '8px';
 		// this.formatContainer.style.bottom = (this.footerHeight + off) + 'px';
 		// this.diagramContainer.style.bottom = (this.footerHeight + off + th) + 'px';
 	}
@@ -3017,6 +3027,7 @@ EditorUi.prototype.createTabContainer = function()
 EditorUi.prototype.createDivs = function()
 {
 	this.wfEditorContainer = this.createDiv('wfEditorContainer');
+	this.wfPanelContainer = this.createDiv('wfPanelContainer');
 	this.wfGroupsContainer = this.createDiv('wfGroupsContainer');
 	this.wfNodeInfoContainer = this.createDiv('wfNodeInfoContainer');
 	this.menubarContainer = this.createDiv('geMenubarContainer');
@@ -3038,7 +3049,8 @@ EditorUi.prototype.createDivs = function()
 	this.formatContainer.style.right = '0px';
 	this.formatContainer.style.zIndex = '1';
 	// this.diagramContainer.style.right = ((this.format != null) ? this.formatWidth : 0) + 'px';
-	this.diagramContainer.style.right = '240px';
+	// this.diagramContainer.style.right = '240px';
+	this.wfPanelContainer.style.right = '240px';
 	this.footerContainer.style.left = '0px';
 	this.footerContainer.style.right = '0px';
 	this.footerContainer.style.bottom = '0px';
@@ -3155,7 +3167,9 @@ EditorUi.prototype.createUi = function()
 		this.container.appendChild(this.sidebarFooterContainer);		
 	}
 
-	this.container.appendChild(this.diagramContainer);
+	// this.container.appendChild(this.diagramContainer);
+	this.container.appendChild(this.wfPanelContainer);
+	this.wfPanelContainer.appendChild(this.diagramContainer);
 
 	if (this.container != null && this.tabContainer != null)
 	{
@@ -3626,6 +3640,19 @@ EditorUi.prototype.saveFile = function(forceDialog)
  */
 EditorUi.prototype.save = function(name)
 {
+	if(!window.workflowUiIsLoaded){
+		wfModal.confirm({
+			title: wfGetLabel(131329, "信息确认"),
+			content:'当前用户未登陆，请先登陆！',
+			okText: wfGetLabel(83446, "确定"),
+			cancelText: wfGetLabel(31129, "取消"),
+			onOk:()=>{
+				window.location.href = '/wui/index.html';
+			},
+			onCancel:()=>{}
+		});
+		return;
+	}
 	if (name != null)
 	{
 		if (this.editor.graph.isEditing())
