@@ -6,6 +6,11 @@
  */
 EditorUi = function(editor, container, lightbox)
 {
+	this.isFromWfForm = false;
+	if(window.urlParams && window.urlParams.hasOwnProperty('isFromWfForm') && window.urlParams.isFromWfForm=='true'){
+		this.isFromWfForm = true;
+	}
+
 	mxEventSource.call(this);
 	
 	this.destroyFunctions = [];
@@ -1038,7 +1043,11 @@ EditorUi.prototype.init = function()
 	}));
 	mxEvent.addListener(graph.container, 'keypress', mxUtils.bind(this, function(evt)
 	{
-		this.onKeyPress(evt);
+		if(evt.target.className.indexOf('ant-input') > -1){
+			// evt.stopPropagation();
+		}else{
+			this.onKeyPress(evt);
+		}
 	}));
 
 	// Updates action states
@@ -2941,7 +2950,9 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 	this.wfPanelContainer.style.left = (this.hsplit.parentNode != null) ? (effHsplitPosition + this.splitSize) + 'px' : '0px';
 	this.diagramContainer.style.left = '8px';
 	// this.diagramContainer.style.top = this.sidebarContainer.style.top;
-	this.wfPanelContainer.style.top = tmp+115+'px';
+
+	// this.wfPanelContainer.style.top = this.isFromWfForm?0:(tmp+115)+'px';
+	this.wfPanelContainer.style.top = this.isFromWfForm?0:(this.wfPanelContainer.offsetTop)+'px';
 	this.diagramContainer.style.top = '8px';
 	this.footerContainer.style.height = this.footerHeight + 'px';
 	this.hsplit.style.top = this.sidebarContainer.style.top;
@@ -2988,7 +2999,7 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 		// this.diagramContainer.style.right = fw + 'px';
 		// this.diagramContainer.style.right = '240px';
 		this.diagramContainer.style.right = '8px';
-		this.wfPanelContainer.style.right = '240px';
+		this.wfPanelContainer.style.right = this.isFromWfForm?'0px' : '240px';
 		var th = 0;
 		
 		if (this.tabContainer != null)
@@ -3002,7 +3013,7 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 		this.sidebarContainer.style.bottom = (this.footerHeight + sidebarFooterHeight + off) + 'px';
 		this.formatContainer.style.bottom = '0px';
 		this.wfPanelContainer.style.bottom = '0px';
-		this.diagramContainer.style.bottom = '8px';
+		this.diagramContainer.style.bottom = '10px';
 		// this.formatContainer.style.bottom = (this.footerHeight + off) + 'px';
 		// this.diagramContainer.style.bottom = (this.footerHeight + off + th) + 'px';
 	}
@@ -3119,7 +3130,8 @@ EditorUi.prototype.createUi = function()
 		this.wfEditorContainer.onselectstart = this.wfEditorContainer.ondrag = function(){
 	　　　　return false;
 	　　}
-		this.container.appendChild(this.wfEditorContainer);
+		!this.isFromWfForm && this.container.appendChild(this.wfEditorContainer);
+		this.isFromWfForm && this.wfEditor.createTestMask();
 	}
 	this.wfGroups = (this.editor.chromeless) ? null : this.createWfGroups(this.wfGroupsContainer);
 	if(this.wfGroups != null ){
@@ -3128,7 +3140,7 @@ EditorUi.prototype.createUi = function()
 	}
 	this.wfNodeInfo = (this.editor.chromeless) ? null : this.createWfNodeInfo(this.wfNodeInfoContainer);
 	if(this.wfNodeInfo != null ){
-		this.container.appendChild(this.wfNodeInfoContainer);
+		!this.isFromWfForm && this.container.appendChild(this.wfNodeInfoContainer);
 	}
 	
 	
@@ -3597,14 +3609,15 @@ EditorUi.prototype.saveFile = function(forceDialog)
 	var modified = this.editor.modified;
 	var actionHistory = this.editor.undoManager.history || []
 	var wfEditor = this.wfEditor;
-	if(actionHistory.length>0){
+	var sb = this;
+	if(actionHistory.length>0 && this.editor.modified){
 		wfModal.confirm({
 			title: wfGetLabel(131329, "信息确认"),
 			content:'改动未进行测试，是否需要测试？',
 			okText: wfGetLabel(83446, "确定"),
 			cancelText: wfGetLabel(31129, "取消"),
-			onOk:()=>{wfEditor.doWorkflowTest();this.editor.setModified(false);},
-			onCancel:()=>{this.save(1)}
+			onOk:function(){wfEditor.doWorkflowTest();sb.editor.setModified(false);},
+			onCancel:function(){sb.save(1)}
 		});
 	}else{
 		this.save(1)
@@ -3646,10 +3659,10 @@ EditorUi.prototype.save = function(name)
 			content:'当前用户未登陆，请先登陆！',
 			okText: wfGetLabel(83446, "确定"),
 			cancelText: wfGetLabel(31129, "取消"),
-			onOk:()=>{
+			onOk:function(){
 				window.location.href = '/wui/index.html';
 			},
-			onCancel:()=>{}
+			onCancel:function(){}
 		});
 		return;
 	}
@@ -3672,21 +3685,21 @@ EditorUi.prototype.save = function(name)
 		var graphHeight = graph.minimumGraphSize.height;
 		var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
 
-		let havaStartNode = false, havaEndNode = false;
-		allCells.map(v=>{
-			if(v.nodeType == 0){//创建
+		var havaStartNode = false, havaEndNode = false;
+		for(var i = 0;i<allCells.length;++i){
+			if(allCells[i].nodeType == 0){//创建
 				havaStartNode = true;
 			}
-			else if(v.nodeType == 3){//归档
+			else if(allCells[i].nodeType == 3){//归档
 				havaEndNode = true;	
 			}
-		});
+		}
 		if(!havaStartNode){
 			wfModal.warning({
 				title: wfGetLabel(131329, "信息确认"),
 				content:'创建节点不存在，请添加！',
 				okText: wfGetLabel(83446, "确定"),
-				onOk:()=>{console.log('ok')},
+				onOk:function(){console.log('ok')},
 			});
 			return false;
 		}else if(!havaEndNode){
@@ -3694,27 +3707,43 @@ EditorUi.prototype.save = function(name)
 				title: wfGetLabel(131329, "信息确认"),
 				content:'归档节点不存在，请添加！',
 				okText: wfGetLabel(83446, "确定"),
-				onOk:()=>{console.log('ok')},
+				onOk:function(){console.log('ok')},
 			});
 			return false;
 		}
-
-		var edges = allCells.filter(v=>v.edge);
-		var nodes = allCells.filter(v=>!v.edge);
+		var edges = [];
+		var nodes = [];
+		for(var i = 0;i<allCells.length;++i){
+			if(allCells[i].edge){
+				edges.push(allCells[i]);
+			}else{
+				nodes.push(allCells[i]);
+			}
+		}
 		var nowNodes = [] , nowLinks = [];
-		nodes.map(c=>{
-			if(c && c.nodeId){
-				nowNodes.push(c.nodeId);
+		for(var i = 0;i<nodes.length;++i){
+			if(nodes[i] && nodes[i].nodeId){
+				nowNodes.push(nodes[i].nodeId);
 			}
-		});
-		edges.map(c=>{
-			if(c && c.linkId){
-				nowLinks.push(c.linkId);
+		}
+		for(var i = 0;i<edges.length;++i){
+			if(edges[i] && edges[i].linkId){
+				nowLinks.push(edges[i].linkId);
 			}
-		});
-
-		var deleteNodeIds = initParams ? initParams.nodeIds.filter(v=>nowNodes.indexOf(v)<0) : '';
-		var deleteLinkIds = initParams ? initParams.linkIds.filter(v=>nowLinks.indexOf(v)<0) : '';
+		}
+		var lastDeleteNodes = [] , lastDeleteLinks = [];
+		for(var i = 0;i<initParams.nodeIds.length;++i){
+			if(nowNodes.indexOf(initParams.nodeIds[i])<0){
+				lastDeleteNodes.push(initParams.nodeIds[i]);
+			}
+		}
+		for(var i = 0;i<initParams.linkIds.length;++i){
+			if(nowLinks.indexOf(initParams.linkIds[i])<0){
+				lastDeleteLinks.push(initParams.linkIds[i]);
+			}
+		}
+		var deleteNodeIds = initParams ? lastDeleteNodes : '';
+		var deleteLinkIds = initParams ? lastDeleteLinks : '';
 		
 
 		xml = xml.replace(/&quot;/g,'_quot_'); //因xml中的双引号被转义，这里将其替换回双引号
@@ -3727,10 +3756,10 @@ EditorUi.prototype.save = function(name)
 			var _this = this;
 			var message = window.antd && window.antd.message;
 
-			let workflowId = window.urlParams.workflowId || '';
+			var workflowId = window.urlParams.workflowId || '';
 			message.destroy();
 			message && message.loading('正在保存，请稍候...',0);
-			mxUtils.post('/api/workflow/layout/saveLayout', `workflowId=${workflowId}&xml=${xml}&deleteLinks=${deleteLinkIds.join(',')}&deleteNodes=${deleteNodeIds.join(',')}&groups=${JSON.stringify(groupsParams)}`, function(req,res)
+			mxUtils.post('/api/workflow/layout/saveLayout', "workflowId="+workflowId+"&xml="+xml+"&deleteLinks="+deleteLinkIds.join(',')+"&deleteNodes="+deleteNodeIds.join(',')+"&groups="+JSON.stringify(groupsParams), function(req,res)
 			{
 				var response = req.request.response;
 				var resObj = JSON.parse(response);
@@ -3741,7 +3770,7 @@ EditorUi.prototype.save = function(name)
 				}else{
 					message && message.error('保存失败！',2);
 				}
-				let timeout= setTimeout(() => {
+				var timeout= setTimeout(function() {
 					message.destroy();
 					clearTimeout(timeout);
 				}, 2000);

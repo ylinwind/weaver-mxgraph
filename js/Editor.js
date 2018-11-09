@@ -1944,16 +1944,16 @@ PageSetupDialog.getFormats = function()
 			wfPanelContainer.appendChild(rowCanvas);
 		}
 		
-		let rowCtx = rowCanvas.getContext('2d');
-		let colCtx = colCanvas.getContext('2d');
+		var rowCtx = rowCanvas.getContext('2d');
+		var colCtx = colCanvas.getContext('2d');
 
 		rowCtx.strokeStyle = '#A9A9A9';
 		rowCtx.moveTo(20-0.5,0-0.5);
 		rowCtx.lineTo(20-0.5,20-0.5);
 		rowCtx.stroke();
-		let rulePointIndex = 1 , colRulerIndex = 1;
-		// for(let i = 25 ; i < graph.container.clientWidth ; i+=5){
-		for(let i = 25 ; i < wfPanelContainer.clientWidth ; i+=5){
+		var rulePointIndex = 1 , colRulerIndex = 1;
+		// for(var i = 25 ; i < graph.container.clientWidth ; i+=5){
+		for(var i = 25 ; i < wfPanelContainer.clientWidth ; i+=5){
 			rowCtx.moveTo(i-0.5,20-0.5);
 			if(rulePointIndex%5==0){
 				rowCtx.lineTo(i-0.5,0-0.5);
@@ -1968,8 +1968,8 @@ PageSetupDialog.getFormats = function()
 		colCtx.moveTo(0-0.5,0-0.5);
 		colCtx.lineTo(20-0.5,0-0.5);
 		colCtx.stroke();
-		// for(let i = 5 ; i < graph.container.clientHeight ; i+=5){
-		for(let i = 5 ; i < wfPanelContainer.clientHeight ; i+=5){
+		// for(var i = 5 ; i < graph.container.clientHeight ; i+=5){
+		for(var i = 5 ; i < wfPanelContainer.clientHeight ; i+=5){
 			colCtx.moveTo(20-0.5,i-0.5);
 			if(colRulerIndex%5==0){
 				colCtx.lineTo(0-0.5,i-0.5);

@@ -8,7 +8,8 @@ function WfNodeInfo(editorUi, container) {
 	this.update = mxUtils.bind(this, function(sender, evt)
 	{
 		this.clearSelectionState();
-		this.refresh();
+		!this.noNeedRefresh && this.refresh();
+		this.noNeedRefresh = false;
 	});
 	
 	graph.getSelectionModel().addListener(mxEvent.CHANGE, this.update);
@@ -32,7 +33,7 @@ WfNodeInfo.prototype.drawHeader = function(){
 	var graph = this.editorUi.editor.graph;
     var cells = graph.getSelectionCells();
 
-	let headerStr = '流程信息';
+	var headerStr = '流程信息';
 	if(cells.length == 1){
 		if(cells[0].edge){
 			headerStr = '出口信息';
@@ -53,9 +54,11 @@ WfNodeInfo.prototype.drawHeader = function(){
 }
 
 WfNodeInfo.prototype.refresh = function(){
-	this.drawHeader();
-	this.drawFoder();
-    this.nodeActions();
+	if(!this.editorUi.isFromWfForm){
+		this.drawHeader();
+		this.drawFoder();
+		this.nodeActions();
+	}
 }
 /**
  * Returns information about the current selection.
@@ -111,12 +114,12 @@ WfNodeInfo.prototype.nodeActions = function(){
 	if(document.getElementById('nodeInfo-detail-shouldSaveFirst') != null){
 		this.container.removeChild(document.getElementById('nodeInfo-detail-shouldSaveFirst'));
 	}
-	cells.map(v=>{
-		if(v.style.indexOf('fillColor=none;') != -1 && v.style.indexOf('connectable=0;') != -1){ //区域分组
+	for(var i = 0 ; i<cells.length;++i){
+		if(cells[i].style.indexOf('fillColor=none;') != -1 && cells[i].style.indexOf('connectable=0;') != -1){ //区域分组
 			graph.orderCells(true)
 		}
-		if(v instanceof mxCell &&  cells.length==1 && !v.isGroupArea ){ //点击选中节点 v.edge != 1 && 不是区域分组 并且有nodeId linkId(校验下nodeId为0的情况)
-			if(v.nodeId || v.linkId){
+		if(cells[i] instanceof mxCell &&  cells.length==1 && !cells[i].isGroupArea ){ //点击选中节点 v.edge != 1 && 不是区域分组 并且有nodeId linkId(校验下nodeId为0的情况)
+			if(cells[i].nodeId || cells[i].linkId){
 				if(document.getElementById('nodeInfo-no-node1') != null){
 					this.container.removeChild(document.getElementById('nodeInfo-no-node1'));
 				}
@@ -126,25 +129,31 @@ WfNodeInfo.prototype.nodeActions = function(){
 			}
 			haveNode = true;
 		}
-	});
+	}
 	if(!haveNode){//
 		this.renderWorkdlowItem();
 	}
 	if(haveNode && noNodeOrLinkId){
 		this.renderWorkdlowItem();
 		if(document.getElementById('nodeInfo-detail-shouldSaveFirst') != null){
-			let re_elP = document.getElementById('nodeInfo-detail-shouldSaveFirst');
+			var re_elP = document.getElementById('nodeInfo-detail-shouldSaveFirst');
 			this.container.removeChild(re_elP);
 		}
 		if(document.getElementById('nodeInfo-detail-nodeLinkDetail') != null){
-			let _elDiv = document.getElementById('nodeInfo-detail-nodeLinkDetail');
+			var _elDiv = document.getElementById('nodeInfo-detail-nodeLinkDetail');
 			_elDiv.style.display = 'none';
 			// this.container.removeChild(_elDiv);
 		}
-		let _elP = document.createElement('p');
+		var _elP = document.createElement('p');
 		_elP.id = 'nodeInfo-detail-shouldSaveFirst';
 		_elP.innerHTML = '温馨提示：需要先保存流程图才能对新增节点和出口进行详细属性设置！';
 		this.container.appendChild(_elP);
+	}
+	if(!haveNode || noNodeOrLinkId){
+		if(document.getElementById('nodeName-container')){
+			var nodeNameContainer = document.getElementById('nodeName-container');
+			document.body.removeChild(nodeNameContainer);
+		}
 	}
 }
 
@@ -157,14 +166,14 @@ WfNodeInfo.prototype.renderWorkdlowItem = function(){
 
 	var elP = document.getElementById('nodeInfo-no-node1');
 	if(document.getElementById('nodeInfo-node-detail') != null){
-		let _elDiv = document.getElementById('nodeInfo-node-detail');
+		var _elDiv = document.getElementById('nodeInfo-node-detail');
 		// this.container.removeChild(_elDiv); // 会报react minify错 找不到元素了
 		_elDiv.style.display = 'none';
 	}
 	if(elP == null){
 		elP = document.createElement('p');
-		let elSpanLeft = document.createElement('span');
-		let elSpanRight = document.createElement('div');
+		var elSpanLeft = document.createElement('span');
+		var elSpanRight = document.createElement('div');
 		elP.id = 'nodeInfo-no-node1';
 		elP.className = 'nodeInfo-detail-item';
 		elSpanLeft.className = 'detail-item-left detail-item-span';
@@ -194,13 +203,13 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 	if(nowCell.nodeId != null)  isCouldShow = true;
 
 	if(_workflowDetailDatas != null){
-		let mapDatas = null;
+		var mapDatas = null;
 		if(isEage){
 			mapDatas = _workflowDetailDatas.linkDatas || {};
 		}else{
 			mapDatas = _workflowDetailDatas.nodeDatas || {};
 		}
-		for(let i in mapDatas){
+		for(var i in mapDatas){
 			if((!isEage && i == nowCell.nodeId) || (isEage && i == nowCell.linkId)){
 				detailDatas = mapDatas[i];
 			}
@@ -208,7 +217,7 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 	}
 
 	if(document.getElementById('nodeInfo-node-detail') != null){
-		let _elDiv = document.getElementById('nodeInfo-node-detail');
+		var _elDiv = document.getElementById('nodeInfo-node-detail');
 		this.container.removeChild(_elDiv);
 	}
 
@@ -228,11 +237,11 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 	];
 	if(nowCell.nodeAttriBute && (nowCell.nodeAttriBute == 3||nowCell.nodeAttriBute == 4||nowCell.nodeAttriBute == 5)){//分支合并节点
 		nodeDetailArr.push(
-			{label:'合并类型',value:'',key:'branchToOneType'},
-			{label:`${nowCell.nodeAttriBute == 5 ? '通过比例（%）' : 
-					nowCell.nodeAttriBute == 4 ? '指定通过分支' : '通过分支数合并'}`,
-			value:'',key:'branchToOneSubType'},
-		)
+			{label:'合并类型',value:'',key:'branchToOneType'}
+		);
+		nodeDetailArr.push({label:nowCell.nodeAttriBute == 5 ? '通过比例（%）' : 
+					nowCell.nodeAttriBute == 4 ? '指定通过分支' : '通过分支数合并',
+			value:'',key:'branchToOneSubType'});
 	}
 	var linkDetailArr = [
 		{label:'出口名称',value:'',key:'name'},
@@ -252,11 +261,10 @@ WfNodeInfo.prototype.drawNodeDetail = function(){
 	var elNodeLinkDetail;
 	elNodeLinkDetail = document.createElement('div');
 	elNodeLinkDetail.id = 'nodeInfo-detail-nodeLinkDetail';
-
-	labelShowDatas.map(v=>{
-		let item = this.createNodeItem(isEage,v,detailDatas,nowCell);
+	for(var i = 0 ; i<labelShowDatas.length;++i){
+		var item = this.createNodeItem(isEage,labelShowDatas[i],detailDatas,nowCell);
 		item&&elNodeLinkDetail.appendChild(item);
-	});
+	}
 	elDiv.appendChild(elNodeLinkDetail);
 	this.container.appendChild(elDiv);
 }
@@ -270,10 +278,10 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 
 	elP.className = 'nodeInfo-detail-item';
 	elSpanLeft.className = 'detail-item-left detail-item-span';
-	elSpanRight.className = `detail-item-right detail-item-span 
-		${v.key === 'operators' || v.key === 'name' || v.key === 'targetCell' || v.key === 'isBuildCode' ||
+	elSpanRight.className = "detail-item-right detail-item-span "+(
+		v.key === 'operators' || v.key === 'name' || v.key === 'targetCell' || v.key === 'isBuildCode' ||
 		 v.key === 'remindMsg' || v.key === 'changeNodeType' || v.key === 'branchToOneType' || v.key === 'branchToOneSubType' 
-		   ? 'isEcComs-item':''}`;
+		   ? 'isEcComs-item':'');
 	/**
 	//类型：处理和审批类型互换 1审批 2  处理
 	/类型单独判断
@@ -282,12 +290,12 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 	if(v.key === 'changeNodeType'){
 		if(nowCell.nodeType == 1 || nowCell.nodeType == 2 || nowCell.nodeAttriBute==1 || nowCell.nodeAttriBute==2 ||
 		(nowCell.nodeType == 3 &&(nowCell.nodeAttriBute==3 || nowCell.nodeAttriBute==4 || nowCell.nodeAttriBute==5))){
-			let operatorArea = document.createElement('div');
+			var operatorArea = document.createElement('div');
 			operatorArea.id = 'changeNodeType-container';
 			elSpanRight.appendChild(operatorArea);
 
-			let _sb = this;
-			setTimeout(() => {
+			var _sb = this;
+			setTimeout(function() {
 				_sb.createChangeNodeTypeElement(isEage,v.key,detailDatas,nowCell);
 			}, 0);
 		}else{
@@ -296,89 +304,100 @@ WfNodeInfo.prototype.createNodeItem = function(isEage,v,detailDatas,nowCell){
 	}
 	// 
 	if(v.key === 'name'){//节点名称 ||  出口名称
-		let operatorArea = document.createElement('div');
-		operatorArea.id = 'nodeName-container';
-		elSpanRight.appendChild(operatorArea);
-
-		let _sb = this;
-		setTimeout(() => {
+		var operatorArea
+		if(document.getElementById('nodeName-container')){
+			operatorArea = document.getElementById('nodeName-container');
+			operatorArea.style.display = 'block';
+		}else{
+			operatorArea = document.createElement('div');
+			operatorArea.id = 'nodeName-container';
+			// elSpanRight.appendChild(operatorArea);
+			operatorArea.style.position = 'absolute';
+			operatorArea.style.zIndex = '10';
+			operatorArea.style.top = '47px';
+			operatorArea.style.right = '10px';
+			operatorArea.style.width = '110px';
+			document.body.appendChild(operatorArea);
+		}
+		var _sb = this;
+		setTimeout(function() {
 			_sb.createNodeNameElement(isEage,v.key,detailDatas,nowCell);
 		}, 0);
 
 	}else if(v.key === 'operators'){ //操作者
-		let operatorArea = document.createElement('div');
+		var operatorArea = document.createElement('div');
 		operatorArea.id = 'operators-container';
 		elSpanRight.appendChild(operatorArea);
 
-		let _sb = this;
-		setTimeout(() => {
+		var _sb = this;
+		setTimeout(function(){
 			_sb.createOperatorElement(isEage,v.key,detailDatas,nowCell);
 		}, 0);
 	}else if(v.key === 'branchToOneType'){ //合并类型 （分叉合并节点）
-		let branchToOneTypeArea = document.createElement('div');
+		var branchToOneTypeArea = document.createElement('div');
 		branchToOneTypeArea.id = 'branchToOneType-container';
 		elSpanRight.appendChild(branchToOneTypeArea);
 
-		let _sb = this;
-		setTimeout(() => {
+		var _sb = this;
+		setTimeout(function() {
 			_sb.createBranchToOneTypeElement(isEage,v.key,detailDatas,nowCell);
 		}, 0);
 	}else if(v.key === 'branchToOneSubType'){ //合并类型 子项详细设置（分叉合并节点）
-		let branchToOneSubType = document.createElement('div');
+		var branchToOneSubType = document.createElement('div');
 		branchToOneSubType.id = 'branchToOneSubType-container';
 		elSpanRight.appendChild(branchToOneSubType);
 
-		let _sb = this;
-		setTimeout(() => {
+		var _sb = this;
+		setTimeout(function() {
 			_sb.createBranchToOneTypeSubElement(isEage,v.key,detailDatas,nowCell);
 		}, 0);
 	}else if(v.key === 'targetCell'){//出口-目标节点
-		let operatorArea = document.createElement('div');
+		var operatorArea = document.createElement('div');
 		operatorArea.id = 'targetCell-container';
 		elSpanRight.appendChild(operatorArea);
 
-		let _sb = this;
-		setTimeout(() => {
+		var _sb = this;
+		setTimeout(function() {
 			_sb.createTargetNodeElement(isEage,v.key,detailDatas,nowCell);
 		}, 0);
 	}else if(v.key === 'isBuildCode'){//出口-生成编号
-		let operatorArea = document.createElement('div');
+		var operatorArea = document.createElement('div');
 		operatorArea.id = 'isBuildCode-container';
 		elSpanRight.appendChild(operatorArea);
 
-		let _sb = this;
-		setTimeout(() => {
+		var _sb = this;
+		setTimeout(function() {
 			_sb.createBuildCodeElement(isEage,v.key,detailDatas,nowCell);
 		}, 0);
 	}else if(v.key === 'linkNeedBack'){//出口-审批-是否退回
-		let operatorArea = document.createElement('div');
+		var operatorArea = document.createElement('div');
 		operatorArea.id = 'linkNeedBack-container';
 		elSpanRight.appendChild(operatorArea);
 
-		let _sb = this;
-		setTimeout(() => {
+		var _sb = this;
+		setTimeout(function() {
 			_sb.createLinkNeedBackElement(isEage,v.key,detailDatas,nowCell);
 		}, 0);
 	}else if(v.key === 'remindMsg'){//出口-出口提示信息
-		let operatorArea = document.createElement('div');
+		var operatorArea = document.createElement('div');
 		operatorArea.id = 'remindMsg-container';
 		elSpanRight.appendChild(operatorArea);
 
-		let _sb = this;
-		setTimeout(() => {
+		var _sb = this;
+		setTimeout(function(){
 			_sb.createRemindMsgElement(isEage,v.key,detailDatas,nowCell);
 		}, 0);
 	}else if(v.key === 'formContent'){//节点-表单内容
 		var formContentArea = document.createElement('a');
 		formContentArea.innerHTML = detailDatas[v.key];
 		// formContentArea.className = 'icon-workflow-shezhi';
-		formContentArea.onclick = this.createDetailDialog.bind(this,v.key,v.label,nowCell.nodeId?nowCell.nodeId:nowCell.linkId,'','',nowCell);
+		formContentArea.onclick = this.createDetailDialog.bind(this,v.key,v.label,nowCell.nodeId?nowCell.nodeId:nowCell.linkId,'','',isEage);
 		elSpanRight.appendChild(formContentArea);
 	}else{
 		if(v.key !== 'changeNodeType'){
 			var checkSpanIcon = document.createElement('span');
 			checkSpanIcon.className = 'icon-workflow-shezhi';
-			checkSpanIcon.onclick = this.createDetailDialog.bind(this,v.key,v.label,nowCell.nodeId?nowCell.nodeId:nowCell.linkId,'','',nowCell);
+			checkSpanIcon.onclick = this.createDetailDialog.bind(this,v.key,v.label,nowCell.nodeId?nowCell.nodeId:nowCell.linkId,'','',isEage);
 			elSpanRight.appendChild(checkSpanIcon);
 			if(detailDatas[v.key] == 'true'){//已经设置打√
 				var checkSpanIcon = document.createElement('span');
@@ -402,27 +421,27 @@ WfNodeInfo.prototype.createBranchToOneTypeElement = function(isEage,key,detailDa
 	
 	var graph = this.editorUi.editor.graph;
 	var model = graph.model;
-	let WeaSelect = window.ecCom.WeaSelect;
+	var WeaSelect = window.ecCom.WeaSelect;
 	//(nowCell.nodeAttriBute == 3||nowCell.nodeAttriBute == 4||nowCell.nodeAttriBute == 5)
-	let selectOptions = [
+	var selectOptions = [
 		{key: "3",selected: nowCell.nodeAttriBute == 3,showname: "通过分支数"},
 		{key: "4",selected: nowCell.nodeAttriBute == 4,showname: "指定通过分支"},
 		{key: "5",selected: nowCell.nodeAttriBute == 5,showname: "比例合并"},
 	]
 	var sb = this;
-	let edges = nowCell.edges || [] , typeComsViewAttr = 2;
-	edges.map(v=>{
-		if(v.linkId == null || v.linkId == undefined || v.linkId == ''){
+	var edges = nowCell.edges || [] , typeComsViewAttr = 2;
+	for(var i = 0 ; i<edges.length;++i){
+		if(edges[i].linkId == null || edges[i].linkId == undefined || edges[i].linkId == ''){
 			typeComsViewAttr = 1;
 		}
-	});
+	}
 	
 	ReactDOM.render(
 		React.createElement(WeaSelect,
 		{
 			viewAttr:typeComsViewAttr,
 			options:selectOptions,
-			onChange:(value, showname)=>{
+			onChange:function(value, showname){
 				nowCell.nodeAttriBute = value;
 				sb.refresh();
 			}
@@ -437,61 +456,61 @@ WfNodeInfo.prototype.createBranchToOneTypeSubElement = function(isEage,key,detai
 	
 	var graph = this.editorUi.editor.graph;
 	var model = graph.model;
-	let WeaSelect = window.ecCom.WeaSelect;
-	let WeaInput = window.ecCom.WeaInput;
+	var WeaSelect = window.ecCom.WeaSelect;
+	var WeaInput = window.ecCom.WeaInput;
 	// nowCell.edges &&  //(nowCell.nodeAttriBute == 3||nowCell.nodeAttriBute == 4||nowCell.nodeAttriBute == 5)
-	let selectOptions = [];
+	var selectOptions = [];
 	if(nowCell.nodeAttriBute == 4 && nowCell.edges && nowCell.edges.length>0){
-		let edges = nowCell.edges;
-		edges.map(v=>{
-			if(v.target.id == nowCell.id){
-				let obj = {key: `${v.id}`,selected: false,showname: `${v.value || ('出口'+v.id)}`};
+		var edges = nowCell.edges;
+		for(var i = 0 ; i<edges.length;++i){
+			if(edges[i].target.id == nowCell.id){
+				var obj = {key:edges[i].id,selected: false,showname: edges[i].value || ('出口'+edges[i].id)};
 				selectOptions.push(obj);
 			}
-		});
+		}
 	}
 	if(nowCell.nodeAttriBute == 4 && nowCell.targetBranchValue && nowCell.targetBranchValue.indexOf('link_')>-1){//初次从后端返回的value : link_1,link_2,link_3
-		let valArr = nowCell.targetBranchValue.split(',');
-		let linkIds = [];
-		valArr.map(v=>{
-			linkIds.push(Number(v.split('_')[1]));
-		});
-		let xmlIds = [];
+		var valArr = nowCell.targetBranchValue.split(',');
+		var linkIds = [];
+		for(var i = 0 ; i<valArr.length;++i){
+			linkIds.push(Number(valArr[i].split('_')[1]));
+		}
+		var xmlIds = [];
 
-		let startX = graph.minimumGraphSize.x;
-		let startY = graph.minimumGraphSize.y;
-		let graphWidth = graph.minimumGraphSize.width;
-		let graphHeight = graph.minimumGraphSize.height;
-		let allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+		var startX = graph.minimumGraphSize.x;
+		var startY = graph.minimumGraphSize.y;
+		var graphWidth = graph.minimumGraphSize.width;
+		var graphHeight = graph.minimumGraphSize.height;
+		var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
 
-		allCells.map(v=>{
-			if(v.edge && linkIds.indexOf(Number(v.linkId))>-1){//是edge,并且linkId存在targetBranchValue内
-				xmlIds.push(v.id);
+		for(var i = 0 ; i<allCells.length;++i){
+			if(allCells[i].edge && linkIds.indexOf(Number(allCells[i].linkId))>-1){//是edge,并且linkId存在targetBranchValue内
+				xmlIds.push(allCells[i].id);
 			}
-		});
+		}
 		nowCell.targetBranchValue = xmlIds.join(',');
 	}
 
-	let edges = nowCell.edges || [] , typeComsViewAttr = 2;
-	edges.map(v=>{
-		if(v.linkId == null || v.linkId == undefined || v.linkId == ''){
+	var edges = nowCell.edges || [] , typeComsViewAttr = 2;
+	for(var i = 0 ; i<edges.length;++i){
+		if(edges[i].linkId == null || edges[i].linkId == undefined || edges[i].linkId == ''){
 			typeComsViewAttr = 1;
 		}
-	});
+	}
 
-	let nowComs = nowCell.nodeAttriBute == 4 ? WeaSelect : WeaInput;
-	let nowParams = nowCell.nodeAttriBute == 4 ? {
+	var nowComs = nowCell.nodeAttriBute == 4 ? WeaSelect : WeaInput;
+	var nowParams = nowCell.nodeAttriBute == 4 ? {
 		multiple : true,
 		viewAttr:typeComsViewAttr,
 		value:nowCell.targetBranchValue || '',
 		options:selectOptions,
-		onChange:(value, showname)=>{
+		onChange:function(value, showname){
 			nowCell.targetBranchValue = value;
 		}
 	} : {//通过分支数和比例合并组件参数
 		viewAttr:typeComsViewAttr,
 		value:nowCell.nodeAttriBute == 3 ? (nowCell.passBranchNum || '0') : (nowCell.proportMerge || '0'),
-		onChange:(value)=>{
+		onChange:function(value){
 			value > 100 ? value = 100 : '';
 			nowCell.nodeAttriBute == 3 ? nowCell.passBranchNum = value : nowCell.proportMerge = value ;
 		}
@@ -506,9 +525,9 @@ WfNodeInfo.prototype.createBranchToOneTypeSubElement = function(isEage,key,detai
 1审批 2  处理
  */
 WfNodeInfo.prototype.createChangeNodeTypeElement = function(isEage,key,detailDatas,nowCell){
-	let graph = this.editorUi.editor.graph;
-	let model = graph.model;
-	let WeaSelect = window.ecCom.WeaSelect;
+	var graph = this.editorUi.editor.graph;
+	var model = graph.model;
+	var WeaSelect = window.ecCom.WeaSelect;
 
 	var startX = graph.minimumGraphSize.x;
 	var startY = graph.minimumGraphSize.y;
@@ -516,7 +535,7 @@ WfNodeInfo.prototype.createChangeNodeTypeElement = function(isEage,key,detailDat
 	var graphHeight = graph.minimumGraphSize.height;
 	var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
 
-	let options = [
+	var options = [
 		{key:'2',selected:nowCell.nodeType==2,showname:'处理'},
 		{key:'1',selected:nowCell.nodeType==1,showname:'审批'},
 		];
@@ -525,90 +544,90 @@ WfNodeInfo.prototype.createChangeNodeTypeElement = function(isEage,key,detailDat
 	}else if(nowCell.nodeAttriBute == 3 || nowCell.nodeAttriBute == 4 || nowCell.nodeAttriBute == 5){//合并节点 3 通过分支数，4指定分支，5比例合并
 		options.unshift({key:'3',selected:nowCell.nodeType==3,showname:'归档'});
 	}
-	let edges = nowCell.edges || [] , typeComsViewAttr = 2;
-	edges.map(v=>{
-		if(v.linkId == null || v.linkId == undefined || v.linkId == ''){
+	var edges = nowCell.edges || [] , typeComsViewAttr = 2;
+	for(var i = 0 ; i<edges.length;++i){
+		if(edges[i].linkId == null || edges[i].linkId == undefined || edges[i].linkId == ''){
 			typeComsViewAttr = 1;
 		}
-	});
+	}
 	ReactDOM.render(
 		React.createElement(WeaSelect,
 		{
 			viewAttr:typeComsViewAttr,
 			options:options,
-			onChange:(value, showname)=>{
-				let haveStartNode = false;
-				allCells.map(v=>{
-					if(!v.edge && v.nodeType == 0){
+			onChange:function(value, showname){
+				var haveStartNode = false;
+				for(var i = 0 ; i<allCells.length;++i){
+					if(!allCells[i].edge && allCells[i].nodeType == 0){
 						haveStartNode = true;
 					}
-				});
+				}
 				if(haveStartNode && value == 0){
 					wfModal.warning({
 						title: wfGetLabel(131329, "信息确认"),
 						content:'只能有一个创建节点！',
 						okText: wfGetLabel(83446, "确定"),
-						onOk:()=>{},
+						onOk:function(){},
 					});
 				}else{
 					model.beginUpdate();
 					try
 					{
 						if(value == 1 && nowCell.nodeType!=1){
-							let newStyle = '';
+							var newStyle = '';
 							nowCell.style.indexOf('rounded=0;') != -1 ? newStyle = nowCell.style.replace(/rounded=0;/,'rhombus;') : 
 							nowCell.style.indexOf('shape=mxgraph.flowchart.terminator;') != -1 ? newStyle = nowCell.style.replace(/shape=mxgraph.flowchart.terminator;/,'rhombus;') : '';
 							var arr = newStyle.split(';');
-							arr.map((v,i)=>{
-								if((v.indexOf('icon-workflow-chuangjian')>=0 && v.indexOf('icon-workflow-fencha')>=0) || 
-									(v.indexOf('icon-workflow-guidang')>=0 && v.indexOf('icon-workflow-hebing')>=0)){
-									let obj = JSON.parse(arr[i].split('=')[1]);
+							for(var i = 0 ; i<arr.length;++i){
+								if((arr[i].indexOf('icon-workflow-chuangjian')>=0 && arr[i].indexOf('icon-workflow-fencha')>=0) || 
+									(arr[i].indexOf('icon-workflow-guidang')>=0 && arr[i].indexOf('icon-workflow-hebing')>=0)){
+									var obj = JSON.parse(arr[i].split('=')[1]);
 									delete obj.right;
-									arr[i] = `icons=${JSON.stringify(obj)}`;
+									arr[i] = "icons="+JSON.stringify(obj);
 								}
-							})
+							}
 							model.setStyle(nowCell, arr.join(';'));
 						}else if(value == 2 && nowCell.nodeType!=2){
-							let newStyle = '';
+							var newStyle = '';
 							nowCell.style.indexOf('rhombus;') != -1 ? newStyle = nowCell.style.replace(/rhombus;/,'rounded=0;') : 
 							nowCell.style.indexOf('shape=mxgraph.flowchart.terminator;') != -1 ? newStyle = nowCell.style.replace(/shape=mxgraph.flowchart.terminator;/,'rounded=0;') : '';
 							var arr = newStyle.split(';');
-							arr.map((v,i)=>{
-								if((v.indexOf('icon-workflow-chuangjian')>=0 && v.indexOf('icon-workflow-fencha')>=0) || 
-									(v.indexOf('icon-workflow-guidang')>=0 && v.indexOf('icon-workflow-hebing')>=0)){
-									let obj = JSON.parse(arr[i].split('=')[1]);
+							for(var i = 0 ; i<arr.length;++i){
+								if((arr[i].indexOf('icon-workflow-chuangjian')>=0 && arr[i].indexOf('icon-workflow-fencha')>=0) || 
+									(arr[i].indexOf('icon-workflow-guidang')>=0 && arr[i].indexOf('icon-workflow-hebing')>=0)){
+									var obj = JSON.parse(arr[i].split('=')[1]);
 									delete obj.right;
-									arr[i] = `icons=${JSON.stringify(obj)}`;
+									arr[i] = "icons="+JSON.stringify(obj);
 								}
-							})
+							}
 							model.setStyle(nowCell, arr.join(';'));
 						}else if(value == 0 && nowCell.nodeType!=0){//创建
-							let newStyle = '';
+							var newStyle = '';
 							nowCell.style.indexOf('rounded=0;') != -1 ? newStyle = nowCell.style.replace(/rounded=0;/,'shape=mxgraph.flowchart.terminator;') : 
 							nowCell.style.indexOf('rhombus;') != -1 ? newStyle = nowCell.style.replace(/rhombus;/,'shape=mxgraph.flowchart.terminator;') : '';
 							var arr = newStyle.split(';');
-							arr.map((v,i)=>{
-								if(v.indexOf('icons')>=0){
-									let obj = JSON.parse(arr[i].split('=')[1]);
+							for(var i = 0 ; i<arr.length;++i){
+								if(arr[i].indexOf('icons')>=0){
+									var obj = JSON.parse(arr[i].split('=')[1]);
 									obj['left'] = 'icon-workflow-fencha';
 									obj['right'] = 'icon-workflow-chuangjian';
-									arr[i] = `icons=${JSON.stringify(obj)}`;
+									arr[i] = "icons="+JSON.stringify(obj);
 								}
-							})
+							}
 							model.setStyle(nowCell, arr.join(';'));
 						}else if(value == 3 && nowCell.nodeType!=3){//归档
-							let newStyle = '';
+							var newStyle = '';
 							nowCell.style.indexOf('rounded=0;') != -1 ? newStyle = nowCell.style.replace(/rounded=0;/,'shape=mxgraph.flowchart.terminator;') : 
 							nowCell.style.indexOf('rhombus;') != -1 ? newStyle = nowCell.style.replace(/rhombus;/,'shape=mxgraph.flowchart.terminator;') : '';
 							var arr = newStyle.split(';');
-							arr.map((v,i)=>{
-								if(v.indexOf('icons')>=0){
-									let obj = JSON.parse(arr[i].split('=')[1]);
+							for(var i = 0 ; i<arr.length;++i){
+								if(arr[i].indexOf('icons')>=0){
+									var obj = JSON.parse(arr[i].split('=')[1]);
 									obj['left'] = 'icon-workflow-hebing';
 									obj['right'] = 'icon-workflow-guidang';
-									arr[i] = `icons=${JSON.stringify(obj)}`;
+									arr[i] = "icons="+JSON.stringify(obj);
 								}
-							})
+							}
 							model.setStyle(nowCell, arr.join(';'));
 						}
 						nowCell.nodeType = value;
@@ -632,36 +651,58 @@ WfNodeInfo.prototype.createTargetNodeElement = function(isEage,key,detailDatas,n
 	
 	var graph = this.editorUi.editor.graph;
 	var model = graph.model;
-	let WeaSelect = window.ecCom.WeaSelect;
+	var WeaSelect = window.ecCom.WeaSelect;
 
 	var startX = graph.minimumGraphSize.x;
 	var startY = graph.minimumGraphSize.y;
 	var graphWidth = graph.minimumGraphSize.width;
 	var graphHeight = graph.minimumGraphSize.height;
 	var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
-	var cellsExceptEdges = allCells.filter(v=>!v.edge && v.id != nowCell.source.id);
+
+	var cellsExceptEdges = [];
+	for(var i = 0 ; i<allCells.length;++i){
+		if(nowCell.source.nodeAttriBute == 2 && !allCells[i].edge){//分叉中间点
+			if(allCells[i].nodeAttriBute == 2 || (allCells[i].nodeAttriBute == 3 || allCells[i].nodeAttriBute == 4 || allCells[i].nodeAttriBute == 5)  ){//中间节点 || 合并节点
+				cellsExceptEdges.push(allCells[i]);
+			}
+		}else if((nowCell.source.nodeAttriBute == 3 || nowCell.source.nodeAttriBute == 4 || nowCell.source.nodeAttriBute == 5) && !allCells[i].edge ){//合并节点
+			if(allCells[i].nodeAttriBute != 2){//不能是分叉中间点
+				cellsExceptEdges.push(allCells[i]);
+			}
+		}
+		else{
+			if(!allCells[i].edge && allCells[i].nodeAttriBute != 2){//allCells[i].id != nowCell.source.id不能是分叉中间点
+				cellsExceptEdges.push(allCells[i]);
+			}
+		}
+	}
 	
-	let selectOptions = [];
-	cellsExceptEdges.map((v,i)=>{
-		let obj = {};
-		obj['key'] = ''+v.id;
-		obj['selected'] = v.id == nowCell.target.id ? true : false;
-		obj['showname'] = wfFormatMultiLang(v.value);
+	var selectOptions = [];
+	for(var i = 0 ; i<cellsExceptEdges.length;++i){
+		var obj = {};
+		obj['key'] = ''+cellsExceptEdges[i].id;
+		obj['selected'] = cellsExceptEdges[i].id == nowCell.target.id ? true : false;
+		obj['showname'] = wfFormatMultiLang(cellsExceptEdges[i].value);
 		selectOptions.push(obj);
-	});
+	}
 	var sb = this;
 	ReactDOM.render(
 		React.createElement(WeaSelect,
 		{
 			options:selectOptions,
-			onChange:(value, showname)=>{
+			onChange:function(value, showname){
 				wfModal.confirm({
 					title: wfGetLabel(131329, "信息确认"),
-					content:'修改目标节点会改变出口条件等设置信息，确认修改吗？',
+					content:'确定要将出口：'+nowCell.value+"的目标节点从"+nowCell.target.value+"改为"+showname+"吗？",
 					okText: wfGetLabel(83446, "确定"),
 					cancelText: wfGetLabel(31129, "取消"),
-					onOk:()=>{
-						let selectItem = cellsExceptEdges.filter(v=>v.id == value);
+					onOk:function(){
+						var selectItem = [];
+						for(var i = 0 ; i<cellsExceptEdges.length;++i){
+							if(cellsExceptEdges[i].id == value){
+								selectItem.push(cellsExceptEdges[i]);
+							}
+						}
 						model.beginUpdate();
 						try
 						{
@@ -672,7 +713,7 @@ WfNodeInfo.prototype.createTargetNodeElement = function(isEage,key,detailDatas,n
 							model.endUpdate();
 						}
 					},
-					onCancel:()=>{sb.refresh();}
+					onCancel:function(){sb.refresh();}
 				});
 				
 			}
@@ -687,13 +728,13 @@ WfNodeInfo.prototype.createLinkNeedBackElement = function(isEage,key,detailDatas
 	
 	var graph = this.editorUi.editor.graph;
 	var model = graph.model;
-	let WeaCheckbox = window.ecCom.WeaCheckbox;
+	var WeaCheckbox = window.ecCom.WeaCheckbox;
 
 	ReactDOM.render(
 		React.createElement(WeaCheckbox,
 		{
 			value:nowCell.isreject?nowCell.isreject:false,
-			onChange:(v)=>{
+			onChange:function(v){
 				nowCell.isreject = v;
 			}
 		}),
@@ -707,13 +748,13 @@ WfNodeInfo.prototype.createBuildCodeElement = function(isEage,key,detailDatas,no
 	
 	var graph = this.editorUi.editor.graph;
 	var model = graph.model;
-	let WeaCheckbox = window.ecCom.WeaCheckbox;
+	var WeaCheckbox = window.ecCom.WeaCheckbox;
 
 	ReactDOM.render(
 		React.createElement(WeaCheckbox,
 		{
 			value:nowCell.isBuildCode?nowCell.isBuildCode:detailDatas[key] == 'true' ? true : false,
-			onChange:(v)=>{
+			onChange:function(v){
 				nowCell.isBuildCode = v;
 			}
 		}),
@@ -727,7 +768,7 @@ WfNodeInfo.prototype.createRemindMsgElement = function(isEage,key,detailDatas,no
 	
 	var graph = this.editorUi.editor.graph;
 	var model = graph.model;
-	let WeaInput = window.ecCom.WeaInput;
+	var WeaInput = window.ecCom.WeaInput;
 
 	ReactDOM.render(
 		React.createElement(WeaInput,
@@ -737,7 +778,7 @@ WfNodeInfo.prototype.createRemindMsgElement = function(isEage,key,detailDatas,no
 			inputType:"multilang",
 			isBase64:true,
 			layout:document.getElementById("remindMsg-container"),
-			onBlur:(v)=>{
+			onBlur:function(v){
 				nowCell.exitInfo = v;
 			}
 		}),
@@ -747,36 +788,35 @@ WfNodeInfo.prototype.createRemindMsgElement = function(isEage,key,detailDatas,no
 /**
 创建节点名称元素
  */
+WfNodeInfo.prototype.noNeedRefresh = false;//修改名称时 不刷新，刷新会将当前dom结构清楚 会出现一些问题
 WfNodeInfo.prototype.createNodeNameElement = function(isEage,key,detailDatas,nowCell){
 	
 	var graph = this.editorUi.editor.graph;
 	var model = graph.model;
-	let WeaInput = window.ecCom.WeaInput;
+	var WeaInput = window.ecCom.WeaInput;
+	var sb = this;
 
 	if(isEage && (!nowCell.value)){
-		nowCell.value = `出口${nowCell.id}`; //给出口添加默认名称
+		nowCell.value = "出口"+nowCell.id; //给出口添加默认名称
 	}
 	ReactDOM.render(
 		React.createElement(WeaInput,
 		{
 			viewAttr:3,
-			// value:!isEage?(nowCell.value ?  nowCell.value : detailDatas[key]) : (nowCell.value ?  nowCell.value : detailDatas[key] ? detailDatas[key] : `出口${nowCell.id}`) ,
 			value:nowCell.value ?  nowCell.value : detailDatas[key] ,
-			// inputType:"multilang",
-			// isBase64:true,
+			inputType:"multilang",
+			isBase64:true,
 			layout:document.getElementById("nodeName-container"),
-			// onChange : (v)=>{
-			// 	console.log(v,'----------')
-			// },
-			onBlur:(v)=>{
+			onChange : function(v){
+				sb.noNeedRefresh = true;
 				if(v.trim() == ''){
 					wfModal.warning({
 						title: wfGetLabel(131329, "信息确认"),
 						content:'节点名称不能为空！',
 						okText: wfGetLabel(83446, "确定"),
-						onOk:()=>{},
+						onOk:function(){},
 					});
-					this.nodeNameRef.refs.inputNormal.setValue(nowCell.value.trim());
+					// sb.nodeNameRef.refs.inputNormal.setValue(nowCell.value.trim());
 				}else{
 					model.beginUpdate();
 					try
@@ -789,7 +829,10 @@ WfNodeInfo.prototype.createNodeNameElement = function(isEage,key,detailDatas,now
 					}
 				}
 			},
-			ref:(ref)=>{this.nodeNameRef = ref}
+			onBlur:function(v){
+				
+			},
+			ref:function(ref){this.nodeNameRef = ref}
 		}),
 		document.getElementById("nodeName-container")
 	);
@@ -798,12 +841,15 @@ WfNodeInfo.prototype.createNodeNameElement = function(isEage,key,detailDatas,now
 创建操作者元素
  */
 WfNodeInfo.prototype.createOperatorElement = function(isEage,key,detailDatas,nowCell){
-	let browserComs = window.ecCom.WeaBrowser;
-	detailDatas.operatorGroups.map((v,i)=>{
+	var browserComs = window.ecCom.WeaBrowser;
+	for(var i = 0 ; i < detailDatas.operatorGroups.length;++i){
 		detailDatas.operatorGroups[i].name = 
-		`<a onclick="window.workflowUi.wfNodeInfo.createDetailDialog('operator','操作组',${nowCell.nodeId},${nowCell.nodeType},${v.id},${nowCell})">${wfFormatMultiLang(v.name)}</a>`;//wfFormatMultiLang
-	});
-
+		// `<a onclick="window.workflowUi.wfNodeInfo.createDetailDialog('operator','操作组',${nowCell.nodeId},${nowCell.nodeType},${detailDatas.operatorGroups[i].id},${nowCell}")>${wfFormatMultiLang(detailDatas.operatorGroups[i].name)}</a>`
+		'<a onclick="window.workflowUi.wfNodeInfo.createDetailDialog('+"'operator',"+"'操作组','"+
+		nowCell.nodeId+"','"+nowCell.nodeType+"','"+detailDatas.operatorGroups[i].id+"',"+isEage+')">'+
+		wfFormatMultiLang(detailDatas.operatorGroups[i].name)+"</a>";//wfFormatMultiLang
+	}
+	var sb = this;
 	ReactDOM.render(
 		React.createElement(browserComs,
 		{
@@ -813,7 +859,7 @@ WfNodeInfo.prototype.createOperatorElement = function(isEage,key,detailDatas,now
 			replaceDatas:detailDatas.operatorGroups || [],
 			whiteBackground:true,
 			hasBorder:true,
-			addOnClick:()=>{console.log('iniin');this.createDetailDialog('operator','操作组',nowCell.nodeId,nowCell.nodeType,'-1',nowCell)},
+			addOnClick:function(){sb.createDetailDialog('operator','操作组',nowCell.nodeId,nowCell.nodeType,'-1',isEage)},
 			layout:document.body,
 		}),
 		document.getElementById("operators-container")
@@ -825,14 +871,19 @@ WfNodeInfo.prototype.createOperatorElement = function(isEage,key,detailDatas,now
 *
 */
 WfNodeInfo.prototype.drawFoder = function(){
-	var elDiv = document.createElement('div');
-    elDiv.className = 'nodeInfo-panel-folder';
+	var elDiv;
+	if(document.getElementById('nodeInfo-panel-folder')){
+		elDiv = document.getElementById('nodeInfo-panel-folder');
+	}else{
+		elDiv = document.createElement('div');
+    	elDiv.id = 'nodeInfo-panel-folder';
+		// elDiv.innerHTML = '>';
+		elDiv.style.background = 'url(/workflow/workflowDesign/images/hide.png)';
+		this.container.appendChild(elDiv);
 
-	// elDiv.innerHTML = '>';
-	elDiv.style.background = 'url(/cloudstore/resource/pc/com/images/right-show.png)';
-	this.container.appendChild(elDiv);
+		elDiv.onclick = this.clickNodeFolder.bind(this,elDiv);
+	}
 
-	elDiv.onclick = this.clickNodeFolder.bind(this,elDiv);
 }
 WfNodeInfo.prototype.clickNodeFolder = function(elt){
 	var wfEditor = this.editorUi.wfEditor;
@@ -854,9 +905,12 @@ WfNodeInfo.prototype.clickNodeFolder = function(elt){
 	// model.beginUpdate();
 	try
 	{
-		let rowCanvas = document.getElementById('wf-row-rule-canvas');
-		let	colCanvas = document.getElementById('wf-col-rule-canvas');
+		var rowCanvas = document.getElementById('wf-row-rule-canvas');
+		var	colCanvas = document.getElementById('wf-col-rule-canvas');
 		if(this.nodePanelHide){//隐藏 向右移动隐藏
+			if(document.getElementById("nodeName-container")){
+				document.getElementById("nodeName-container").style.display = 'none';
+			}
 			wfEditor.container.style.width = '100%';
 			// diagramContainer.style.width = '100%';
 			wfPanelContainer.style.width = '100%';
@@ -865,12 +919,15 @@ WfNodeInfo.prototype.clickNodeFolder = function(elt){
 			graph.pageFormat.width = window.innerWidth-(graph.isRuleEnabled()?30:18);
 			this.container.style.transform = 'translateX(240px)';
 			elt.style.left = '-18px';
-			elt.style.background = 'url(/cloudstore/resource/pc/com/images/right-hide.png)';
+			elt.style.background = 'url(/workflow/workflowDesign/images/show.png)';
 			// elt.innerHTML = '<';
 		}else{//显示 向左移动显示
+			if(document.getElementById("nodeName-container")){
+				document.getElementById("nodeName-container").style.display = 'block';
+			}
 			this.container.style.transform = 'translateX(0)';
-			elt.style.left = '0';
-			elt.style.background = 'url(/cloudstore/resource/pc/com/images/right-show.png)';
+			elt.style.left = '-1px';
+			elt.style.background = 'url(/workflow/workflowDesign/images/hide.png)';
 			// elt.innerHTML = '>';
 			wfEditor.container.style.width = 'calc(100% - 240px)';
 			wfPanelContainer.style.width = 'calc(100% - 240px)';
@@ -890,16 +947,36 @@ WfNodeInfo.prototype.clickNodeFolder = function(elt){
 创建每项设置对应弹框
 */
 var workflowDesignE9_dialog,workflowDesignE9_dialog_params={};
-WfNodeInfo.prototype.createDetailDialog = function(key='',modalName='',nodeId='',nodetype='',groupid='',nowCell){
+WfNodeInfo.prototype.createDetailDialog = function(key,modalName,nodeId,nodetype,groupid,isEage){
 	var WeaTools = window.ecCom.WeaTools;
-	workflowDesignE9_dialog_params = {key,modalName,nodetype,groupid,nowCell};
+	var graph = this.editorUi.editor.graph;
+	var startX = graph.minimumGraphSize.x;
+	var startY = graph.minimumGraphSize.y;
+	var graphWidth = graph.minimumGraphSize.width;
+	var graphHeight = graph.minimumGraphSize.height;
+	var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
+	var nowCell;
+	for(var i = 0 ; i < allCells.length;++i){
+		if(isEage){
+			if(allCells[i].edge && allCells[i].linkId == nodeId){
+				nowCell = allCells[i];
+				break;
+			}
+		}else{
+			if(!allCells[i].edge && allCells[i].nodeId == nodeId ){
+				nowCell = allCells[i];
+				break;
+			}
+		}
+	}
+	workflowDesignE9_dialog_params = {key:key,modalName:modalName,nodetype:nodetype,groupid:groupid,nowCell:nowCell};
 	if(key == 'hasRole' || key == 'hasCondition'){
 		workflowDesignE9_dialog_params['linkId'] = nodeId;
 	}else{
 		workflowDesignE9_dialog_params['nodeId'] = nodeId;
 	}
 	var _workflowDetailDatas = this.editorUi.editor.graph.workflowDetailDatas;
-	let isCreate = nodetype == 0 ? 1 : '';
+	var isCreate = nodetype == 0 ? 1 : '';
 	/**
 		*操作组 ：#/main/workflowengine/path/pathSet/operatorSet?isSingle=true&workflowId=&nodeid=&nodetype=&isCreate=&groupid=-1
 		*操作菜单 : #/main/workflowengine/path/pathset/perationMenuSet?nodeid=284&workflowId=81&isRoute=true&_key=2r5y2t
@@ -929,26 +1006,24 @@ WfNodeInfo.prototype.createDetailDialog = function(key='',modalName='',nodeId=''
 		{label:'条件',value:'',key:'hasCondition'},
 		{label:'附加规则',value:'',key:'hasRole'},
 	*/
-	let workflowId = window.urlParams.workflowId || '';
+	var workflowId = window.urlParams.workflowId || '';
 	// 功能地址
-	let urlObj = {
-		'operator' : `#/main/workflowengine/path/pathSet/operatorSet?isSingle=true&workflowId=${workflowId}&nodeid=${nodeId}&nodetype=${nodetype}
-						&groupid=${groupid}&isCreate=${isCreate}&isClose4e9=true`,
-		'hasCusRigKey' : `#/main/workflowengine/path/pathset/perationMenuSet?nodeid=${nodeId}&workflowId=${workflowId}&isRoute=true&isClose4e9=true&_key=2r5y2t`,
-		'formContent' : `#/main/workflowengine/path/pathset/formcontent?nodeid=${nodeId}&workflowId=${workflowId}&isRoute=true&isClose4e9=true&_key=6vyr0l`,
-		'hasNodeBefAddOpr' : `#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=${workflowId}&nodeId=${nodeId}&ispreoperator=1&isClose4e9=true`,
-		'hasNodeAftAddOpr' : `#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=${workflowId}&nodeId=${nodeId}&ispreoperator=0&isClose4e9=true`,
-		'hasOperateSign' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=sign&isSingle=true&isClose4e9=true`,
-		'hasOperateTitle' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=title&isSingle=true&isClose4e9=true`,
-		'hasOperateSubwf' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=subWf&isSingle=true&isClose4e9=true`,
-		'hasOperateException' : `#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId=${workflowId}&nodeId=${nodeId}&type=exception&isSingle=true&isClose4e9=true`,
+	var urlObj = {
+		'operator' : "#/main/workflowengine/path/pathSet/operatorSet?isSingle=true&workflowId="+workflowId+"&nodeid="+nodeId+"&nodetype="+nodetype+"&groupid="+groupid+"&isCreate="+isCreate+"&isClose4e9=true",
+		'hasCusRigKey' : "#/main/workflowengine/path/pathset/perationMenuSet?nodeid="+nodeId+"workflowId="+workflowId+"&isRoute=true&isClose4e9=true&_key=2r5y2t",
+		'formContent' : "#/main/workflowengine/path/pathset/formcontent?nodeid="+nodeId+"&workflowId="+workflowId+"&isRoute=true&isClose4e9=true&_key=6vyr0l",
+		'hasNodeBefAddOpr' : "#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId="+workflowId+"&nodeId="+nodeId+"&ispreoperator=1&isClose4e9=true",
+		'hasNodeAftAddOpr' : "#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId="+workflowId+"&nodeId="+nodeId+"&ispreoperator=0&isClose4e9=true",
+		'hasOperateSign' : "#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId="+workflowId+"&nodeId="+nodeId+"&type=sign&isSingle=true&isClose4e9=true",
+		'hasOperateTitle' : "#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId="+workflowId+"&nodeId="+nodeId+"&type=title&isSingle=true&isClose4e9=true",
+		'hasOperateSubwf' : "#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId="+workflowId+"&nodeId="+nodeId+"&type=subWf&isSingle=true&isClose4e9=true",
+		'hasOperateException' : "#/main/workflowengine/path/pathSet/nodeMore?_key=hsdkby&workflowId="+workflowId+"&nodeId="+nodeId+"&type=exception&isSingle=true&isClose4e9=true",
 		// 出口
-		'hasRole' : `#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId=${workflowId}&linkId=${nodeId}&isClose4e9=true`,
-		'hasCondition' : `/formmode/interfaces/showconditionContent.jsp?design=1&rulesrc=1&linkid=${nodeId}&wfid=${workflowId}&isreject=&curtype=1
-						&formid=${_workflowDetailDatas.workflowDatas.formId}&isbill=${_workflowDetailDatas.workflowDatas.isBill}&isClose4e9=true`
+		'hasRole' : "#/main/workflowengine/path/pathSet/addInOperate?isRoute=true&workflowId="+workflowId+"&linkId="+nodeId+"&isClose4e9=true",
+		'hasCondition' : "/formmode/interfaces/showconditionContent.jsp?design=1&rulesrc=1&linkid="+nodeId+"&wfid="+workflowId+"&isreject=&curtype=1&formid="+_workflowDetailDatas.workflowDatas.formId+"&isbill="+_workflowDetailDatas.workflowDatas.isBill+"&isClose4e9=true"
 	}
 	if(urlObj[key]){
-		let url = `${key == 'hasCondition' ? '' : '/spa/workflow/static4engine/engine.html'}${urlObj[key]}`;
+		var url = (key == 'hasCondition' ? '' : '/spa/workflow/static4engine/engine.html')+urlObj[key];
 
 		/**
 		var dialog = new window.top.Dialog();
@@ -961,24 +1036,26 @@ WfNodeInfo.prototype.createDetailDialog = function(key='',modalName='',nodeId=''
         dialog.show();
 		 */
 		if(key == 'hasCondition'){//出口条件暂时用老的弹框， e9弹框弹出jsp获取window有问题，导致获取不到当前dialog id
-			let dialog = new window.top.Dialog();
+			var dialog = new window.top.Dialog();
 			dialog.currentWindow = window;
 			dialog.URL = url;
 			dialog.Title = "出口条件";
 			dialog.Width = 900 ;
 			dialog.Height = 600;
 			dialog.Drag = true;
-			dialog.callbackfun = (a)=>{
-				console.log('callback fun',a)
+			dialog.closeHandle = function(a){
+				mxUtils.post('/api/workflow/layout/getRuleCondition', "nodelinkid="+nodeId, function(req)
+				{
+					var _request = req.request;
+					var _response = _request.response;
+					var _json = JSON.parse(_response);
+					workflowUi.editor.graph.workflowDetailDatas.linkDatas[nodeId]['hasCondition'] = _json.allcondition ? 'true' : 'false';
+					nowCell.linkConditionInfo = _json.allcondition || '';
+					workflowUi.wfNodeInfo.refresh();
+				})
 			};
-			dialog.closeHandle = (a)=>{
-				console.log('close handle',a)
-			};
-			dialog._callBack = (a,b,c,d,e)=>{
-				console.log('_callback',a,b,c,d,e)
-			}
-			dialog.callback = (datas)=>{
-				console.log(datas,'datas');//linkConditionInfo
+			dialog.callback = function(datas){
+				// console.log(datas,'datas');//linkConditionInfo
 			}
 			dialog.show();
 		}else{
@@ -987,10 +1064,10 @@ WfNodeInfo.prototype.createDetailDialog = function(key='',modalName='',nodeId=''
 				moduleName: "workflow",
 				url: url,
 				style: {width:900, height:600},
-				callback: (con) =>{
+				callback: function(con){
 					console.log(con)
 				},
-				onCancel: () =>{
+				onCancel: function(){
 					console.log('cancel')
 				}
 			});
@@ -1006,7 +1083,7 @@ function workflowDesign_callback(key,returnVal,needSyncNodes){
 	// console.log(key,returnVal,needSyncNodes,'key,returnVal,needSyncNodes',workflowDesignE9_dialog_params);
 	
 
-	let isNode = true , id;
+	var isNode = true , id;
 	if(workflowDesignE9_dialog_params.hasOwnProperty('linkId')){
 		isNode = false;
 		id = workflowDesignE9_dialog_params.linkId;
@@ -1014,8 +1091,8 @@ function workflowDesign_callback(key,returnVal,needSyncNodes){
 		id = workflowDesignE9_dialog_params.nodeId;
 	}
 	if(key == 'operator'){//操作者
-		let workflowId = window.urlParams.workflowId || '';
-		mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, `workflowId=${workflowId}`, function(req)
+		var workflowId = window.urlParams.workflowId || '';
+		mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, "workflowId="+workflowId, function(req)
 			{
 				var request = req.request;
 				var response = request.response;
@@ -1025,14 +1102,14 @@ function workflowDesign_callback(key,returnVal,needSyncNodes){
 			}
 		)
 	}else{
-		let workflowDetailDatas = workflowUi.editor.graph.workflowDetailDatas;
+		var workflowDetailDatas = workflowUi.editor.graph.workflowDetailDatas;
 		if(key == 'showpreaddinoperate'){//节点前附加操作
 			workflowDetailDatas.nodeDatas[id]['hasNodeBefAddOpr'] = returnVal;
-			let nowCell = workflowDesignE9_dialog_params['nowCell'];
+			var nowCell = workflowDesignE9_dialog_params['nowCell'];
 			checkIsChangCellIcon(nowCell,returnVal,'beforeNode');
 		}else if(key == 'showaddinoperate_node'){//节点后附加操作
 			workflowDetailDatas.nodeDatas[id]['hasNodeAftAddOpr'] = returnVal;
-			let nowCell = workflowDesignE9_dialog_params['nowCell'];
+			var nowCell = workflowDesignE9_dialog_params['nowCell'];
 			checkIsChangCellIcon(nowCell,returnVal,'nodeAfter');
 		}else if(key == 'showNodeAttrOperate_sign'){//签字意见设置
 			workflowDetailDatas.nodeDatas[id]['hasOperateSign'] = returnVal;
@@ -1047,7 +1124,7 @@ function workflowDesign_callback(key,returnVal,needSyncNodes){
 		}else if(key == 'showButtonNameOperate'){//操作菜单
 			workflowDetailDatas.nodeDatas[id]['hasCusRigKey'] = returnVal;
 		}else if(key == 'showaddinoperate_link'){//出口附加规则
-			workflowDetailDatas.nodeDatas[id]['hasRole'] = returnVal;
+			workflowDetailDatas.linkDatas[id]['hasRole'] = returnVal;
 		}
 		workflowUi.editor.graph.workflowDetailDatas = workflowDetailDatas;
 
@@ -1056,23 +1133,23 @@ function workflowDesign_callback(key,returnVal,needSyncNodes){
 	key != 'formContent' && workflowDesignE9_dialog && workflowDesignE9_dialog.close();
 }
 function checkIsChangCellIcon(cell,returnVal,pos){//现在不能同时出现icon
-	let graph = workflowUi.editor.graph;
-	let model = graph.model;
+	var graph = workflowUi.editor.graph;
+	var model = graph.model;
 	
-	let newStyle = cell.style,cellStyle = cell.style;
+	var newStyle = cell.style,cellStyle = cell.style;
 	// if((returnVal=='true' && cellStyle.indexOf('icons=')<0) || (cellStyle.indexOf('icons=')>-1 && returnVal=='false')){ // 本来没icon&&返回值为false，有icon返回值为true 不触发渲染
 		model.beginUpdate();
 		try
 		{
 			if(returnVal == 'true' && cellStyle.indexOf('icons=')<0){
-				newStyle = cellStyle + `icons={"${pos}":"${pos=='beforeNode'?'icon-workflow-caozuoqian':'icon-workflow-caozuohou'}"};`;
+				newStyle = cellStyle + 'icons={"'+pos+'":'+(pos=='"beforeNode"'?'"icon-workflow-caozuoqian"':'"icon-workflow-caozuohou"')+"};";
 			}else if(returnVal =='false' && cellStyle.indexOf('icons=')>-1){
-				let arr = cellStyle.split(';');
-				arr.map((v,i)=>{
-					if(v.indexOf('icons=') >-1 ){
+				var arr = cellStyle.split(';');
+				for(var i = 0 ; i < arr.length;++i){
+					if(arr[i].indexOf('icons=') >-1 ){
 						//v= ic
-						let iconObj = JSON.parse(v.split('=')[1]);
-						for(let key in iconObj){
+						var iconObj = JSON.parse(arr[i].split('=')[1]);
+						for(var key in iconObj){
 							if(key == pos){
 								delete iconObj[key];
 							}
@@ -1080,24 +1157,24 @@ function checkIsChangCellIcon(cell,returnVal,pos){//现在不能同时出现icon
 						if(Object.keys(iconObj).length == 0){
 							arr.splice(i,1);
 						}else{
-							arr[i] = `icons=${JSON.stringify(iconObj)}`;
+							arr[i] = "icons="+JSON.stringify(iconObj);
 						}
 					}
-				});
+				}
 				newStyle = arr.join(';');
 			}else if(returnVal == 'true' && cellStyle.indexOf('icons=')>-1){//两个icon需同时存在
-				let arr = cellStyle.split(';');
-				arr.map((v,i)=>{
-					if(v.indexOf('icons=') >-1 ){
+				var arr = cellStyle.split(';');
+				for(var i = 0 ; i < arr.length;++i){
+					if(arr[i].indexOf('icons=') >-1 ){
 						//v= ic
-						let iconObj = JSON.parse(v.split('=')[1]);
+						var iconObj = JSON.parse(arr[i].split('=')[1]);
 						if(!iconObj[pos]){//未存在当前icon
 							iconObj[pos] = (pos=='beforeNode'?'icon-workflow-caozuoqian':'icon-workflow-caozuohou');
 						}
-						arr[i] = `icons=${JSON.stringify(iconObj)}`;
+						arr[i] = "icons="+JSON.stringify(iconObj);
 						
 					}
-				});
+				}
 				newStyle = arr.join(';');
 			}
 			model.setStyle(cell, newStyle);

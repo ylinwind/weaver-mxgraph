@@ -8,7 +8,7 @@ function WfPanel(editorUi, container) {
 
     this.palettes = new Object();
     // this.siderBar = new Sidebar(editorUi, container);
-    this.showTooltips = true;
+    this.showTooltips = false;
 	this.graph = editorUi.createTemporaryGraph(this.editorUi.editor.graph.getStylesheet());
 	this.graph.cellRenderer.antiAlias = false;
 	this.graph.foldingEnabled = false;
@@ -20,7 +20,7 @@ function WfPanel(editorUi, container) {
     // 创建处理函数-----------------
     this.pointerUpHandler = mxUtils.bind(this, function()
 	{
-		this.showTooltips = true;
+		this.showTooltips = false;
 	});
 
     this.pointerMoveHandler = mxUtils.bind(this, function(evt)
@@ -55,7 +55,7 @@ function WfPanel(editorUi, container) {
     // Enables tooltips after scroll
 	mxEvent.addListener(container, 'scroll', mxUtils.bind(this, function()
 	{
-		this.showTooltips = true;
+		this.showTooltips = false;
 		this.hideTooltip();
 	}));
 	
@@ -95,7 +95,6 @@ WfPanel.prototype.init = function (){
 
     this.drawActions();//绘制操作区域
     this.addGeneralPalette(true);
-    
 }
 
 /**
@@ -212,13 +211,13 @@ WfPanel.prototype.defaultImageHeight = 80;
 /**
  */
 WfPanel.prototype.refresh = function (sender, evt){
-	setTimeout(()=>{
-		let undoManager = workflowUi.editor.undoManager;
-		let history = undoManager.history;
-		let indexOfNextAdd  = undoManager.indexOfNextAdd;
+	setTimeout(function(){
+		var undoManager = workflowUi.editor.undoManager;
+		var history = undoManager.history;
+		var indexOfNextAdd  = undoManager.indexOfNextAdd;
 
-		let undo = document.getElementsByClassName('icon-workflow-chexiao')[0];
-		let redo = document.getElementsByClassName('icon-workflow-fanhui')[0];
+		var undo = document.getElementsByClassName('icon-workflow-chexiao')[0];
+		var redo = document.getElementsByClassName('icon-workflow-fanhui')[0];
 		if(undo && redo){
 			if(history.length>0){
 				if(indexOfNextAdd == 0){
@@ -249,12 +248,12 @@ WfPanel.prototype.refresh = function (sender, evt){
 绘制每个操作项及方法
  */
 WfPanel.prototype.drawActions = function(){
-    let iconActions = this.editorUi.actions;
+    var iconActions = this.editorUi.actions;
 	var graph = this.editorUi.editor.graph;
     var _this = this;
-    let icons = [ //所有的操作按钮
+    var icons = [ //所有的操作按钮
         {icon:'icon-workflow-baocun',action:iconActions.get('save'),title:'保存'},
-        {icon:'icon-workflow-daochu',action:`iconActions.get('export')`,title:'导出'},//使用字符串的方法是导出 流程图xml，执行方法是导出路径xml
+        {icon:'icon-workflow-daochu',action:"iconActions.get('export')",title:'导出'},//使用字符串的方法是导出 流程图xml，执行方法是导出路径xml
         {icon:'icon-workflow-chexiao',action:iconActions.get('undo'),title:'撤销'},
         {icon:'icon-workflow-fanhui',action:iconActions.get('redo'),title:'返回'},
         {icon:'icon-workflow-shanchu',action:iconActions.get('delete'),title:'删除'},
@@ -272,31 +271,32 @@ WfPanel.prototype.drawActions = function(){
         {icon:'icon-workflow-kaoxiaduiqi',action:'1',title:'下对齐'},
 
         {icon:'icon-workflow-biaochi',action:'1',title:'标尺'},
-        {icon:'icon-workflow-wangge',action:'1',title:'网格'},
-        {icon:'icon-workflow-xianshifenzu',action:{funct:_this.setTipInfoShow.bind(_this)},title:'隐藏分组'},
+        {icon:'icon-workflow-wangge workflowIcon-is-clicked',action:'1',title:'网格'},
+        {icon:'icon-workflow-xianshifenzu workflowIcon-is-clicked',action:{funct:_this.setTipInfoShow.bind(_this)},title:'隐藏分组'},
         {icon:'icon-workflow-huifuyuanbil',action:iconActions.get('resetView'),title:'恢复原比例'},
         {icon:'icon-workflow-suoxiao',action:iconActions.get('zoomOut'),title:'缩小'},
         {icon:'icon-workflow-fangda',action:iconActions.get('zoomIn'),title:'放大'},
 
-        {icon:'icon-workflow-ceshi',action:'1',title:'测试'},
+        {icon:'icon-workflow-ceshi',action:'1',title:'开始测试'},
         {icon:'icon-workflow-tingzhi',action:'1',title:'停止'},
     ]
-    let elDiv;
-    icons.map((v,i)=>{
-        if(i==0||i==5||i==9||i==15||i==21){
+    var elDiv;
+	for(var i = 0 ; i < icons.length;++i){
+		if(i==0||i==5||i==9||i==15||i==21){
             elDiv = document.createElement('div');
-            elDiv.className = `${i==21?'testAction':''} action-area`;
-            let elDiv_tip = document.createElement('div');
+            // elDiv.className = `${i==21?'testAction':''} action-area`;
+            elDiv.className = (i==21?'testAction':'')+" action-area";
+            var elDiv_tip = document.createElement('div');
             elDiv_tip.className = 'action-area-tip';
             elDiv_tip.innerHTML = i==0?'编辑':i==5?'标注':i==9?'对齐':i==15?'视图（100%）':i==21?'测试':'';
             elDiv_tip.style.display = this.tipInfoDisplay;
             elDiv.appendChild(elDiv_tip);
         }
-		let spanEl = this.createIconElement(v,this,this.editorUi.editor);
+		var spanEl = this.createIconElement(icons[i],this,this.editorUi.editor);
         elDiv.appendChild(spanEl);
 		// scale range
         if(i==19){
-            let input = this.createIconRangeInput(graph);
+            var input = this.createIconRangeInput(graph);
             elDiv.appendChild(input);
         }
 		// 
@@ -304,32 +304,32 @@ WfPanel.prototype.drawActions = function(){
         if(i==4 || i==8 || i==14 || i==20 || i==22 || i==icons.length-1){
             this.container.appendChild(elDiv);
             if(i!=icons.length-1){
-                let spanSplit = document.createElement('span');
+                var spanSplit = document.createElement('span');
                 spanSplit.className = 'wfEditor-split';
                 this.container.appendChild(spanSplit);
             }
         }
-    });
+	}
 }
 /**
 创建rangeINput
  */
 WfPanel.prototype.createIconRangeInput = function(graph){
-	let input = document.createElement('INPUT');
+	var input = document.createElement('INPUT');
 	input.type = 'range';
 	input.className = 'wf-view-range';
 	input.onchange = function(val){
-		let value = val.target.value;
+		var value = val.target.value;
 		input.value = value;
-		input.style.backgroundSize = `${value}% 100%`;
-		let viewVal = value/50;
+		input.style.backgroundSize = value+"% 100%";
+		var viewVal = value/50;
 
 		viewVal <= 0.15 ? viewVal = 0.15 : '';
 		graph.zoomTo(viewVal);
 		
 		//  0.2 - 2   0 - 100
 		var tips = document.getElementsByClassName('action-area-tip')[4];
-		tips.innerHTML = `视图（${Math.round(viewVal*100)}%）`;
+		tips.innerHTML = "视图（"+Math.round(viewVal*100)+"%）";
 	}
 	return input;
 }	
@@ -337,8 +337,7 @@ WfPanel.prototype.createIconRangeInput = function(graph){
 创建每个顶部操作项dom元素
  */
 WfPanel.prototype.createIconElement = function(item,sb,editor){
-	let spanEl;
-	let history = editor.undoManager.history;
+	var spanEl;
 	if(item.icon === 'icon-workflow-tianjiafenzu'){//添加分组
 		spanEl = sb.drawAreaGroup();
 	}else if(item.icon === 'icon-workflow-wenbenshuoming'){//辅助文本说明 A 按钮
@@ -348,8 +347,9 @@ WfPanel.prototype.createIconElement = function(item,sb,editor){
 	}
 	if(item.icon == 'icon-workflow-ceshi'){
 		spanEl.id='workflow-ceshiOrPause';
+		spanEl.title='开始测试';
 	}
-	spanEl.className = `${item.icon} icon-workflow`;
+	spanEl.className = item.icon+" icon-workflow";
 	spanEl.title = item.title || 'title';
 	spanEl.onclick = function(e){
 		item.action&&sb.setIconsActions(item.action,e,item.icon);
@@ -361,17 +361,26 @@ icons actions
  */
 WfPanel.prototype.setIconsActions = function(func,evt,icon){
     var graph = this.editorUi.editor.graph;
-    if(icon=='icon-workflow-wangge'){//设置网格显示隐藏
-        let gridEnables = graph.isGridEnabled();
-        let color = graph.view.gridColor;
+    if(icon.indexOf('icon-workflow-wangge')>-1){//设置网格显示隐藏
+        var gridEnables = graph.isGridEnabled();
+        var color = graph.view.gridColor;
         graph.setGridEnabled(!gridEnables);
         if(!gridEnables){
             this.editorUi.setGridColor(color);
-        }
+			//workflowIcon-is-clicked
+			evt.target.className = 'icon-workflow-wangge icon-workflow workflowIcon-is-clicked';
+        }else{
+			evt.target.className = 'icon-workflow-wangge icon-workflow';
+		}
         this.editorUi.fireEvent(new mxEventObject('gridEnabledChanged'));
     }else if(icon=='icon-workflow-biaochi'){
-		let gridEnables = graph.isRuleEnabled();
+		var gridEnables = graph.isRuleEnabled();
 		graph.setRuleEnabled(!gridEnables);
+		if(!gridEnables){
+			evt.target.className = 'icon-workflow-biaochi icon-workflow workflowIcon-is-clicked';
+        }else{
+			evt.target.className = 'icon-workflow-biaochi icon-workflow';
+		}
 		this.clickRuleResizeGraph(!gridEnables);
 		this.editorUi.fireEvent(new mxEventObject('ruleEnabledChanged'));
 		this.editorUi.wfGroups.refresh();
@@ -404,11 +413,11 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
         if(icon=='icon-workflow-suoxiao' || icon=='icon-workflow-fangda' || icon=='icon-workflow-huifuyuanbil'){//修改操作区域显示缩放值
 		//0.15 - 2   0 - 100
             var tips = document.getElementsByClassName('action-area-tip')[4];
-            tips.innerHTML = `视图（${Math.round(graph.view.scale <= 0.15 ? 15 : graph.view.scale * 100)}%）`;
+            tips.innerHTML = "视图（"+Math.round(graph.view.scale <= 0.15 ? 15 : graph.view.scale * 100)+"%）";
 
 			var inputRange = document.getElementsByClassName('wf-view-range')[0];
             inputRange.value = graph.view.scale <= 0.15 ? 0 : graph.view.scale * 50;
-			inputRange.style.backgroundSize = `${graph.view.scale <= 0.15 ? 0 : graph.view.scale * 50}% 100%`;
+			inputRange.style.backgroundSize = graph.view.scale <= 0.15 ? 0 : graph.view.scale * 50+"% 100%";
         }
     }
 }
@@ -416,7 +425,7 @@ WfPanel.prototype.setIconsActions = function(func,evt,icon){
 /**
 点击标尺 重绘区域size
  */
-WfPanel.prototype.clickRuleResizeGraph = function(ruleShow=true){
+WfPanel.prototype.clickRuleResizeGraph = function(ruleShow){
 	var wfEditor = this.editorUi.wfEditor;
 	var diagramContainer = this.editorUi.diagramContainer;
 	var graph = this.editorUi.editor.graph;
@@ -454,7 +463,7 @@ WfPanel.prototype.drawHelpfulText = function(){
 		showTitle='文本说明',
 		width=150,height=100,
 		allowCellsInserted,icon,
-		style=`text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;connectable=0;`;
+		style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;connectable=0;";
 		
 	cells = [new mxCell( '文本说明', new mxGeometry(10, 10, width, height), style)];
 	cells[0].vertex = true;
@@ -468,19 +477,19 @@ WfPanel.prototype.drawHelpfulText = function(){
  */
 WfPanel.prototype.getWorkflowXml = function(){
 	message.loading('正在请求数据，请稍候...',0);
-	mxUtils.post(WORKFLOW_GET_XML, `workflowId=${window.urlParams.workflowId || ''}`, function(req){
+	mxUtils.post(WORKFLOW_GET_XML, "wfId="+(window.urlParams.workflowId || ''), function(req){
 		console.log(req);
 		message.destroy();
-		let request = req.request;
-		let response = request.response;
-		let json = JSON.parse(response);
-		let filePath = json.filePath || '';
+		var request = req.request;
+		var response = request.response;
+		var json = JSON.parse(response);
+		var filePath = json.filePath || '';
 		window.open(filePath);
 	});
 }
 WfPanel.prototype.drawRowGroup = function(){
-	let wfGroup = workflowUi.wfGroups;
-	let rowObj = {
+	var wfGroup = workflowUi.wfGroups;
+	var rowObj = {
 		type:'row',
 		position:{left:0},
 		panelWidth:150,
@@ -489,9 +498,9 @@ WfPanel.prototype.drawRowGroup = function(){
 	wfGroup.addRowGroup(rowObj);
 }
 WfPanel.prototype.drawColGroup = function(){
-	let wfGroup = workflowUi.wfGroups;
+	var wfGroup = workflowUi.wfGroups;
 	
-	let rowObj = {
+	var rowObj = {
 		type:'col',
 		position:{top:0},
 		panelWidth:150,
@@ -499,7 +508,7 @@ WfPanel.prototype.drawColGroup = function(){
 	}
 	wfGroup.addColGroup(rowObj);
 }
-WfPanel.prototype.groupDragAction = function(element,direction = 'col'){
+WfPanel.prototype.groupDragAction = function(element,direction){
 	var mouseDownX,mouseDownY,initX,initY,flag = false;
 	element.onmousedown = function(e) {
 		e.stopPropagation();
@@ -535,9 +544,9 @@ WfPanel.prototype.drawAreaGroup = function(){
 		title='分组',
 		showLabel='分组',
 		showTitle='分组',
-		width=300,height=200,
+		width=150,height=100,
 		allowCellsInserted,icon,
-		style=`rounded=1;arcSize=10;fillColor=none;dashed=1;strokeColor=#666666;strokeWidth=2;labelPosition=center;verticalLabelPosition=top;align=center;verticalAlign=bottom;connectable=0;fontSize=18;fontStyle=1;fontFamily='宋体';wrap=1;`;
+		style="rounded=1;arcSize=10;fillColor=none;dashed=1;strokeColor=#666666;strokeWidth=2;labelPosition=center;verticalLabelPosition=top;align=center;verticalAlign=bottom;connectable=0;fontSize=18;fontStyle=1;fontFamily='宋体';wrap=1;";
 		
 	cells = [new mxCell( '分组', new mxGeometry(10, 10, width, height), style)];
 	cells[0].vertex = true;
@@ -571,16 +580,16 @@ WfPanel.prototype.drawGroup = function(){
 		svgG = document.getElementById('groups-line');
 		svgG.innerHTML = '';
 	}
-	this.rowGroups.map(v=>{
+	for(var i = 0 ; i < this.rowGroups.length;++i){
 		var svgEl_1 = graph.svgCanvas.createElement('g');
 		var svgEl = graph.svgCanvas.createElement('path');
 		var _svgEl = graph.svgCanvas.createElement('path');
-		svgEl.setAttribute('id',v.id);
-		svgEl.setAttribute('d',`M0 100 L${maxWidth} 100`);
-		_svgEl.setAttribute('d',`M0 100 L${maxWidth} 100`);
+		svgEl.setAttribute('id',this.rowGroups[i].id);
+		svgEl.setAttribute('d',"M0 100 L"+maxWidth+ "100");
+		_svgEl.setAttribute('d',"M0 100 L"+maxWidth+ "100");
 		_svgEl.setAttribute('visibility',"hidden");
 		_svgEl.style="stroke:#fff;stroke-width:10;stroke-dasharray:5;stroke-miterlimit:10;";
-		svgEl.style=v.style;
+		svgEl.style=this.rowGroups[i].style;
 
 		svgEl_1.addEventListener("mouseenter", this.enterChangeGroupLineState.bind(this,'row'), false);
 		svgEl_1.addEventListener("mouseout", this.outChangeGroupLineState.bind(this,'row'), false);
@@ -588,21 +597,21 @@ WfPanel.prototype.drawGroup = function(){
 		svgEl_1.appendChild(svgEl);
 		svgEl_1.appendChild(_svgEl);
 		svgG.appendChild(svgEl_1);
-	});
-	this.colGroups.map(v=>{
+	}
+	for(var i = 0 ; i < this.colGroups.length;++i){
 		var svgEl = graph.svgCanvas.createElement('line');
-		svgEl.setAttribute('id',v.id);
-		svgEl.setAttribute('x1',v.x1);
-		svgEl.setAttribute('y1',v.y1);
-		svgEl.setAttribute('x2',v.x2);
-		svgEl.setAttribute('y2',v.y2);
-		svgEl.style=v.style;
+		svgEl.setAttribute('id',this.colGroups[i].id);
+		svgEl.setAttribute('x1',this.colGroups[i].x1);
+		svgEl.setAttribute('y1',this.colGroups[i].y1);
+		svgEl.setAttribute('x2',this.colGroups[i].x2);
+		svgEl.setAttribute('y2',this.colGroups[i].y2);
+		svgEl.style=this.colGroups[i].style;
 
 		svgEl.addEventListener("mouseenter", this.enterChangeGroupLineState.bind(this,'col'), false);
 		svgEl.addEventListener("mouseout", this.outChangeGroupLineState.bind(this,'col'), false);
 
 		svgG.appendChild(svgEl);
-	})
+	}
 
 	
 	__root.appendChild(svgG);
@@ -629,20 +638,23 @@ WfPanel.prototype.outChangeGroupLineState = function(type,e){
 控制每块操作区域提示语
  */
 WfPanel.prototype.setTipInfoBtn = function(){
-    let tipBtn = document.createElement('button');
+    var tipBtn = document.createElement('button');
     tipBtn.innerHTML = 'show tip'
     tipBtn.onclick = this.setTipInfoShow.bind(this);
     this.container.appendChild(tipBtn);
 }
 WfPanel.prototype.setTipInfoShow = function(){
-	let elDiv_tips = document.getElementsByClassName('action-area-tip');
-	let groupTipElt = document.getElementsByClassName('icon-workflow-xianshifenzu')[0];
-	for(let i  = 0 ; i <elDiv_tips.length ; ++i){
+	var elDiv_tips = document.getElementsByClassName('action-area-tip');
+	var groupTipElt = document.getElementsByClassName('icon-workflow-xianshifenzu')[0];
+	for(var i  = 0 ; i <elDiv_tips.length ; ++i){
 		if(this.tipInfoDisplay=='none'){
 			elDiv_tips[i].style.display = 'block';
+			groupTipElt.className = 'icon-workflow-xianshifenzu workflowIcon-is-clicked icon-workflow';
 			groupTipElt.title = '隐藏分组';
 		}else{
 			elDiv_tips[i].style.display = 'none';
+			//workflowIcon-is-clicked
+			groupTipElt.className = 'icon-workflow-xianshifenzu icon-workflow';
 			groupTipElt.title = '显示分组';
 		}
 	}
@@ -652,7 +664,7 @@ WfPanel.prototype.setTipInfoShow = function(){
 /**
 重绘 绘制区域大小
  */
-WfPanel.prototype.reDrawGraphSize = function(show=true){
+WfPanel.prototype.reDrawGraphSize = function(show){
 	var wfEditor = this.editorUi.wfEditor;
 	var diagramContainer = this.editorUi.diagramContainer;
 	var wfPanelContainer = this.editorUi.wfPanelContainer;
@@ -666,11 +678,11 @@ WfPanel.prototype.reDrawGraphSize = function(show=true){
 			wfEditor.container.style.height = '150px';
 			wfPanelContainer.style.top = '150px';
 			// graph.pageFormat.height = graph.pageFormat.height - 35;
-			graph.pageFormat.height = window.innerHeight - 168;
+			graph.pageFormat.height = window.innerHeight - 170;
 		}else{//显示 向左移动显示
 			wfEditor.container.style.height = '100px';
 			wfPanelContainer.style.top = '100px';
-			graph.pageFormat.height = window.innerHeight - 118;
+			graph.pageFormat.height = window.innerHeight - 120;
 		}
 		graph.refresh();
 	}
@@ -681,7 +693,7 @@ WfPanel.prototype.reDrawGraphSize = function(show=true){
 	
 }
 /**gg */
-WfPanel.prototype.__test = function(show=true){
+WfPanel.prototype.__test = function(show){
 	/*ReactDOM.render(
 		React.createElement(antd.Table,
 		{
@@ -704,21 +716,21 @@ WfPanel.prototype.__test = function(show=true){
 检测 分叉节点是否合乎规则
  */
 WfPanel.prototype.doCheckBranchNode = function(cells){
-	let passed = true,haveBranchStart = false,havaBranchEnd = false;
-	cells.map(v=>{
-		if(v.nodeAttriBute == 1){//分叉起始点
+	var passed = true,haveBranchStart = false,havaBranchEnd = false;
+	for(var i = 0 ; i < cells.length;++i){
+		if(cells[i].nodeAttriBute == 1){//分叉起始点
 			haveBranchStart = true;
 		}
-		else if(v.nodeAttriBute == 5 || v.nodeAttriBute == 3 || v.nodeAttriBute == 4){//合并节点
+		else if(cells[i].nodeAttriBute == 5 || cells[i].nodeAttriBute == 3 || cells[i].nodeAttriBute == 4){//合并节点
 			havaBranchEnd = true;
 		}
-	});
+	}
 	if(!haveBranchStart && havaBranchEnd){//只有合并节点
 		wfModal.warning({
 			title: wfGetLabel(131329, "信息确认"),
 			content:'只有分叉合并节点，没有分叉起始节点！',
 			okText: wfGetLabel(83446, "确定"),
-			onOk:()=>{console.log('ok')},
+			onOk:function(){console.log('ok')},
 		});
 		return false;
 	}else if(haveBranchStart && !havaBranchEnd){
@@ -726,7 +738,7 @@ WfPanel.prototype.doCheckBranchNode = function(cells){
 			title: wfGetLabel(131329, "信息确认"),
 			content:'只有分叉起始节点，没有分叉合并节点！',
 			okText: wfGetLabel(83446, "确定"),
-			onOk:()=>{console.log('ok')},
+			onOk:function(){console.log('ok')},
 		});
 		return false;
 	}else if((!haveBranchStart && !havaBranchEnd) || (haveBranchStart && havaBranchEnd)){//两个都存在，或者两个都不存在
@@ -737,13 +749,13 @@ WfPanel.prototype.doCheckBranchNode = function(cells){
 暂停流程测试
  */
 WfPanel.prototype.pauseWorkflowTest = function(evt){
-	
-	this.wfTestTimeOutList.map(v=>{
-		clearTimeout(v);
-	});
+	for(var i = 0 ; i < this.wfTestTimeOutList.length;++i){
+		clearTimeout(this.wfTestTimeOutList[i]);
+	}
 
-	let ceshiElement = document.getElementById('workflow-ceshiOrPause');
+	var ceshiElement = document.getElementById('workflow-ceshiOrPause');
 	ceshiElement.className = 'icon-workflow icon-workflow-ceshi';
+	ceshiElement.title = '继续';
 	ceshiElement.onclick = this.startAgainWorkflowTest.bind(this);
 }
 /**
@@ -752,6 +764,7 @@ WfPanel.prototype.pauseWorkflowTest = function(evt){
 WfPanel.prototype.startAgainWorkflowTest = function(evt){
 
 	evt.target.className = 'icon-workflow icon-workflow-zanting';
+	evt.target.title = '暂停测试';
 	evt.target.onclick = this.pauseWorkflowTest.bind(this);
 
 	var graph = this.editorUi.editor.graph;
@@ -762,19 +775,19 @@ WfPanel.prototype.startAgainWorkflowTest = function(evt){
 	var graphHeight = graph.minimumGraphSize.height;
 
 	var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
-	let testElts = document.getElementsByClassName('workfow-test');
+	var testElts = document.getElementsByClassName('workflow-test');
 
 	if(testElts){
-		for(let i = 0 ; i < testElts.length ; ++i){
+		for(var i = 0 ; i < testElts.length ; ++i){
 			if(testElts[i].workflowCusAttr){
-				let flagStr = testElts[i].workflowCusAttr;//startCellId_13,startPointIndex_2,edgeCellId_333
-				let startCell , pointIndex ,edgeCellId , nowEdge;
-				let flagArr = flagStr.split(',');
+				var flagStr = testElts[i].workflowCusAttr;//startCellId_13,startPointIndex_2,edgeCellId_333
+				var startCell , pointIndex ,edgeCellId , nowEdge;
+				var flagArr = flagStr.split(',');
 				
-				let cellId = flagArr[0].split('_')[1];
+				var cellId = flagArr[0].split('_')[1];
 				pointIndex = flagArr[1].split('_')[1];
 				edgeCellId = flagArr[2].split('_')[1];
-				for(let j = 0 ; j < allCells.length ; ++j){
+				for(var j = 0 ; j < allCells.length ; ++j){
 					if(!allCells[j].edge && allCells[j].id == cellId){
 						startCell = allCells[j];
 						// break;
@@ -783,11 +796,13 @@ WfPanel.prototype.startAgainWorkflowTest = function(evt){
 						nowEdge = allCells[j];
 					}
 				}
-				startCell.edges&&startCell.edges.map(v=>{
-					v.isTested = false;
-				});
+				if(startCell.edges){
+					for(var i = 0 ; i < startCell.edges.length;++i){
+						startCell.edges[i].isTested = false;
+					}
+				}
 				// this.workflowTestV2(startCell,Number(pointIndex))
-				let edgePoints = view.getState(nowEdge).absolutePoints;
+				var edgePoints = view.getState(nowEdge).absolutePoints;
 				this.startWorkflowTest(edgePoints,nowEdge,Number(pointIndex))
 			}
 		}
@@ -797,11 +812,10 @@ WfPanel.prototype.startAgainWorkflowTest = function(evt){
 流程测试
  */
 WfPanel.prototype.doWorkflowTest = function(evt){
-	let nowTringgerEle = evt?evt.target :  document.getElementById('workflow-ceshiOrPause');
+	this.workflowTestIsPassed = true;
+	var nowTringgerEle = evt?evt.target :  document.getElementById('workflow-ceshiOrPause');
 
 	// document.getElementById('workflow-ceshiOrPause').className = 'icon-workflow icon-workflow-zanting';
-	nowTringgerEle.className = 'icon-workflow icon-workflow-zanting';
-	nowTringgerEle.onclick = this.pauseWorkflowTest.bind(this);
 
 	var graph = this.editorUi.editor.graph;
 	var view = graph.view;
@@ -812,17 +826,16 @@ WfPanel.prototype.doWorkflowTest = function(evt){
 
 	var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
 
-	let res = this.doCheckBranchNode(allCells);
+	var res = this.doCheckBranchNode(allCells);
 	if(!res){
 		return;
 	}
 
-	this.createTestMask();
 	var allEdges = [];
 	var testWaysObj = {} //存放测试路径数据，有可能有多条路线
 	this.wfTestIsIng = true;
 	var theStartCell = null , haveAEndCell = false; //haveAEndCell : 是否有归档节点
-	for(let i = 0 , len = allCells.length; i < len ; ++i){
+	for(var i = 0 , len = allCells.length; i < len ; ++i){
 		if(allCells[i].nodeType == 0){
 			theStartCell = allCells[i] ;
 		}
@@ -838,17 +851,24 @@ WfPanel.prototype.doWorkflowTest = function(evt){
 			title: wfGetLabel(131329, "信息确认"),
 			content:'必须有一个创建节点！',
 			okText: wfGetLabel(83446, "确定"),
-			onOk:()=>{console.log('ok')},
+			onOk:function(){console.log('ok')},
 		});
+		this.openWorkflowTestPanel('NO_START_CELL');//打开详细信息面板
+		this.createTestMask();
 	}else{
 		if(haveAEndCell){
 			this.workflowTestV2(theStartCell);
+			this.createTestMask();
+			
+			nowTringgerEle.className = 'icon-workflow icon-workflow-zanting';
+			nowTringgerEle.title = '暂停测试';
+			nowTringgerEle.onclick = this.pauseWorkflowTest.bind(this);
 		}else{
 			wfModal.warning({
 				title: wfGetLabel(131329, "信息确认"),
 				content:'至少有一个归档节点！',
 				okText: wfGetLabel(83446, "确定"),
-				onOk:()=>{console.log('ok')},
+				onOk:function(){console.log('ok')},
 			});
 		}
 	}
@@ -881,38 +901,42 @@ WfPanel.prototype.wfTestIsIng = false;
  */
 WfPanel.prototype.wfTestTimeOutList = [];
 /**开始测试 */
-WfPanel.prototype.startWorkflowTest = function(beginPointArr=[],nowEdge,startPointIndex=0){
+WfPanel.prototype.startWorkflowTest = function(beginPointArr,nowEdge,startPointIndex){
+	startPointIndex = startPointIndex || 0;
 	var graph = this.editorUi.editor.graph;
 	var sb = this,secondIndex = startPointIndex;
-	let pointArr = beginPointArr.slice(startPointIndex);
+	var pointArr = beginPointArr.slice(startPointIndex);
 	if(pointArr.length > 0 && pointArr[0]){
 		var _container = document.getElementsByClassName('geBackgroundPage')[0];
-		let eltSpanElts = document.getElementsByClassName('workfow-test');
+		var eltSpanElts = document.getElementsByClassName('workflow-test');
 		var eltSpan,isExistSpan = false;
-		for(let i = 0 ; i < eltSpanElts.length ; ++i){
+		for(var i = 0 ; i < eltSpanElts.length ; ++i){
 			if(eltSpanElts[i].workflowCusAttr && 
-			eltSpanElts[i].workflowCusAttr == `startCellId_${nowEdge.source.id},startPointIndex_${startPointIndex},edgeCellId_${nowEdge.id}`){
+			eltSpanElts[i].workflowCusAttr == "startCellId_"+nowEdge.source.id+",startPointIndex_"+startPointIndex+",edgeCellId_"+nowEdge.id){
 				eltSpan = eltSpanElts[i];
-				beginPointArr.map((v,i)=>{
-					if((eltSpan.offsetLeft == v.x - 5)&&(eltSpan.offsetTop == v.y - 5)){
+				for(var i = 0 ; i < beginPointArr.length;++i){
+					if((eltSpan.offsetLeft == beginPointArr[i].x - 5)&&(eltSpan.offsetTop == beginPointArr[i].y - 5)){
 						secondIndex = i;
 					}
-				})
+				}
 				isExistSpan = true;
 				break;
 			}
 		}
 		if(!isExistSpan){
 			eltSpan = document.createElement('span');
-			eltSpan.className = `workfow-test`;
-			// eltSpan.className = 'workfow-test icon-coms-Reverse';
+			eltSpan.className = "workflow-test";
+			// eltSpan.className = 'workflow-test icon-coms-Reverse';
 			
 			eltSpan.style.left = beginPointArr[startPointIndex].x - 5 + 'px';
 			eltSpan.style.top = beginPointArr[startPointIndex].y - 5 + 'px';
 			_container.appendChild(eltSpan);
 		}
 		secondIndex ? pointArr = beginPointArr.slice(secondIndex) : '';
-		let transX=0 , transY=0 , timeout;
+		var transX=0 , transY=0 , timeout;
+		/**
+		换为es5 兼容ie
+		 */
 		for(let i = 0 , len = pointArr.length ; i < len ; ++i){
 			if(pointArr[i-1] || len==1){
 				let _transX=0 , _transY=0 , index = i , iconDrec = 'top';//iconDrec 图标的指向默认朝上,top|bottom|left|right
@@ -932,7 +956,7 @@ WfPanel.prototype.startWorkflowTest = function(beginPointArr=[],nowEdge,startPoi
 						iconDrec = 'left';
 					}
 				}
-				timeout = setTimeout(()=>{
+				timeout = setTimeout(function(){
 					eltSpan.workflowCusAttr = `startCellId_${nowEdge.source.id},startPointIndex_${i},edgeCellId_${nowEdge.id}`;
 					eltSpan.style.left = pointArr[i].x - 5 + 'px';
 					eltSpan.style.top = pointArr[i].y - 5 + 'px';
@@ -940,7 +964,7 @@ WfPanel.prototype.startWorkflowTest = function(beginPointArr=[],nowEdge,startPoi
 					// eltSpan.style.top = eltSpan.offsetTop + _transY + 'px';
 					if(index == pointArr.length -1){//当前运动路径最后一个点
 						clearTimeout(timeout);
-						let _time = setTimeout(()=>{
+						let _time = setTimeout(function(){
 							eltSpan && _container.removeChild(eltSpan);
 							clearTimeout(_time);
 							sb.workflowTestV2(nowEdge.target);
@@ -951,13 +975,16 @@ WfPanel.prototype.startWorkflowTest = function(beginPointArr=[],nowEdge,startPoi
 				sb.wfTestTimeOutList.push(timeout);
 			}
 		}
+		/**
+		换为es5 兼容ie
+		 */
 	}
 }
 /**
 流程测试 v2
  */
-WfPanel.prototype.workflowTestV2 = function(cellNode,startPointIndex=0){//传入从哪个节点开始  默认是从创建节点
-
+WfPanel.prototype.workflowTestV2 = function(cellNode,startPointIndex){//传入从哪个节点开始  默认是从创建节点
+	startPointIndex = startPointIndex || 0;
 	if(!this.wfTestIsIng){
 		return;
 	}
@@ -970,17 +997,17 @@ WfPanel.prototype.workflowTestV2 = function(cellNode,startPointIndex=0){//传入
 	测试结束
 	*/
 	var edges = null;
-	let haveExit = false ;
+	var haveExit = false ;
 	if(cellNode != null && cellNode.nodeType!=3 && cellNode.edges != null && cellNode.edges.length > 0){
 		edges = cellNode.edges;
-		edges.map(v=>{
-			if(v.source.id == cellNode.id ){
+		for(var i = 0 ; i < edges.length;++i){
+			if(edges[i].source.id == cellNode.id ){
 				haveExit = true;
-				let edgePoints = [];
+				var edgePoints = [];
 				model.beginUpdate();
 				try
 				{
-					var style = mxUtils.setStyle(model.getStyle(v), 'strokeColor', '#FFFF66');
+					var style = mxUtils.setStyle(model.getStyle(edges[i]), 'strokeColor', '#FFFF66');
 					// model.setStyle(v, style);
 					// v.setStyle(style);
 					// v.setAttribute('style',style);
@@ -988,18 +1015,18 @@ WfPanel.prototype.workflowTestV2 = function(cellNode,startPointIndex=0){//传入
 				finally
 				{
 					model.endUpdate();
-					edgePoints = view.getState(v).absolutePoints;
-					!v.isTested && this.startWorkflowTest(edgePoints,v,startPointIndex);
-					v.isTested = true;
+					edgePoints = view.getState(edges[i]).absolutePoints;
+					!edges[i].isTested && this.startWorkflowTest(edgePoints,edges[i],startPointIndex);
+					edges[i].isTested = true;
 				}
 			}
-		});
+		}
 		if(!haveExit){
-			let wfTestSpanElt = document.getElementsByClassName('workfow-test');
+			var wfTestSpanElt = document.getElementsByClassName('workflow-test');
 			if(wfTestSpanElt.length == 0){
 				this.stopWorkflowTest(1);
 			}
-			console.log(wfTestSpanElt,'workfow-test')
+			console.log(wfTestSpanElt,'workflow-test')
 		}
 	}
 	cellNode.nodeType == 3 ? haveExit = true : '';
@@ -1008,7 +1035,7 @@ WfPanel.prototype.workflowTestV2 = function(cellNode,startPointIndex=0){//传入
 /**
 停止流程测试
  */
-WfPanel.prototype.stopWorkflowTest = function(fromTest=0){
+WfPanel.prototype.stopWorkflowTest = function(fromTest){
 	var graph = this.editorUi.editor.graph;
 	var view = graph.view;
 	var startX = graph.minimumGraphSize.x;
@@ -1016,9 +1043,9 @@ WfPanel.prototype.stopWorkflowTest = function(fromTest=0){
 	var graphWidth = graph.minimumGraphSize.width;
 	var graphHeight = graph.minimumGraphSize.height;
 
-	this.wfTestTimeOutList.map(v=>{
-		clearTimeout(v);
-	});
+	for(var i = 0 ; i < this.wfTestTimeOutList.length;++i){
+		clearTimeout(this.wfTestTimeOutList[i]);
+	}
 	this.wfTestTimeOutList = [];
 	this.wfTestIsIng = false;
 
@@ -1026,23 +1053,24 @@ WfPanel.prototype.stopWorkflowTest = function(fromTest=0){
 	var allEdges = [];
 
 	var theStartCell = null;
-	for(let i = 0 , len = allCells.length; i < len ; ++i){
+	for(var i = 0 , len = allCells.length; i < len ; ++i){
 		if(allCells[i].edge){
 			allCells[i].isTested = false;
 		}
 	}
-	let wfTestSpanElt = document.getElementsByClassName('workfow-test');
-	for(let i = 0 ,len = wfTestSpanElt.length; i< len ; ++i){
+	var wfTestSpanElt = document.getElementsByClassName('workflow-test');
+	for(var i = 0 ,len = wfTestSpanElt.length; i< len ; ++i){
 		wfTestSpanElt[0].style.display = 'none';
 		wfTestSpanElt[0].parentNode.removeChild(wfTestSpanElt[0]);
 	}
 	this.hideWorkflowTestPanel(fromTest);//隐藏测试详细信息面板
 	// 清楚undolistener
 	this.editorUi.editor.setModified(false);
-	this.editorUi.editor.undoManager.clear();
+	// this.editorUi.editor.undoManager.clear();
 
-	let ceshiElement = document.getElementById('workflow-ceshiOrPause');
+	var ceshiElement = document.getElementById('workflow-ceshiOrPause');
 	ceshiElement.className = 'icon-workflow icon-workflow-ceshi';
+	ceshiElement.title = '开始测试';
 	ceshiElement.onclick = this.doWorkflowTest.bind(this);
 }
 /**
@@ -1050,12 +1078,15 @@ WfPanel.prototype.stopWorkflowTest = function(fromTest=0){
 */
 WfPanel.prototype.openWorkflowTestPanel = function(cellNode,isPassed,edges)
 {
+	
 	var wfTestPanel,vertSplit;
+	var wfDiagramContainer = this.editorUi.diagramContainer;
+
 	if(document.getElementById('workflow-test-detail-panel')){
 		wfTestPanel = document.getElementById('workflow-test-detail-panel');
 		wfTestPanel.style.bottom = '8px';
 	}else{
-		let elt = document.createElement('div');
+		var elt = document.createElement('div');
 		elt.id = 'workflow-test-detail-panel';
 		wfTestPanel = elt;
 		document.body.appendChild(wfTestPanel);
@@ -1065,10 +1096,12 @@ WfPanel.prototype.openWorkflowTestPanel = function(cellNode,isPassed,edges)
 		vertSplit = document.getElementById('test-panel-split');
 		vertSplit.style.bottom = wfTestPanel.clientHeight + 'px';
 	}else{
-		let elt = document.createElement('div');
+		var elt = document.createElement('div');
 		elt.id = 'test-panel-split';
 		elt.className = 'geVsplit';
 		vertSplit = elt;
+		vertSplit.style.bottom = wfTestPanel.clientHeight + 'px';
+		wfDiagramContainer.style.bottom = wfTestPanel.clientHeight + 10 + 'px';
 
 		document.body.appendChild(vertSplit);
 		
@@ -1076,15 +1109,21 @@ WfPanel.prototype.openWorkflowTestPanel = function(cellNode,isPassed,edges)
 		
 		workflowUi.addSplitHandler(vertSplit, false, 0, mxUtils.bind(workflowUi, function(value)
 		{
-			value<=8 ? value = 8 : '';
+			value<=0 ? value = 0 : '';
 			wfTestPanel.style.height = value + 'px';
-			wfTestPanel.style.bottom = '8px';
+			wfTestPanel.style.bottom = value<=8 ? '0px' : '8px';
 			vertSplit.style.bottom = value + 'px';
+			wfDiagramContainer.style.bottom = value<=8 ? '8px' : value+'px';
 		}));
 	}
 
 	wfTestPanel.style.width = workflowUi.wfNodeInfo.nodePanelHide ? '100%' :'calc(100% - 250px)';
-	this.writeWorkflowTestInfo(wfTestPanel,cellNode,isPassed,edges);
+	if(cellNode == 'NO_START_CELL'){
+		this.writeWorkflowTestInfo(wfTestPanel,cellNode);
+		return;
+	}else{
+		this.writeWorkflowTestInfo(wfTestPanel,cellNode,isPassed,edges);
+	}
 }
 /**
 	隐藏workflow test详细信息面板
@@ -1105,19 +1144,42 @@ WfPanel.prototype.hideWorkflowTestPanel = function(fromTest)
 		// this.container.removeChild(actionMask);
 		// document.body.removeChild(testMask);
 
-		let vertSplit = document.getElementById('test-panel-split');
-		vertSplit?vertSplit.style.bottom = '8px':'';
+		var vertSplit = document.getElementById('test-panel-split');
+		vertSplit?vertSplit.style.bottom = '0px':'';
 		wfTestPanel.style.bottom = - wfTestPanel.clientHeight+ 'px';
+		var wfDiagramContainer = this.editorUi.diagramContainer;
+		wfDiagramContainer.style.bottom = '8px';
 	}
 }
 /**
 	写入测试信息新进入面板
 */
+WfPanel.prototype.workflowTestIsPassed = true;
 WfPanel.prototype.writeWorkflowTestInfo = function(container,cellNode,isPassed,edges)
 {
+	var detailInfo = document.getElementById('workflow-test-detail-panel');
+	if(cellNode == 'NO_START_CELL'){//没有创建节点，做记录
+		var elP_split = document.createElement('p');
+		var elP_start = document.createElement('p');
+		var elP_err = document.createElement('p');
+		elP_split.className = 'wfTest-detail-item';
+		elP_start.className = 'wfTest-detail-item';
+		elP_err.className = 'wfTest-detail-item wfTest-item-wrong';
+		
+		elP_split.innerHTML = '[信息] ****************************************************************************************************************';
+		elP_start.innerHTML = '[信息] 工作流 开始检查';
+		elP_err.innerHTML = '[错误] 当前流程无创建节点';
+		container.appendChild(elP_split);
+		container.appendChild(elP_start);
+		container.appendChild(elP_err);
+
+		detailInfo.scrollTop = 10000;
+		return;
+	}
+	
 	if(cellNode.nodeType == 0){//创建节点 ：  需多绘制测试分界线
-		let elP_split = document.createElement('p');
-		let elP_start = document.createElement('p');
+		var elP_split = document.createElement('p');
+		var elP_start = document.createElement('p');
 		elP_split.className = 'wfTest-detail-item';
 		elP_start.className = 'wfTest-detail-item';
 		elP_split.innerHTML = '[信息] ****************************************************************************************************************';
@@ -1125,7 +1187,7 @@ WfPanel.prototype.writeWorkflowTestInfo = function(container,cellNode,isPassed,e
 		container.appendChild(elP_split);
 		container.appendChild(elP_start);
 	}
-	let nodeType = '',nodeAttriBute = '';
+	var nodeType = '',nodeAttriBute = '';
 	nodeType = 
 		cellNode.nodeType == 0 ? '创建' :
 		cellNode.nodeType == 1 ? '审批' :
@@ -1139,30 +1201,58 @@ WfPanel.prototype.writeWorkflowTestInfo = function(container,cellNode,isPassed,e
 		cellNode.nodeAttriBute == 4 ? '指定通过分支合并' :
 		cellNode.nodeAttriBute == 5 ? '比例合并' : '';
 
-	let elP_detail = document.createElement('p');
+	var elP_detail = document.createElement('p');
 	if(isPassed){
 		elP_detail.className = 'wfTest-detail-item';
-		elP_detail.innerHTML = `[信息] 节点：[${cellNode.value}] 基本信息：[节点名称：${cellNode.value}，节点类型：${nodeType}，节点属性：${nodeAttriBute}]`;
+		elP_detail.innerHTML = "[信息] 节点：["+cellNode.value+"] 基本信息：[节点名称："+cellNode.value+"，节点类型："+nodeType+"，节点属性："+nodeAttriBute+"]";
 	}else{
+		this.workflowTestIsPassed = false;
 		elP_detail.className = 'wfTest-detail-item wfTest-item-wrong';
-		elP_detail.innerHTML = `[错误] 节点：[${cellNode.value}] 没有出口`;
+		elP_detail.innerHTML = "[错误] 节点：["+cellNode.value+"] 没有出口";
 	}
 	
 	container.appendChild(elP_detail);
 	if(cellNode.nodeType == '1'){//审批节点应该包含退回出口
-		let haveBackPath = false;
-		edges.map(v=>{
-			if(v.isreject == 1){
+		var haveBackPath = false;
+		for(var i = 0 ; i < edges.length;++i){
+			if(edges[i].isreject == 1){
 				haveBackPath = true;
 			}
-		});
+		}
 		if(!haveBackPath){
-			let elP_warning = document.createElement('p');
+			var elP_warning = document.createElement('p');
 			elP_warning.className = 'wfTest-detail-item wfTest-item-warning';
-			elP_warning.innerHTML = `[警告] 节点：[${cellNode.value}] 审批节点应该包含退回出口`;
+			elP_warning.innerHTML = "[警告] 节点：["+cellNode.value+"] 审批节点应该包含退回出口";
 			container.appendChild(elP_warning);
 		}
 	}
+	if(cellNode.nodeAttriBute == 3 || cellNode.nodeAttriBute == 4 || cellNode.nodeAttriBute == 5){//合并节点
+		var toOneLinks = [];
+		for(var i = 0 ; i < edges.length;++i){
+			if(edges[i].target.id == cellNode.id){
+				toOneLinks.push(edges[i].id);
+			}
+		}
+		if(toOneLinks.length<=1){
+			var elP_warning = document.createElement('p');
+			elP_warning.className = 'wfTest-detail-item wfTest-item-warning';
+			elP_warning.innerHTML = "[警告] 节点：["+cellNode.value+"] 合并节点至少应该有两条或两条以上的入口";
+			container.appendChild(elP_warning);
+		}
+	}
+	if(cellNode.nodeType == '3'){//归档节点
+		var elP_warning = document.createElement('p');
+		if(this.workflowTestIsPassed){
+			elP_warning.className = 'wfTest-detail-item wfTest-item-success';
+			elP_warning.innerHTML = "[成功] 节点：["+cellNode.value+"] 此流向正常结束";
+		}else{
+			elP_warning.className = 'wfTest-detail-item wfTest-item-wrong';
+			elP_warning.innerHTML = "[失败] 节点：["+cellNode.value+"] 此流向测试异常";
+		}
+		
+		container.appendChild(elP_warning);
+	}
+	detailInfo.scrollTop = 10000;
 }
 /**
  * Hides the current tooltip.
@@ -1204,27 +1294,27 @@ WfPanel.prototype.addGeneralPalette = function(expand)
 {
 	var sb = this;
 	var lineTags = 'line lines connector connectors connection connections arrow arrows ';
-	let wfStrokeStyle = 'fillColor=#BFF3C3;strokeColor=#5ABD6B;resizable=0;';
+	var wfStrokeStyle = 'fillColor=#BFF3C3;strokeColor=#5ABD6B;resizable=0;';
 
 	var fns = [
 		this.createVertexTemplateEntry('shape=mxgraph.flowchart.terminator;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-ceshi"};'+wfStrokeStyle, 
-		 110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian','','0','0'),
+		 120, 80, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian','','0','0'),
 	 	// this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-ceshi"};'+wfStrokeStyle, 
 		//  110, 70, '创建人', '创建', null, null, 'rounded rect rectangle box','icon-workflow-chuangjian','','0'),
-	 	this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 110, 70, '处理', '处理', null, null,
+	 	this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 120, 80, '处理', '处理', null, null,
 		'rect rectangle box','icon-workflow-chuli','','2','0'),
-        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;'+wfStrokeStyle, 130, 80, '审批', '审批', null, null, 
+        this.createVertexTemplateEntry('rhombus;whiteSpace=wrap;html=1;'+wfStrokeStyle, 120, 80, '审批', '审批', null, null, 
         'diamond rhombus if condition decision conditional question test','icon-workflow-shenpi','','1','0'),
-        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha"};'+wfStrokeStyle, 110, 70,`分叉`, `分叉`,
+        this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fencha"};'+wfStrokeStyle, 120, 80,"分叉", "分叉",
          null, null, 'rect rectangle box','icon-workflow-fencha','oneToBranch','2','1'),
         this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-fenchazhongjiandian"};'+wfStrokeStyle,
-		 110, 70, '分叉中间点', '分叉中间点', null, null, 'rect rectangle box','icon-workflow-fenchazhongjiandian','branchCenter','2','2'),
+		 120, 80, '分叉中间点', '分叉中间点', null, null, 'rect rectangle box','icon-workflow-fenchazhongjiandian','branchCenter','2','2'),
         this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;icons={"left":"icon-workflow-hebing"};'+wfStrokeStyle,
-		 110, 70, '合并节点', '合并节点', null, null, 'rect rectangle box','icon-workflow-hebing','branchToOne','2','3'),
+		 120, 80, '合并节点', '合并节点', null, null, 'rect rectangle box','icon-workflow-hebing','branchToOne','2','3'),
 	 	// this.createVertexTemplateEntry('rounded=1;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-guidang"};'+wfStrokeStyle,
 		//  110, 70, '归档', '归档', null, null, 'rounded rect rectangle box','icon-workflow-guidang','','3'),
 	 	this.createVertexTemplateEntry('shape=mxgraph.flowchart.terminator;whiteSpace=wrap;html=1;icons={"right":"icon-workflow-guidang"};'+wfStrokeStyle,
-		 110, 70, '归档', '归档', null, null, 'rounded rect rectangle box','icon-workflow-guidang','','3','0'),
+		 120, 80, '归档', '归档', null, null, 'rounded rect rectangle box','icon-workflow-guidang','','3','0'),
 	 	// Explicit strokecolor/fillcolor=none is a workaround to maintain transparent background regardless of current style
             // this.createVertexTemplateEntry('text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;',
             //     40, 20, 'Text', '', null, null, 'text textbox textarea label','icon-workflow-fencha'),
@@ -1375,7 +1465,7 @@ WfPanel.prototype.addFoldingHandler = function(title, content, funct)
  * Creates a drop handler for inserting the given cells.
  */
 //  ('line;strokeWidth=2;html=1;', 160, 10, '', 'Horizontal Line')
-WfPanel.prototype.createVertexTemplateEntry = function(style, width, height, value, title, showLabel, showTitle, tags,icon,nodeType='',cellType='',nodeAttriBute='0')
+WfPanel.prototype.createVertexTemplateEntry = function(style, width, height, value, title, showLabel, showTitle, tags,icon,nodeType,cellType,nodeAttriBute)
 {
 	/**
 	nodeType:为了区分分叉节点类型
@@ -1391,7 +1481,7 @@ WfPanel.prototype.createVertexTemplateEntry = function(style, width, height, val
 /**
  * Creates a drop handler for inserting the given cells.
  */
-WfPanel.prototype.createVertexTemplate = function(style, width, height, value, title, showLabel, showTitle, allowCellsInserted,icon,nodeType='',cellType='',nodeAttriBute)
+WfPanel.prototype.createVertexTemplate = function(style, width, height, value, title, showLabel, showTitle, allowCellsInserted,icon,nodeType,cellType,nodeAttriBute)
 {
 	var cells = [new mxCell((value != null) ? value : '', new mxGeometry(0, 0, width, height), style , nodeType)];
 	cells[0].vertex = true;
@@ -1540,13 +1630,14 @@ WfPanel.prototype.createThumb = function(cells, width, height, parent, title, sh
 /**
  * Creates and returns a new palette item for the given image.
  */
-WfPanel.prototype.createItem = function(cells, title, showLabel, showTitle, width, height, allowCellsInserted , icon='' , isGroup = false)
+WfPanel.prototype.createItem = function(cells, title, showLabel, showTitle, width, height, allowCellsInserted , icon , isGroup)
 {
 	// var elt = document.createElement('a');
 	// elt.setAttribute('href', 'javascript:void(0);');
 	// elt.className = 'geItem';
 	var elt = document.createElement('span');
-	elt.className = `${icon} icon-workflow`;
+	elt.className = icon+" icon-workflow";
+	elt.title = title;
 
 	// elt.style.overflow = 'hidden';
 	// var border = (mxClient.IS_QUIRKS) ? 8 + 2 * this.thumbPadding : 2 * this.thumbBorder;
@@ -1604,7 +1695,7 @@ WfPanel.prototype.createItem = function(cells, title, showLabel, showTitle, widt
 /**
  * Creates a drag source for the given element.
  */
-WfPanel.prototype.createDragSource = function(elt, dropHandler, preview, cells, bounds ,isGroup=false)
+WfPanel.prototype.createDragSource = function(elt, dropHandler, preview, cells, bounds ,isGroup)
 {
 	// Checks if the cells contain any vertices
 	var ui = this.editorUi;

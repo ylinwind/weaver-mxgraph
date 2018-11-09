@@ -5,6 +5,7 @@
     <title>流程图设计器</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<!-- <script type="text/javascript" src="/cloudstore/resource/pc/bowser/bowser.min.js"></script> -->
 	<script type="text/javascript">
 		// Parses URL parameters. Supported parameters are:
 		// - lang=xy: Specifies the language of the user interface.
@@ -37,6 +38,23 @@
 		// Default resources are included in grapheditor resources
 		mxLoadResources = false;
 	</script>
+	
+	<!-- 流程图组件所需资源 -->
+	  
+	<link rel="stylesheet" href="/cloudstore/resource/pc/com/v1/index.min.css?v=20180320">
+    <link rel="stylesheet" href="/cloudstore/resource/pc/com/v1/ecCom.min.css?v=20180320">
+    <script type="text/javascript" src="/cloudstore/resource/pc/jquery/jquery-1.8.3.min.js?v=20180320"></script>
+    <!-- <style>#container,body,html{height:100%;overflow:hidden}</style> -->
+	<!-- <link href="/spa/workflow/static4engine/engine.css?9ed4d7a8023a5ff85b59" rel="stylesheet"> -->
+	  
+    
+	<!-- isFromWfForm  是否是来自前台表单-->
+</head>
+<body class="geEditor">
+<!-- 流程图组件所需资源 -->
+	<div id="container"></div>
+	<!-- <script src="./js/browser.min.js"></script> -->
+	<script type="text/javascript" src="/cloudstore/resource/pc/polyfill/polyfill.min.js"></script>
 	<script type="text/javascript" src="js/Init.js"></script>
 	<script type="text/javascript" src="deflate/pako.min.js"></script>
 	<script type="text/javascript" src="deflate/base64.js"></script>
@@ -45,7 +63,7 @@
 	<script type="text/javascript" src="js/mxClient.js"></script>
 	<script type="text/javascript" src="js/EditorUi.js"></script>
 	<script type="text/javascript" src="js/Editor.js"></script>
-	<script type="text/javascript" src="js/Sidebar.js"></script>
+	<!-- <script type="text/javascript" src="js/Sidebar.js"></script> -->
 	<script type="text/javascript" src="js/Graph.js"></script>
 	<script type="text/javascript" src="js/Format.js"></script>
 	<script type="text/javascript" src="js/Shapes.js"></script>
@@ -56,21 +74,6 @@
 	<script type="text/javascript" src="js/wfEditor.js"></script>
 	<script type="text/javascript" src="js/NodeInfo.js"></script>
 	<script type="text/javascript" src="js/wfGroups.js"></script>
-	<!-- 流程图组件所需资源 -->
-	  
-	<link rel="stylesheet" href="/cloudstore/resource/pc/com/v1/index.min.css?v=20180320">
-    <link rel="stylesheet" href="/cloudstore/resource/pc/com/v1/ecCom.min.css?v=20180320">
-    <script type="text/javascript" src="/cloudstore/resource/pc/jquery/jquery-1.8.3.min.js?v=20180320"></script>
-    <!-- <style>#container,body,html{height:100%;overflow:hidden}</style> -->
-	<!-- <link href="/spa/workflow/static4engine/engine.css?9ed4d7a8023a5ff85b59" rel="stylesheet"> -->
-	  
-    
-	<!--  -->
-</head>
-<body class="geEditor">
-<!-- 流程图组件所需资源 -->
-	<div id="container"></div>
-	<script type="text/javascript" src="/cloudstore/resource/pc/polyfill/polyfill.min.js"></script>
     <!-- Polyfills -->
     <!--[if lt IE 10]>
     <script type="text/javascript" src="/cloudstore/resource/pc/shim/shim.min.js"></script>
@@ -93,21 +96,6 @@
     <!-- mobx -->
     <script type="text/javascript" src="/cloudstore/resource/pc/mobx-3.1.16/mobx.umd.js"></script>
     <script type="text/javascript" src="/spa/coms/index.mobx.js?v=20180320"></script>
-	<!-- 集成中心-SAP集成-->
-	<!-- <link rel="stylesheet" href="/spa/sapIntegration/index_sapBrowse.css">
-	<script type="text/javascript" src="/spa/sapIntegration/index_sapBrowse.js"></script>
-	<link rel="stylesheet" href="/spa/sapIntegration/index.css">
-	<script type="text/javascript" src="/spa/sapIntegration/index.js"></script>  -->
-	
-	<!-- 门户主题 -->
-	<!-- <link rel="stylesheet" type="text/css" href="/spa/theme/static4engine/engine.css">
-	<script type="text/javascript" src="/spa/theme/static4engine/engine.js"></script> -->
-	<!-- 引擎入口 -->
-	<!-- <script type="text/javascript" src="/spa/main/engine.js?v=20171214"></script> -->
-	
-	<!-- <script type="text/javascript" src="/spa/workflow/global.js"></script> -->
-	<!-- <script type="text/javascript" src="/spa/workflow/static4engine/engine.js"></script>
-	<script type="text/javascript" src="/spa/workflow/static4engine/engine4single.js"></script> -->
 <!--  -->
 	<link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
 	<link rel="stylesheet" type="text/css" href="styles/style-icon.css">
@@ -154,15 +142,18 @@
 					var graph = sb.editor.graph;
 					var nodePanelHide = sb.wfNodeInfo.nodePanelHide;
 					var tipInfoDisplay = sb.wfEditor.tipInfoDisplay;
+					var wfActionsHeight = sb.wfEditor.container.clientHeight;
+					sb.wfPanelContainer.style.top = wfActionsHeight + 'px';
+
 					if(nodePanelHide){
-						graph.pageFormat.width = window.innerWidth-2;
+						graph.pageFormat.width =  sb.isFromWfForm ? (window.innerWidth-20) : (window.innerWidth-2);
 					}else{
-						graph.pageFormat.width = window.innerWidth - 250;
+						graph.pageFormat.width = sb.isFromWfForm ? (window.innerWidth-20) : (window.innerWidth - 258);
 					}
 					if(tipInfoDisplay == 'block'){
-						graph.pageFormat.height = window.innerHeight - 150;
+						graph.pageFormat.height = sb.isFromWfForm ? (window.innerHeight-22) : (window.innerHeight - wfActionsHeight - 20);
 					}else{
-						graph.pageFormat.height = window.innerHeight - 115;
+						graph.pageFormat.height = sb.isFromWfForm ? (window.innerHeight-22) : (window.innerHeight - wfActionsHeight - 20);
 					}
 					
 					graph.refresh();
@@ -195,9 +186,14 @@
 			});
 		})();
 		function getXmlAndDatas(sb){
-			let workflowId = window.urlParams.workflowId || '';
+			// var workflowId = window.urlParams.workflowId || '';
+			var postParams = [],paramsArr = [];
+			for(var key in window.urlParams){
+				paramsArr.push(key+"="+window.urlParams[key]);
+			}
+			postParams = paramsArr.join('&');
 			message.loading('正在加载数据，请稍候...',0);
-			mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, `workflowId=${workflowId}`, function(req)
+			mxUtils.post(WORKFLOW_GETDETAILINFO_PATH, postParams, function(req)
 			{
 				var _request = req.request;
 				var _response = _request.response;
@@ -209,18 +205,17 @@
 						content:'当前用户未登陆，请先登陆！',
 						okText: wfGetLabel(83446, "确定"),
 						cancelText: wfGetLabel(31129, "取消"),
-						onOk:()=>{
+						onOk:function(){
 							window.location.href = '/wui/index.html';
 						},
-						onCancel:()=>{}
+						onCancel:function(){}
 					});
 				}
 				else{
 					workflowUiIsLoaded = true;
 					sb.editor.graph.workflowDetailDatas = _json;
 				
-					sb.editor.graph.model.clear();
-					mxUtils.post(WORKFLOW_GETWFINFO_PATH, `workflowId=${workflowId}`, function(req)
+					mxUtils.post(WORKFLOW_GETWFINFO_PATH, postParams, function(req)
 					{
 						message.destroy();
 						var request = req.request;
@@ -228,15 +223,16 @@
 						var json = JSON.parse(response);
 						var doc = mxUtils.parseXml(json.xml);
 
+						sb.editor.graph.model.clear();
 						var allCells = sb.editor.graph.importGraphModel(doc.documentElement);
 						var existParams = {nodeIds:[],linkIds:[]};//初始节点出口值；
-						allCells.map(v=>{
-							if(v && v.nodeId){
-								existParams['nodeIds'].push(v.nodeId);
-							}else if(v && v.linkId){
-								existParams['linkIds'].push(v.linkId);
+						for(var i = 0 ; i<allCells.length;++i){
+							if(allCells[i] && allCells[i].nodeId){
+								existParams['nodeIds'].push(allCells[i].nodeId);
+							}else if(allCells[i] && allCells[i].linkId){
+								existParams['linkIds'].push(allCells[i].linkId);
 							}
-						});
+						}
 						sb.editor.graph.existParams = existParams;
 						
 						sb.wfGroups.init(_json.groupDetail);

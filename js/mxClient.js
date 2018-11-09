@@ -7205,9 +7205,9 @@ var mxUtils =
 	 * of this page format are 826x1169 pixels.
 	 */
 	// PAGE_FORMAT_A4_PORTRAIT: new mxRectangle(0, 0, 827, 1169),
-	PAGE_FORMAT_A4_PORTRAIT: new mxRectangle(0, 0, window.innerWidth - 266, window.innerHeight - 168),
+	PAGE_FORMAT_A4_PORTRAIT: new mxRectangle(0, 0, window.urlParams.isFromWfForm=='true'? window.innerWidth-20 : window.innerWidth - 266, window.urlParams.isFromWfForm=='true'? window.innerHeight-22 : window.innerHeight - 170),
 	// 设置默认流程图大小
-	PAGE_FORMAT_WORKFLOW_PORTRAIT: new mxRectangle(0, 0, window.innerWidth - 266, window.innerHeight - 168),
+	PAGE_FORMAT_WORKFLOW_PORTRAIT: new mxRectangle(0, 0, window.urlParams.isFromWfForm=='true'? window.innerWidth-20 : window.innerWidth - 266, window.urlParams.isFromWfForm=='true'? window.innerHeight-22 : window.innerHeight - 170),
 
 	/**
 	 * Variable: PAGE_FORMAT_A4_PORTRAIT
@@ -11443,10 +11443,10 @@ var mxClipboard =
 		if (!mxClipboard.isEmpty())
 		{
 			cells = graph.getImportableCells(mxClipboard.getCells());
-			cells.map((v,i)=>{
-				v.nodeId ? cells[i].nodeId = '' : '';
-				v.linkId ? cells[i].linkId = '' : '';
-			});
+			for(var i = 0 ; i<cells.length;++i){
+				cells[i].nodeId ? cells[i].nodeId = '' : '';
+				cells[i].linkId ? cells[i].linkId = '' : '';
+			}
 			var delta = mxClipboard.insertCount * mxClipboard.STEPSIZE;
 			var parent = graph.getDefaultParent();
 			cells = graph.importCells(cells, delta, delta, parent);
@@ -13323,7 +13323,7 @@ mxDragSource.prototype.mouseDown = function(evt)
 
 	console.log('down--- sider')
 	var coundAddCell = true;
-	for(let i = 0 , len = allCells.length ; i<len ; ++i){
+	for(var i = 0 , len = allCells.length ; i<len ; ++i){
 		// if(evt.currentTarget != null && evt.currentTarget.nodeType == 0 &&  allCells[i].nodeType == 0){
 		if(evt.currentTarget != null && evt.currentTarget.className.indexOf('chuangjian') != -1 &&  allCells[i].nodeType == 0){
 			coundAddCell = false;
@@ -13348,7 +13348,7 @@ mxDragSource.prototype.mouseDown = function(evt)
 			title: wfGetLabel(131329, "信息确认"),
 			content:'只能有一个创建节点！',
 			okText: wfGetLabel(83446, "确定"),
-			onOk:()=>{console.log('ok')},
+			onOk:function(){console.log('ok')},
 		});
 		// mxUtils.alert('只能有一个创建节点！');
 	}
@@ -19654,7 +19654,7 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 		css += 'border:1px solid ' + s.fontBorderColor + ';';
 	}
 	
-	let nameStr = str.split('_split_')[0];
+	var nameStr = str.split('_split_')[0];
 	var val = str.split('_split_')[0];
 	// 节点图标
 	var nodeIcons;
@@ -19707,17 +19707,17 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 		}
 		else
 		{
-			let span = document.createElement('span');
+			var span = document.createElement('span');
 			span.className = 'wf-nodeVal';
 			span.innerHTML = val
 			div.appendChild(span);
 		}
 		// append 节点图标
-		let iconDiv = document.createElement('div');
-		iconDiv.className = `nodeIcon`;
+		var iconDiv = document.createElement('div');
+		iconDiv.className = "nodeIcon";
 		if(nodeIcons&&nodeIcons.hasOwnProperty('left')){
-			let span = document.createElement('span');
-			span.className = `${nodeIcons.left} nodeIconLeft`;
+			var span = document.createElement('span');
+			span.className = nodeIcons.left+" nodeIconLeft";
 			if (shape=='rhombus')
 			{
 				span.style.marginLeft = '10px';
@@ -19725,8 +19725,8 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 			iconDiv.appendChild(span);
 		}
 		if(nodeIcons&&nodeIcons.hasOwnProperty('right')){
-			let span = document.createElement('span');
-			span.className = `${nodeIcons.right} nodeIconRight`;
+			var span = document.createElement('span');
+			span.className = nodeIcons.right+" nodeIconRight";
 			if (shape=='rhombus')
 			{
 				span.style.marginRight = '10px';
@@ -19734,8 +19734,8 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 			iconDiv.appendChild(span);
 		}
 		if(nodeIcons&&nodeIcons.hasOwnProperty('nodeAfter')){
-			let span = document.createElement('span');
-			span.className = `${nodeIcons.nodeAfter} nodeAfter`;
+			var span = document.createElement('span');
+			span.className = nodeIcons.nodeAfter+" nodeAfter";
 			if (shape=='rhombus')
 			{
 				span.style.marginRight = '35px';
@@ -19743,8 +19743,8 @@ mxSvgCanvas2D.prototype.createDiv = function(str, align, valign, style, overflow
 			iconDiv.appendChild(span);
 		}
 		if(nodeIcons&&nodeIcons.hasOwnProperty('beforeNode')){
-			let span = document.createElement('span');
-			span.className = `${nodeIcons.beforeNode} beforeNode`;
+			var span = document.createElement('span');
+			span.className = nodeIcons.beforeNode+" beforeNode";
 			if (shape=='rhombus')
 			{
 				span.style.marginRight = '5px';
@@ -21975,7 +21975,7 @@ mxGuide.prototype.move = function(bounds, delta, gridEnabled)
 					
 					// Makes sure to use either VML or SVG shapes in order to implement
 					// event-transparency on the background area of the rectangle since
-					// HTML shapes do not let mouseevents through even when transparent
+					// HTML shapes do not var mouseevents through even when transparent
 					this.guideX.dialect = (this.graph.dialect != mxConstants.DIALECT_SVG) ?
 						mxConstants.DIALECT_VML : mxConstants.DIALECT_SVG;
 					this.guideX.pointerEvents = false;
@@ -22022,7 +22022,7 @@ mxGuide.prototype.move = function(bounds, delta, gridEnabled)
 					
 					// Makes sure to use either VML or SVG shapes in order to implement
 					// event-transparency on the background area of the rectangle since
-					// HTML shapes do not let mouseevents through even when transparent
+					// HTML shapes do not var mouseevents through even when transparent
 					this.guideY.dialect = (this.graph.dialect != mxConstants.DIALECT_SVG) ?
 						mxConstants.DIALECT_VML : mxConstants.DIALECT_SVG;
 					this.guideY.pointerEvents = false;
@@ -42013,7 +42013,7 @@ mxCellAttributeChange.prototype.execute = function()
  * geometry - Optional <mxGeometry> that specifies the geometry.
  * style - Optional formatted string that defines the style.
  */
-function mxCell(value, geometry, style,nodeType='')
+function mxCell(value, geometry, style,nodeType)
 {
 	this.value = value;
 	this.setGeometry(geometry);
@@ -42198,9 +42198,9 @@ mxCell.prototype.valueChanged = function(newValue)
 		// mxUtils.alert('节点名称不能为空！');
 		wfModal.warning({
 			title: wfGetLabel(131329, "信息确认"),
-			content:`${this.isGroupArea?'分组名称不能为空！':'节点名称不能为空！'}`,
+			content:this.isGroupArea?'分组名称不能为空！':'节点名称不能为空！',
 			okText: wfGetLabel(83446, "确定"),
-			onOk:()=>{console.log('ok')},
+			onOk:function(){console.log('ok')},
 		});
 		this.setValue(previous);
 	}
@@ -46468,13 +46468,13 @@ mxGraphSelectionModel.prototype.removeCell = function(cell)
  */
 mxGraphSelectionModel.prototype.removeCells = function(cells)
 {
-	const allCells = this.graph.model.cells;
+	var  allCells = this.graph.model.cells;
 
 	if (cells != null)
 	{
 		var tmp = [];
 		
-		for (let i = 0; i < cells.length; i++)
+		for (var i = 0; i < cells.length; i++)
 		{
 			if (this.isSelected(cells[i]))
 			{
@@ -47344,6 +47344,86 @@ mxCellEditor.prototype.startEditing = function(cell, trigger)
 {
 	this.stopEditing(true);
 	
+	
+	var workflowCellEditor ;
+	if(document.getElementById('workflow-cellEditor')){
+		workflowCellEditor = document.getElementById('workflow-cellEditor');
+		workflowCellEditor.style.display = 'block';
+	}else{
+		workflowCellEditor = document.createElement('div');
+		workflowCellEditor.id = 'workflow-cellEditor';
+	}
+	if (this.graph.tooltipHandler != null)
+	{
+		this.graph.tooltipHandler.hideTooltip();
+	}
+	var state = this.graph.getView().getState(cell);
+	var model = this.graph.model;
+
+	if (state != null){
+		// if (!this.autoSize || (state.style[mxConstants.STYLE_OVERFLOW] == 'fill'))
+		// {
+			workflowCellEditor.style.position = ((this.isLegacyEditor())) ? 'absolute' : 'relative';
+			var scale = this.graph.getView().scale;
+			// Specifies the bounds of the editor box
+			this.bounds = this.getEditorBounds(state);
+			var isRhombus = cell.style.indexOf('rhombus') > -1 ? true : false , widthRatio = isRhombus ? 0.5 : 0.8 ;
+			workflowCellEditor.style.width = Math.round((this.bounds.width / scale)* widthRatio ) + 'px';
+			state.cell.isGroupArea ? workflowCellEditor.style.width = Math.round((this.bounds.width-32/ scale)) + 'px' : '';//区域分组单独处理
+
+			// workflowCellEditor.style.height = Math.round(this.bounds.height / scale) + 'px';
+			workflowCellEditor.style.height = Math.round(30*scale) + 'px';
+			
+			// FIXME: Offset when scaled
+			if (document.documentMode == 8 || mxClient.IS_QUIRKS)
+			{
+				workflowCellEditor.style.left = Math.round(this.bounds.x + 11 + (isRhombus?17:0)) + 'px';
+				workflowCellEditor.style.top = Math.round(this.bounds.y + 4 + + (isRhombus?9:0)) + 'px';
+			}
+			else
+			{
+				workflowCellEditor.style.left = state.cell.isGroupArea ? Math.max(0, Math.round(this.bounds.x + 12 + (isRhombus?17:0))) + 'px' : 
+												Math.max(0, Math.round(this.bounds.x + 12 + (isRhombus?17:0))) + 'px' ;
+
+				workflowCellEditor.style.top = state.cell.isGroupArea ? Math.max(0, Math.round(state.origin.y - 40 + (isRhombus?9:0))) + 'px' : 
+												 Math.max(0, Math.round(this.bounds.y + 5 + (isRhombus?9:0))) + 'px';
+			}
+		// }
+		this.graph.container.appendChild(workflowCellEditor);
+		var WeaInput = window.ecCom.WeaInput , sb = this;
+
+		window.setTimeout(function(){
+			ReactDOM.render(
+				React.createElement(WeaInput,
+				{
+					viewAttr:3,
+					value:cell.value || '',
+					inputType:"multilang",
+					isBase64:true,
+					layout:document.getElementById("workflow-cellEditor"),
+					onChange:function(val){
+						model.beginUpdate();
+						try
+						{
+							model.setValue(cell,val);
+						}
+						finally
+						{
+							model.endUpdate();
+						}
+					},
+					onBlur:function(v){ //多语言模式下 onChange会触发onBlur
+						// cell.value = v;
+						// workflowCellEditor.style.display = 'none';
+					}
+				}),
+				document.getElementById("workflow-cellEditor")
+			);
+		},0);
+	}
+
+
+	/*
 	// Creates new textarea instance
 	if (this.textarea == null)
 	{
@@ -47463,6 +47543,7 @@ mxCellEditor.prototype.startEditing = function(cell, trigger)
 			// ignore
 		}
 	}
+	*/
 };
 
 /**
@@ -48217,24 +48298,36 @@ mxCellRenderer.prototype.createLabel = function(state, value)
 			{
 				if (this.isLabelEvent(state, evt))
 				{
-					graph.fireMouseEvent(mxEvent.MOUSE_DOWN, new mxMouseEvent(evt, state));
-					forceGetCell = graph.dialect != mxConstants.DIALECT_SVG &&
-						mxEvent.getSource(evt).nodeName == 'IMG';
+					if(window.urlParams.isFromWfForm=='true' || workflowUi.wfEditor.wfTestIsIng){
+						return;
+					}else{
+						graph.fireMouseEvent(mxEvent.MOUSE_DOWN, new mxMouseEvent(evt, state));
+						forceGetCell = graph.dialect != mxConstants.DIALECT_SVG &&
+							mxEvent.getSource(evt).nodeName == 'IMG';
+					}
 				}
 			}),
 			mxUtils.bind(this, function(evt)
 			{
 				if (this.isLabelEvent(state, evt))
 				{
-					graph.fireMouseEvent(mxEvent.MOUSE_MOVE, new mxMouseEvent(evt, getState(evt)));
+					if(window.urlParams.isFromWfForm=='true' || workflowUi.wfEditor.wfTestIsIng){
+						return;
+					}else{
+						graph.fireMouseEvent(mxEvent.MOUSE_MOVE, new mxMouseEvent(evt, getState(evt)));
+					}
 				}
 			}),
 			mxUtils.bind(this, function(evt)
 			{
 				if (this.isLabelEvent(state, evt))
 				{
-					graph.fireMouseEvent(mxEvent.MOUSE_UP, new mxMouseEvent(evt, getState(evt)));
-					forceGetCell = false;
+					if(window.urlParams.isFromWfForm=='true' || workflowUi.wfEditor.wfTestIsIng){
+						return;
+					}else{
+						graph.fireMouseEvent(mxEvent.MOUSE_UP, new mxMouseEvent(evt, getState(evt)));
+						forceGetCell = false;
+					}
 				}
 			})
 		);
@@ -48610,21 +48703,34 @@ mxCellRenderer.prototype.installListeners = function(state)
 		{
 			if (this.isShapeEvent(state, evt))
 			{
-				graph.fireMouseEvent(mxEvent.MOUSE_DOWN, new mxMouseEvent(evt, state));
+				if(window.urlParams.isFromWfForm=='true' || workflowUi.wfEditor.wfTestIsIng){
+					return;
+				}else{
+					graph.fireMouseEvent(mxEvent.MOUSE_DOWN, new mxMouseEvent(evt, state));
+				}
 			}
 		}),
 		mxUtils.bind(this, function(evt)
 		{
 			if (this.isShapeEvent(state, evt))
 			{
-				graph.fireMouseEvent(mxEvent.MOUSE_MOVE, new mxMouseEvent(evt, getState(evt)));
+				if(!state.cell.edge && (window.urlParams.isFromWfForm=='true' || workflowUi.wfEditor.wfTestIsIng)){
+					return;
+				}else{
+					graph.fireMouseEvent(mxEvent.MOUSE_MOVE, new mxMouseEvent(evt, getState(evt)));
+				}
+				
 			}
 		}),
 		mxUtils.bind(this, function(evt)
 		{
 			if (this.isShapeEvent(state, evt))
 			{
-				graph.fireMouseEvent(mxEvent.MOUSE_UP, new mxMouseEvent(evt, getState(evt)));
+				if(window.urlParams.isFromWfForm=='true' || workflowUi.wfEditor.wfTestIsIng){
+					return;
+				}else{
+					graph.fireMouseEvent(mxEvent.MOUSE_UP, new mxMouseEvent(evt, getState(evt)));
+				}
 			}
 		})
 	);
@@ -53607,21 +53713,33 @@ mxGraphView.prototype.installListeners = function()
 			if (this.isContainerEvent(evt) && ((!mxClient.IS_IE && !mxClient.IS_IE11 && !mxClient.IS_GC &&
 				!mxClient.IS_OP && !mxClient.IS_SF) || !this.isScrollEvent(evt)))
 			{
-				graph.fireMouseEvent(mxEvent.MOUSE_DOWN, new mxMouseEvent(evt));
+				if(window.urlParams.isFromWfForm=='true' || workflowUi.wfEditor.wfTestIsIng){
+					return;
+				}else{
+					graph.fireMouseEvent(mxEvent.MOUSE_DOWN, new mxMouseEvent(evt));
+				}
 			}
 		}),
 		mxUtils.bind(this, function(evt)
 		{
 			if (this.isContainerEvent(evt))
 			{
-				graph.fireMouseEvent(mxEvent.MOUSE_MOVE, new mxMouseEvent(evt));
+				if(window.urlParams.isFromWfForm=='true' || workflowUi.wfEditor.wfTestIsIng){
+					return;
+				}else{
+					graph.fireMouseEvent(mxEvent.MOUSE_MOVE, new mxMouseEvent(evt));
+				}
 			}
 		}),
 		mxUtils.bind(this, function(evt)
 		{
 			if (this.isContainerEvent(evt))
 			{
-				graph.fireMouseEvent(mxEvent.MOUSE_UP, new mxMouseEvent(evt));
+				if(window.urlParams.isFromWfForm=='true' || workflowUi.wfEditor.wfTestIsIng){
+					return;
+				}else{
+					graph.fireMouseEvent(mxEvent.MOUSE_UP, new mxMouseEvent(evt));
+				}
 			}
 		}));
 		
@@ -55989,7 +56107,7 @@ mxGraph.prototype.getSelectionCellsForChanges = function(changes)
  * 
  * changes - Array that contains the individual changes.
  */
-mxGraph.prototype.graphModelChanged = function(changes,isFromGroup=false)
+mxGraph.prototype.graphModelChanged = function(changes,isFromGroup)
 {
 	for (var i = 0; i < changes.length; i++)
 	{
@@ -57085,7 +57203,7 @@ mxGraph.prototype.fit = function(border, keepOrigin, margin, enabled, ignoreWidt
  * a <size> event after updating the clipping region of the SVG element in
  * SVG-bases browsers.
  */
-mxGraph.prototype.sizeDidChange = function(isFromGroup = false)
+mxGraph.prototype.sizeDidChange = function(isFromGroup)
 {
 
 	var bounds = this.getGraphBounds();
@@ -63699,6 +63817,7 @@ mxGraph.prototype.isGridEnabled = function()
  *
  * 是否显示标尺
  */
+// mxGraph.prototype.ruleEnabled = true;
 mxGraph.prototype.isRuleEnabled = function()
 {
 	return this.ruleEnabled;
@@ -69536,7 +69655,7 @@ mxGraphHandler.prototype.previewColor = 'black';
  * 
  * Specifies if the graph container should be used for preview. If this is used
  * then drop target detection relies entirely on <mxGraph.getCellAt> because
- * the HTML preview does not "let events through". Default is false.
+ * the HTML preview does not "var events through". Default is false.
  */
 mxGraphHandler.prototype.htmlPreview = false;
 
@@ -69721,6 +69840,9 @@ mxGraphHandler.prototype.mouseDown = function(sender, me)
 	// if(me.evt.target.className == "workflow-col-group"){
 	// 	return;
 	// }
+	if(document.getElementById("workflow-cellEditor")){
+		document.getElementById("workflow-cellEditor").style.display = 'none';
+	}
 	console.log('down')
 	if (!me.isConsumed() && this.isEnabled() && this.graph.isEnabled() &&
 		me.getState() != null && !mxEvent.isMultiTouchEvent(me.getEvent()))
@@ -69926,7 +70048,7 @@ mxGraphHandler.prototype.createPreviewShape = function(bounds)
 	{
 		// Makes sure to use either VML or SVG shapes in order to implement
 		// event-transparency on the background area of the rectangle since
-		// HTML shapes do not let mouseevents through even when transparent
+		// HTML shapes do not var mouseevents through even when transparent
 		shape.dialect = (this.graph.dialect != mxConstants.DIALECT_SVG) ?
 			mxConstants.DIALECT_VML : mxConstants.DIALECT_SVG;
 		shape.init(this.graph.getView().getOverlayPane());
@@ -70038,6 +70160,9 @@ mxGraphHandler.prototype.roundLength = function(length)
  */
 mxGraphHandler.prototype.mouseMove = function(sender, me)
 {
+	// me.graphX < 20 ? me.graphX = 20 : '';
+	// me.graphY < 20 ? me.graphY = 20 : '';
+
 	var graph = this.graph;
 
 	if (!me.isConsumed() && graph.isMouseDown && this.cell != null &&
@@ -70051,8 +70176,16 @@ mxGraphHandler.prototype.mouseMove = function(sender, me)
 		}
 		
 		var delta = this.getDelta(me);
+		// delta.x < 20 ? delta.x = 20 : '' ;
+		// delta.y < 20 ? delta.y = 20 : '' ;
 		var dx = delta.x;
 		var dy = delta.y;
+		// if(this.bounds.x + dx < 20 ){
+		// 	delta.x = this.bounds.x - 20;
+		// }
+		// if(this.bounds.y + dy < 20 ){
+		// 	delta.y = this.bounds.y - 20;
+		// }
 		var tol = graph.tolerance;
 
 		if (this.shape != null || Math.abs(dx) > tol || Math.abs(dy) > tol)
@@ -70184,7 +70317,7 @@ mxGraphHandler.prototype.mouseMove = function(sender, me)
 		
 		if (cursor == null && graph.isEnabled() && graph.isCellMovable(me.getCell()))
 		{
-			let cell = me.getCell();
+			var cell = me.getCell();
 			if (graph.getModel().isEdge(me.getCell()))
 			{
 				if(cell.isRowGroup){
@@ -70227,6 +70360,12 @@ mxGraphHandler.prototype.updatePreviewShape = function()
 	{
 		this.shape.bounds = new mxRectangle(Math.round(this.pBounds.x + this.currentDx - this.graph.panDx),
 				Math.round(this.pBounds.y + this.currentDy - this.graph.panDy), this.pBounds.width, this.pBounds.height);
+		if(this.shape.bounds.x < 50){
+			this.shape.bounds.x = 50;
+		}
+		if(this.shape.bounds.y < 50){
+			this.shape.bounds.y = 50;
+		}
 		this.shape.redraw();
 	}
 };
@@ -70293,10 +70432,20 @@ mxGraphHandler.prototype.mouseUp = function(sender, me)
 							this.moveCells(this.cells, dx, dy, clone, this.target, me.getEvent());
 						}
 					}else{
-						let newCells = [];
-						for(let i = 0 ; i < this.cells.length ; ++i){
+						var newCells = [];
+						for(var i = 0 ; i < this.cells.length ; ++i){
 							if(!this.cells[i].isColGroup && !this.cells[i].isRowGroup){
 								newCells.push(this.cells[i]);
+							}
+						}
+						for(var i = 0 ; i < newCells.length; ++i){
+							if(newCells[i].geometry.x + dx < 50){
+								// newCells[i].geometry.x = 20;
+								dx = 50 - newCells[i].geometry.x;
+							}
+							if(newCells[i].geometry.y + dy < 50){
+								// newCells[i].geometry.y = 20;
+								dy = 50 - newCells[i].geometry.y;
 							}
 						}
 						this.moveCells(newCells, dx, dy, clone, this.target, me.getEvent());
@@ -71886,12 +72035,12 @@ mxSelectionCellsHandler.prototype.mouseUp = function(sender, me)
 		{
 			if((handler.isSource == false && handler.isTarget == false) || handler.currentTerminalState != null || handler.sizers != null){
 				if(handler.state.cell.edge && (handler.isSource || handler.isTarget) ){
-					wfModal.warning({
-						title: wfGetLabel(131329, "信息确认"),
-						content:'修改目标节点会改变出口条件等设置信息！',
-						okText: wfGetLabel(83446, "确定"),
-						onOk:()=>{},
-					});
+					// wfModal.warning({
+					// 	title: wfGetLabel(131329, "信息确认"),
+					// 	content:'修改目标节点会改变出口条件等设置信息！',
+					// 	okText: wfGetLabel(83446, "确定"),
+					// 	onOk:function(){},
+					// });
 				}
 				handler.mouseUp.apply(handler, args);
 			}
@@ -73645,9 +73794,10 @@ mxConnectionHandler.prototype.mouseUp = function(sender, me)
 					title: wfGetLabel(131329, "信息确认"),
 					content:'起点不能是归档节点！',
 					okText: wfGetLabel(83446, "确定"),
-					onOk:()=>{},
+					onOk:function(){},
 				});
 			}else{
+				var sb = this;
 				if(target != null ){
 					// if(source.branchType == 'branchCenter' && !(target.branchType == 'branchCenter' || target.branchType == 'branchToOne')){
 					if(source.nodeAttriBute == '2' && !(target.nodeAttriBute == '2' || (target.nodeAttriBute == '3' || target.nodeAttriBute == '4' || target.nodeAttriBute == '5'))){
@@ -73655,7 +73805,7 @@ mxConnectionHandler.prototype.mouseUp = function(sender, me)
 							title: wfGetLabel(131329, "信息确认"),
 							content:'分叉中间点只能指向本分支中间节点或合并节点！',
 							okText: wfGetLabel(83446, "确定"),
-							onOk:()=>{console.log('ok')},
+							onOk:function(){console.log('ok')},
 						});
 					// }else if(target.branchType == 'branchCenter' && source.branchType == 'branchToOne'){
 					}else if(target.nodeAttriBute == '2' && (source.nodeAttriBute == '3' || source.nodeAttriBute == '4' || source.nodeAttriBute == '5' )){
@@ -73663,7 +73813,7 @@ mxConnectionHandler.prototype.mouseUp = function(sender, me)
 							title: wfGetLabel(131329, "信息确认"),
 							content:'合并节点不能指向分叉中间点！',
 							okText: wfGetLabel(83446, "确定"),
-							onOk:()=>{console.log('ok')},
+							onOk:function(){console.log('ok')},
 						});
 					// }else if(target.branchType == 'branchToOne' && source.branchType == 'oneToBranch'){
 					}else if((target.nodeAttriBute == '3' || target.nodeAttriBute == '4' || target.nodeAttriBute == '5') && source.nodeAttriBute == '1'){
@@ -73671,8 +73821,26 @@ mxConnectionHandler.prototype.mouseUp = function(sender, me)
 							title: wfGetLabel(131329, "信息确认"),
 							content:'起始节点不能指向合并节点！',
 							okText: wfGetLabel(83446, "确定"),
-							onOk:()=>{console.log('ok')},
+							onOk:function(){console.log('ok')},
 						});
+					// }else if((target.nodeAttriBute == '2') && (source.nodeType == 0)){
+					}else if((target.nodeAttriBute == '2') && (source.nodeAttriBute != 1)){
+						wfModal.warning({
+							title: wfGetLabel(131329, "信息确认"),
+							content:'分叉中间点的起始节点和结束节点不能为一般节点！',
+							okText: wfGetLabel(83446, "确定"),
+							onOk:function(){},
+						});
+					}else if(target.id == source.id){
+						wfModal.confirm({
+							title: wfGetLabel(131329, "信息确认"),
+							content:'确定要添加指向本身的出口？',
+							okText: wfGetLabel(83446, "确定"),
+							cancelText: wfGetLabel(31129, "取消"),
+							onOk:function(){},
+							onCancel:function(){workflowUi.actions.get('undo').funct();}
+						});
+						this.connect(source, target, me.getEvent(), me.getCell());
 					}else{
 						this.connect(source, target, me.getEvent(), me.getCell());
 					}
@@ -76396,8 +76564,8 @@ mxVertexHandler.prototype.resizeVertex = function(me)
 		new mxPoint(0, 0), this.isConstrainedEvent(me),
 		this.isCenteredEvent(this.state, me));
 	
-	let minWidth = this.state.cell.isHelpfulText? 80 : 150;
-	let minHeight = this.state.cell.isHelpfulText? 40 : 100;
+	var minWidth = this.state.cell.isHelpfulText? 80 : 150;
+	var minHeight = this.state.cell.isHelpfulText? 40 : 100;
 	this.unscaledBounds.width<minWidth ? this.unscaledBounds.width = minWidth :'';
 	this.unscaledBounds.height<minHeight ? this.unscaledBounds.height = minHeight :'';
 	// Keeps vertex within maximum graph or parent bounds
@@ -77126,7 +77294,7 @@ mxVertexHandler.prototype.redrawHandles = function()
 	var tol = this.tolerance;
 	this.horizontalOffset = 0;
 	this.verticalOffset = 0;
-	
+	var s = this.bounds;
 
 
 	if (this.sizers != null && this.sizers.length > 0 && this.sizers[0] != null)
@@ -77390,7 +77558,7 @@ mxVertexHandler.prototype.drawPreview = function()
 		this.preview.redraw();
 	}
 	
-	let s = this.bounds;
+	var s = this.bounds;
 	s.x = s.x - 5;
 	s.y = s.y - 5;
 	s.width = s.width + 10;
@@ -79075,7 +79243,26 @@ mxEdgeHandler.prototype.mouseUp = function(sender, me)
 							
 							edge = clone;
 						}
-						
+						if(edge.linkId && this.isTarget && terminal.id != edge.target.id){
+							wfModal.confirm({
+								title: wfGetLabel(131329, "信息确认"),
+								content:"确定要将出口："+edge.value+"的目标节点从"+edge.target.value+"改成"+terminal.value+"吗？",
+								okText: wfGetLabel(83446, "确定"),
+								cancelText: wfGetLabel(31129, "取消"),
+								onOk:function(){},
+								onCancel:function(){workflowUi.actions.get('undo').funct();}
+							});	
+						}	
+						if(edge.linkId && this.isSource && terminal.id != edge.source.id){
+							wfModal.confirm({
+								title: wfGetLabel(131329, "信息确认"),
+								content:"修改源节点，会清除原有的生成编号、出口条件、附加规则及出口提示信息等设置，确定要修改吗？",
+								okText: wfGetLabel(83446, "确定"),
+								cancelText: wfGetLabel(31129, "取消"),
+								onOk:function(){},
+								onCancel:function(){workflowUi.actions.get('undo').funct();}
+							});	
+						}					
 						edge = this.connect(edge, terminal, this.isSource, clone, me);
 					}
 					finally
@@ -80632,7 +80819,12 @@ function mxKeyHandler(graph, target)
 		
 		this.keydownHandler = mxUtils.bind(this, function(evt)
 		{
-			this.keyDown(evt);
+			if(evt.target.className.indexOf('ant-input') > -1){
+				evt.stopPropagation();
+			}else{
+				this.keyDown(evt);
+			}
+			
 		});
 
 		// Installs the keystroke listener in the target
@@ -81278,7 +81470,7 @@ mxTooltipHandler.prototype.hideTooltip = function()
 mxTooltipHandler.prototype.show = function(tip, x, y,state)
 {
 	if(state.cell.edge){
-		tip = state.cell.linkConditionInfo ? `${state.cell.value}[${state.cell.linkConditionInfo}]` : state.cell.value;//出口条件
+		tip = state.cell.linkConditionInfo ? state.cell.value+"["+state.cell.linkConditionInfo+"]" : state.cell.value;//出口条件
 	}
 	if (!this.destroyed && tip != null && tip.length > 0)
 	{

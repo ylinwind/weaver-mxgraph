@@ -1657,10 +1657,10 @@ Graph.prototype.getPageLayout = function()
 		var h = Math.floor(bounds.height / this.view.scale);
 		
 		// 追加对比分组的位置
-		let colGroups = workflowUi.wfGroups&&workflowUi.wfGroups.colGroups;//对比 w
-		let rowGroups = workflowUi.wfGroups&&workflowUi.wfGroups.rowGroups; //对比 h
-		let colLast = colGroups[colGroups.length-1];
-		let rowLast = rowGroups[rowGroups.length-1];
+		var colGroups = workflowUi.wfGroups&&workflowUi.wfGroups.colGroups;//对比 w
+		var rowGroups = workflowUi.wfGroups&&workflowUi.wfGroups.rowGroups; //对比 h
+		var colLast = colGroups[colGroups.length-1];
+		var rowLast = rowGroups[rowGroups.length-1];
 		w = (x + w) > (colLast?colLast.position.left:0) ? (x + w) : (colLast?colLast.position.left:0);
 		h = (y + h) > (rowLast?rowLast.position.top :0) ? (y + h) : (rowLast?rowLast.position.top :0);
 		
@@ -6802,7 +6802,7 @@ if (typeof mxVertexHandler != 'undefined')
 		mxCellEditor.prototype.startEditing = function(cell, trigger)
 		{
 			mxCellEditorStartEditing.apply(this, arguments);
-			
+			/*
 			// Overrides class in case of HTML content to add
 			// dashed borders for divs and table cells
 			var state = this.graph.view.getState(cell);
@@ -6852,6 +6852,7 @@ if (typeof mxVertexHandler != 'undefined')
 				this.textarea.style.outline = 'none';
 				this.textarea.style.border = '';
 			}
+			*/
 		}
 
 		/**

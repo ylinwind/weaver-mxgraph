@@ -919,7 +919,7 @@ Sidebar.prototype.addGeneralPalette = function(expand)
 {
 	var sb = this;
 	var lineTags = 'line lines connector connectors connection connections arrow arrows ';
-	let wfStrokeStyle = 'fillColor=#BFF3C3;strokeColor=#5ABD6B;';
+	var wfStrokeStyle = 'fillColor=#BFF3C3;strokeColor=#5ABD6B;';
 
 	var fns = [
 	 	this.createVertexTemplateEntry('rounded=0;whiteSpace=wrap;html=1;'+wfStrokeStyle, 120, 60, '', 'Rectangle', null, null, 'rect rectangle box'),

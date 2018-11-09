@@ -67,7 +67,7 @@ Actions.prototype.init = function()
 	this.addAction('saveAs...', function() { ui.saveFile(true); }, null, null, Editor.ctrlKey + '+Shift+S').isEnabled = isGraphEnabled;
 	this.addAction('export...', function() { 
 		// ui.showDialog(new ExportDialog(ui).container, 300, 230, true, true); 
-		let exportDialog = new ExportDialog(ui);
+		var exportDialog = new ExportDialog(ui);
 		var s = Math.max(0, parseFloat(100) || 100) / 100;
 		var b = Math.max(0, parseInt(1));
 		var bg = graph.background;
@@ -211,7 +211,7 @@ Actions.prototype.init = function()
 				content:'确定要删除吗？',
 				okText: wfGetLabel(83446, "确定"),
 				cancelText: wfGetLabel(31129, "取消"),
-				onOk:()=>{
+				onOk:function(){
 					var parents = graph.model.getParents(cells);
 					graph.removeCells(cells, includeEdges);
 
@@ -220,19 +220,24 @@ Actions.prototype.init = function()
 					var graphWidth = graph.minimumGraphSize.width;
 					var graphHeight = graph.minimumGraphSize.height;
 					var allCells = graph.getAllCells(startX,startY,graphWidth,graphHeight);
-					let delLinkIds = [];
-					cells.map(v=>{
-						if(v.edge){
-							delLinkIds.push(v.id);
+					var delLinkIds = [];
+					for(var i = 0 ; i < cells.length;++i){
+						if(cells[i].edge){
+							delLinkIds.push(cells[i].id);
 						}
-					})
-					allCells.map((v,i)=>{
-						if(v.targrtBranchValue){//合并节点---含有指定通过分支值
-							let links = v.targrtBranchValue.split(',');
-							links = links.filter(c=>delLinkIds.indexOf(c)<0);
-							allCells[i].targrtBranchValue = links.join(',');
+					}
+					for(var j = 0;j<allCells.length;++j)
+					{
+						if(allCells[j].targrtBranchValue){//合并节点---含有指定通过分支值
+							var links = allCells[j].targrtBranchValue.split(',') , _links=[];
+							for(var k = 0;k<links.length;++k){
+								if(delLinkIds.indexOf(links[k])<0){
+									_links.push(links[k]);
+								}
+							}
+							allCells[j].targrtBranchValue = _links.join(',');
 						}
-					});
+					}
 					// Selects parents for easier editing of groups
 					if (parents != null)
 					{
@@ -251,7 +256,7 @@ Actions.prototype.init = function()
 						graph.setSelectionCells(select);
 					}
 				},
-				onCancel:()=>{},
+				onCancel:function(){},
 			});
 		}
 	};

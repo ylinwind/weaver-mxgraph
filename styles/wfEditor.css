@@ -13,9 +13,13 @@
 .wfPanelContainer{
    position: absolute; 
    background: #f1f3fa;
+   z-index: 3;
+}
+.wfPanelContainer .geDiagramBackdrop{
+    background: #fff;
 }
 /*  */
-.workfow-test [class^="icon-"],.workfow-test[class*=" icon-"]{
+.workflow-test [class^="icon-"],.workflow-test[class*=" icon-"]{
     font-family: icon-coms!important;
     speak: none;
     font-style: normal;
@@ -34,18 +38,25 @@
 .wfEditorContainer{
     width: calc( 100% - 240px);
     background: #F9F9F9;
-    height: 150px;
+    /* height: 150px; */
     overflow: auto;
     position: relative;
+    padding-bottom: 5px;
 }
 .wfEditorContainer .icon-workflow{
     display: inline-block;
     vertical-align: middle;
     font-size: 20px;
-    padding: 15px;
+    padding: 12px;
+    margin: 0 2px;
 }
 .wfEditorContainer .icon-workflow:hover{
     cursor: pointer;
+    background: #E6E6E6;
+    border-radius: 5px;
+}
+/* 网格，标尺选中样式 */
+.wfEditorContainer .workflowIcon-is-clicked{
     background: #E6E6E6;
     border-radius: 5px;
 }
@@ -161,12 +172,15 @@
     position: relative;
     top: 20px;
 }
+.nodeIcon .icon-workflow-caozuoqian , .nodeIcon .icon-workflow-caozuohou{
+    font-size: 16px;
+}
 /* wfNodeInfoContainer */
 .wfNodeInfoContainer{
     position: absolute;
     background: #fff;
     right: 0px;
-    z-index: 1;
+    z-index: 10;
     top: 0px;
     width: 240px;
     bottom: 0px;
@@ -236,12 +250,12 @@
     vertical-align: middle;
 }
 /* 折叠 收缩按钮 */
-.nodeInfo-panel-folder{
+#nodeInfo-panel-folder{
     position: absolute;
-    left: 0;
+    left: -1px;
     top: 50%;
     /* bottom: 0; */
-    width: 15px;
+    width: 17px;
     height: 60px;
     /* border: 1px solid #B2B2B2; */
     line-height: 50px;
@@ -404,7 +418,7 @@
 }
 
 /* 流程测试 */
-.workfow-test{
+.workflow-test{
     display: inline-block;
     width: 10px;
     height: 10px;
@@ -413,6 +427,7 @@
     background: rgb(197, 72, 72);
     border-radius: 50%;
     position: absolute;
+    z-index: 10;
     transition: all .5s;
 }
 .icon-coms-Reverse{
@@ -439,6 +454,9 @@
 #workflow-test-detail-panel .wfTest-item-wrong{
     color: red;
 }
+#workflow-test-detail-panel .wfTest-item-success{
+    color: green;
+}
 #workflow-test-detail-panel .wfTest-item-warning{
     color: #3B99FC;
 }
@@ -459,7 +477,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    z-index: 10;
+    z-index: 2;
     /* background: rgba(0,0,0,.1); */
 }
 #test-action-mask{

@@ -19,7 +19,8 @@ groups:[{
     ...
 }]
  */
-wfGroups.prototype.init = function(groupsParams={}){
+wfGroups.prototype.init = function(groupsParams){
+    groupsParams = groupsParams || {};
     this.rowGroups = groupsParams.row || [];
     this.colGroups = groupsParams.col || [];
     this.refresh();
@@ -28,9 +29,9 @@ wfGroups.prototype.init = function(groupsParams={}){
 /**
 *
 */
-wfGroups.prototype.refresh = function(modelChange = false){
+wfGroups.prototype.refresh = function(modelChange){
     var graph = this.editorUi.editor.graph;
-    let scale = graph.view.scale;
+    var scale = graph.view.scale;
     var minimumGraphSize = graph.minimumGraphSize;
     // if(graph.isRuleEnabled()){//开启了标尺
     //     this.container.style.top = 20 + 'px';
@@ -51,13 +52,13 @@ wfGroups.prototype.refresh = function(modelChange = false){
 /**
 *添加横向分组
  */
-wfGroups.prototype.addRowGroup = function(rowObj = {}){
-    let newTopPosition = 0;
-    this.rowGroups.map(v=>{
-        if(v.position.top && v.position.top > newTopPosition){
-            newTopPosition = v.position.top;
+wfGroups.prototype.addRowGroup = function(rowObj){
+    var newTopPosition = 0;
+    for(var i = 0 ; i < this.rowGroups.length ; ++i){
+        if(this.rowGroups[i].position.top && this.rowGroups[i].position.top > newTopPosition){
+            newTopPosition = this.rowGroups[i].position.top;
         }
-    });
+    }
     newTopPosition += 150;
     rowObj['position']['top'] = newTopPosition;
     this.rowGroups.push(rowObj);
@@ -66,13 +67,13 @@ wfGroups.prototype.addRowGroup = function(rowObj = {}){
 /**
 *添加纵向分组
  */
-wfGroups.prototype.addColGroup = function(colObj = {}){
-    let newLeftPosition = 0;
-    this.colGroups.map(v=>{
-        if(v.position.left && v.position.left > newLeftPosition){
-            newLeftPosition = v.position.left;
+wfGroups.prototype.addColGroup = function(colObj){
+    var newLeftPosition = 0;
+    for(var i = 0 ; i < this.colGroups.length ; ++i){
+        if(this.colGroups[i].position.left && this.colGroups[i].position.left > newLeftPosition){
+            newLeftPosition = this.colGroups[i].position.left;
         }
-    });
+    }
     newLeftPosition += 150;
     colObj['position']['left'] = newLeftPosition;
     this.colGroups.push(colObj);
@@ -82,31 +83,31 @@ wfGroups.prototype.addColGroup = function(colObj = {}){
 *绘制分组
  */
 wfGroups.prototype.paintGroups = function(){
-    this.colGroups.map((v,i)=>{
-        let elt = this.createGroupElement(v,i);
-        let groupPanel = this.createGroupPanelElement(v,i);
+    for(var i = 0 ; i < this.colGroups.length ; ++i){
+        var elt = this.createGroupElement(this.colGroups[i],i);
+        var groupPanel = this.createGroupPanelElement(this.colGroups[i],i);
         this.container.appendChild(groupPanel);
         this.container.appendChild(elt);
-    });
-    this.rowGroups.map((v,i)=>{
-        let elt = this.createGroupElement(v,i);
-        let groupPanel = this.createGroupPanelElement(v,i);
+    }
+    for(var i = 0 ; i < this.rowGroups.length ; ++i){
+        var elt = this.createGroupElement(this.rowGroups[i],i);
+        var groupPanel = this.createGroupPanelElement(this.rowGroups[i],i);
         this.container.appendChild(groupPanel);
         this.container.appendChild(elt);
-    });
+    }
 }
 /**
 *创建分组元素
  */
 wfGroups.prototype.createGroupElement = function(item,index){
     var graph = this.editorUi.editor.graph;
-    let scale = graph.view.scale;
+    var scale = graph.view.scale;
     if(item == null){
         return;
     }
     var element = document.createElement('p');
     item.type == 'col' ? element.className = 'workflow-col-group' : element.className = 'workflow-row-group';
-    for(let key in item['position']){
+    for(var key in item['position']){
         element.style[key] = item['position'][key]*scale + 'px';
     }
     this.groupDragAction(element,item.type,index);
@@ -118,11 +119,11 @@ wfGroups.prototype.createGroupElement = function(item,index){
 */
 wfGroups.prototype.createGroupPanelElement = function(item,index){
     var graph = this.editorUi.editor.graph;
-    let scale = graph.view.scale;
+    var scale = graph.view.scale;
     if(item == null){
         return;
     }
-    let groupArea,groupItem;
+    var groupArea,groupItem;
     if(item.type == 'row'){
         if(document.getElementById('col-group-panel-area')){
             groupArea = document.getElementById('col-group-panel-area');
@@ -151,21 +152,21 @@ wfGroups.prototype.createGroupPanelElement = function(item,index){
 * ×-anticon anticon-cross
 */
 wfGroups.prototype.createGroupPanelItem = function(item,index,scale){
-    let groupItem = document.createElement('div');
-    let infoArea = document.createElement('div');
-    let actionArea = document.createElement('div');
-    let inputName = document.createElement('input');
+    var groupItem = document.createElement('div');
+    var infoArea = document.createElement('div');
+    var actionArea = document.createElement('div');
+    var inputName = document.createElement('input');
     inputName.className = 'group-item-input';
     var sb = this;
     inputName.onblur = function(e){
         this.style.display = 'none';
-        let val = e.target.value;
+        var val = e.target.value;
         if(val.trim() == ''){
             wfModal.warning({
                 title: wfGetLabel(131329, "信息确认"),
                 content:'分组名称不能为空',
                 okText: wfGetLabel(83446, "确定"),
-                onOk:()=>{
+                onOk:function(){
                     e.target.value = item.type=='col'?sb.colGroups[index].value : sb.rowGroups[index].value;
                 },
             });
@@ -175,15 +176,15 @@ wfGroups.prototype.createGroupPanelItem = function(item,index,scale){
         sb.refresh();
     }
 
-    let actions = ['icon-coms-Last-step','icon-coms-Next-step','anticon anticon-cross'];
-    actions.map((v,i)=>{
-        let actionItem = document.createElement('span');
-        actionItem.className = `${v} action-item`;
-        actionItem = this.groupPanelActionEvent(actionItem,v,index,item);
+    var actions = ['icon-coms-Last-step','icon-coms-Next-step','anticon anticon-cross'];
+    for(var i = 0 ; i < actions.length;++i){
+        var actionItem = document.createElement('span');
+        actionItem.className = actions[i]+" action-item";
+        actionItem = this.groupPanelActionEvent(actionItem,actions[i],index,item);
         actionArea.appendChild(actionItem);
-    })
+    }
 
-    groupItem.className = `${item.type}-group-item`;
+    groupItem.className = item.type+"-group-item";
     // item.type=='col' ? groupItem.style.width = (item.panelWidth || 150) + 'px':
     //                     groupItem.style.width = (item.panelWidth || 150) + 'px';
     groupItem.style.width = (item.panelWidth || 150) + 'px';
@@ -191,17 +192,17 @@ wfGroups.prototype.createGroupPanelItem = function(item,index,scale){
     infoArea.className = 'group-item-info';
     infoArea.innerHTML = item.value;
     if(scale<1){
-        actionArea.style.transform = `scale(${scale})`;
-        actionArea.style.transformOrigin = `center top`;
+        actionArea.style.transform = "scale("+scale+")";
+        actionArea.style.transformOrigin = "center top";
         actionArea.style.position = 'absolute';
         actionArea.style.right = '0';
 
-        infoArea.style.transform = `scale(${scale})`;
-        infoArea.style.transformOrigin = `center top`;
+        infoArea.style.transform = "scale("+scale+")";
+        infoArea.style.transformOrigin = "center top";
     }
     infoArea.title = item.value;
     infoArea.ondblclick = function(e){
-        let input = e.target.childNodes[1];
+        var input = e.target.childNodes[1];
         input.style.display = 'inline';
         input.value = item.value
         input.focus();
@@ -210,14 +211,14 @@ wfGroups.prototype.createGroupPanelItem = function(item,index,scale){
     groupItem.appendChild(infoArea);
     groupItem.appendChild(actionArea);
     // groupItem.style.zoom = scale;
-    // groupItem.style.transform = `scale(${scale})`;
+    // groupItem.style.transform = "scale("+scale+")";
     return groupItem;
 }
 /**
 *分组事件 拖拽
 *
  */
-wfGroups.prototype.groupDragAction = function(element,direction = 'col',index){
+wfGroups.prototype.groupDragAction = function(element,direction,index){
 	var mouseDownX,mouseDownY,initX,initY,flag = false;
     var sb = this;
 
@@ -232,38 +233,38 @@ wfGroups.prototype.groupDragAction = function(element,direction = 'col',index){
 		initY = element.offsetTop;
 
 		document.onmousemove = function(ev) {
-            let graph = sb.editorUi.editor.graph;
-            let scale = graph.view.scale;
-			let groupMinWidth = 150*scale, groupMinHeight = 100*scale;
+            var graph = sb.editorUi.editor.graph;
+            var scale = graph.view.scale;
+			var groupMinWidth = 150*scale, groupMinHeight = 100*scale;
             
 			var mouseMoveX = ev.pageX,mouseMoveY = ev.pageY;
             if(direction == 'col'){
-                let left = parseInt(mouseMoveX) - parseInt(mouseDownX) + parseInt(initX);
+                var left = parseInt(mouseMoveX) - parseInt(mouseDownX) + parseInt(initX);
 
-                let _groups = sb.colGroups;
-                let leftNum = left - sb.colGroups[index].position.left*scale;
-                let numVal = _groups[index].panelWidth*scale + leftNum;
+                var _groups = sb.colGroups;
+                var leftNum = left - sb.colGroups[index].position.left*scale;
+                var numVal = _groups[index].panelWidth*scale + leftNum;
                 numVal <= groupMinWidth ? leftNum = 0 : '';
-                _groups.map((v,i)=>{
-                    if(i>=index && v.type == 'col'){//在之后的分组位置需变化
-                        _groups[i].position.left = v.position.left + (leftNum/scale);
+                for(var i = 0 ; i < _groups.length;++i){
+                    if(i>=index && _groups[i].type == 'col'){//在之后的分组位置需变化
+                        _groups[i].position.left = _groups[i].position.left + (leftNum/scale);
                         i==index ? _groups[i].panelWidth = _groups[index].panelWidth + (leftNum/scale) : '';
                     }
-                });
+                }
                 sb.colGroups = _groups;
             }else{
-                let top = parseInt(mouseMoveY) - parseInt(mouseDownY) + parseInt(initY);
+                var top = parseInt(mouseMoveY) - parseInt(mouseDownY) + parseInt(initY);
 
-                let _groups = sb.rowGroups;
-                let topNum = top - sb.rowGroups[index].position.top*scale;
-                let numVal = _groups[index].panelWidth*scale + topNum;
+                var _groups = sb.rowGroups;
+                var topNum = top - sb.rowGroups[index].position.top*scale;
+                var numVal = _groups[index].panelWidth*scale + topNum;
                 numVal <= groupMinHeight ? topNum = 0 : '';
-                _groups.map((v,i)=>{
-                    if(i>=index && v.type == 'row'){
-                        _groups[i].position.top = v.position.top + (topNum/scale);
+                for(var i = 0 ; i < _groups.length;++i){
+                    if(i>=index && _groups[i].type == 'row'){
+                        _groups[i].position.top = _groups[i].position.top + (topNum/scale);
                         i == index ? _groups[i].panelWidth = _groups[i].panelWidth + (topNum/scale) : '';
                     }
-                });
+                }
                 sb.rowGroups = _groups;
             }
             sb.refresh();
@@ -288,7 +289,7 @@ wfGroups.prototype.groupPanelActionEvent = function(elt,item,groupIndex,groupIte
             if(groupIndex == 0){ 
                 return;
             }else{
-                let _groups = groupItem.type=='col'?sb.colGroups:sb.rowGroups;
+                var _groups = groupItem.type=='col'?sb.colGroups:sb.rowGroups;
                 _groups.splice(groupIndex,1);
                 groupItem.type=='col'?groupItem.position.left -= _groups[groupIndex-1].panelWidth:
                                        groupItem.position.top -= _groups[groupIndex-1].panelWidth;
@@ -301,7 +302,7 @@ wfGroups.prototype.groupPanelActionEvent = function(elt,item,groupIndex,groupIte
         }
     }else if(item.indexOf('Next') != -1){//向后 ->
         elt.onclick = function(){
-            let _groups = groupItem.type=='col'?sb.colGroups:sb.rowGroups;
+            var _groups = groupItem.type=='col'?sb.colGroups:sb.rowGroups;
             if(groupIndex == _groups.length - 1){
                 return;
             }else{
@@ -316,15 +317,15 @@ wfGroups.prototype.groupPanelActionEvent = function(elt,item,groupIndex,groupIte
         }
     }else{//删除 ×
         elt.onclick = function(){
-            let _groups = groupItem.type=='col'?sb.colGroups:sb.rowGroups;
+            var _groups = groupItem.type=='col'?sb.colGroups:sb.rowGroups;
             _groups.splice(groupIndex,1);
-            _groups.map((v,i)=>{
+            for(var i = 0 ; i < _groups.length;++i){
                 if(i>=groupIndex){
                     groupItem.type=='col'?_groups[i].position.left -= groupItem.panelWidth:
                                     _groups[i].position.top -= groupItem.panelWidth;
                     
                 }
-            })
+            }
             sb.refresh();
         }
     }
@@ -333,14 +334,14 @@ wfGroups.prototype.groupPanelActionEvent = function(elt,item,groupIndex,groupIte
 /**
  */
 wfGroups.prototype.createGroupItemNameElement = function(){
-    let WeaInput = window.ecCom.WeaInput;
+    var WeaInput = window.ecCom.WeaInput;
 
     ReactDOM.render(
         React.createElement(WeaInput,
         {
             viewAttr:2,
             value:'',
-            onBlur:(v)=>{
+            onBlur:function(v){
             },
         }),
         document.getElementById("nodeName-container")
